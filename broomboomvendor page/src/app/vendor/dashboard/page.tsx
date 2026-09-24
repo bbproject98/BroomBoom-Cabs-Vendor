@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import Script from "next/script";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ShieldCheck,
@@ -100,6 +101,7 @@ type MenuTab = "overview" | "profile";
 function VendorDashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const ticketPaymentStatus = searchParams.get("ticket_payment");
 
   const [activeTab, setActiveTab] = useState<MenuTab>("overview");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -168,7 +170,35 @@ function VendorDashboardContent() {
         )}&mobile=${encodeURIComponent(sessionUser.vendorMobile || "")}`
       );
       const data = await res.json();
+
+      // Check if account has been upgraded and old session deactivated
+      if (data.accountUpgraded) {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("bb_vendor_session");
+          localStorage.removeItem("bb_vendor_token");
+        }
+        router.replace("/vendor/login?upgraded=true");
+        return;
+      }
+
       if (data.success) {
+        // Also check if any completed ticket exists with a new user ID that differs from our current user ID
+        const hasCompletedNewCredentials = data.tickets?.some(
+          (t: any) =>
+            (t.status === "COMPLETED" || t.status === "APPROVED") &&
+            t.newUserId &&
+            t.newUserId.toLowerCase() !== (sessionUser.userId || "").toLowerCase()
+        );
+
+        if (hasCompletedNewCredentials) {
+          if (typeof window !== "undefined") {
+            localStorage.removeItem("bb_vendor_session");
+            localStorage.removeItem("bb_vendor_token");
+          }
+          router.replace("/vendor/login?upgraded=true");
+          return;
+        }
+
         setProfile(data.profile);
         setPlan(data.plan);
         setReview(data.review);
@@ -198,7 +228,7 @@ function VendorDashboardContent() {
       setIsLoading(false);
       setRefreshing(false);
     }
-  }, [sessionUser]);
+  }, [sessionUser, router]);
 
   useEffect(() => {
     if (sessionUser) {
@@ -242,23 +272,51 @@ function VendorDashboardContent() {
           currentPlan: plan?.tier || sessionUser.currentPlan || "silver",
           requestedPlan,
           reason: ticketReason || `Partner requested upgrade to ${requestedPlan.toUpperCase()} plan.`,
+          initiatePayment: true,
         }),
       });
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        throw new Error(data.error || "Failed to submit plan change ticket.");
+        throw new Error(data.error || "Failed to submit plan upgrade ticket.");
+      }
+
+      // 1-Step Cashfree checkout launch
+      if (data.cashfree?.paymentSessionId) {
+        setTicketSuccess("Ticket registered! Launching Cashfree Payment Gateway...");
+        const launchCashfree = () => {
+          if (typeof window !== "undefined" && (window as any).Cashfree) {
+            const cashfree = (window as any).Cashfree({ mode: data.cashfree.mode || "sandbox" });
+            cashfree.checkout({
+              paymentSessionId: data.cashfree.paymentSessionId,
+              redirectTarget: "_self",
+            });
+            return true;
+          }
+          return false;
+        };
+
+        if (!launchCashfree()) {
+          let attempts = 0;
+          const interval = setInterval(() => {
+            attempts++;
+            if (launchCashfree() || attempts >= 8) {
+              clearInterval(interval);
+            }
+          }, 250);
+        }
+        return;
       }
 
       setTicketSuccess(
-        `Ticket #${data.ticket.ticketId} created! Admin will review your plan change request.`
+        `Ticket #${data.ticket.ticketId} created! Total payable: ₹${data.ticket.totalAmount}. Click Pay Now below to complete payment.`
       );
       setTicketReason("");
       fetchDashboardData();
       setTimeout(() => {
         setShowTicketModal(false);
         setTicketSuccess(null);
-      }, 1800);
+      }, 1500);
     } catch (err: any) {
       setTicketError(err.message || "Failed to submit ticket");
     } finally {
@@ -266,7 +324,7 @@ function VendorDashboardContent() {
     }
   };
 
-  // Vendor Pay Now action for approved plan change ticket
+  // Vendor Pay Now action for approved / awaiting payment plan change ticket
   const handlePayTicketUpgrade = async (ticket: Ticket) => {
     setPayingTicketId(ticket.ticketId);
     try {
@@ -281,14 +339,39 @@ function VendorDashboardContent() {
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        throw new Error(data.error || "Failed to process payment");
+        throw new Error(data.error || "Failed to initialize Cashfree payment");
+      }
+
+      if (data.paymentSessionId) {
+        const launchCashfree = () => {
+          if (typeof window !== "undefined" && (window as any).Cashfree) {
+            const cashfree = (window as any).Cashfree({ mode: data.mode || "sandbox" });
+            cashfree.checkout({
+              paymentSessionId: data.paymentSessionId,
+              redirectTarget: "_self",
+            });
+            return true;
+          }
+          return false;
+        };
+
+        if (!launchCashfree()) {
+          let attempts = 0;
+          const interval = setInterval(() => {
+            attempts++;
+            if (launchCashfree() || attempts >= 8) {
+              clearInterval(interval);
+            }
+          }, 250);
+        }
+        return;
       }
 
       alert(
         data.message ||
           `Payment of ₹${(ticket.totalAmount || 0).toLocaleString(
             "en-IN"
-          )} confirmed! Admin HQ has been notified to generate and dispatch your new login credentials.`
+          )} confirmed! Sent to Admin HQ for approval and credential dispatch.`
       );
 
       fetchDashboardData();
@@ -636,9 +719,9 @@ function VendorDashboardContent() {
                       <span
                         className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border ${
                           isPaid
-                            ? "bg-purple-100 text-purple-950 border-purple-300"
-                            : isAwaitingPay
-                            ? "bg-blue-100 text-blue-950 border-blue-300 animate-pulse"
+                            ? "bg-purple-100 text-purple-950 border-purple-300 animate-pulse"
+                            : isAwaitingPay || isPending
+                            ? "bg-blue-100 text-blue-950 border-blue-300"
                             : isCompleted
                             ? "bg-emerald-100 text-emerald-950 border-emerald-300"
                             : isRejected
@@ -647,14 +730,14 @@ function VendorDashboardContent() {
                         }`}
                       >
                         {isPaid
-                          ? "Payment Verified — Awaiting HQ Credentials"
-                          : isAwaitingPay
-                          ? "Approved by Admin — Payment Required"
+                          ? "Payment Verified — Sent to Admin HQ for Approval"
+                          : isAwaitingPay || isPending
+                          ? "Step 1: Pay Upgrade Fee via Cashfree"
                           : isCompleted
                           ? "Plan Upgrade Completed & Active"
                           : isRejected
                           ? "Request Rejected"
-                          : "Pending Admin Approval"}
+                          : "Awaiting Payment"}
                       </span>
                     </div>
                     <span className="text-[11px] text-slate-500 font-medium">
@@ -681,18 +764,8 @@ function VendorDashboardContent() {
                     </div>
                   )}
 
-                  {/* STAGE 1: PENDING ADMIN APPROVAL */}
-                  {isPending && (
-                    <div className="text-xs text-amber-900 bg-amber-100/70 p-3 rounded-xl border border-amber-200 flex items-start gap-2.5">
-                      <Clock className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
-                      <div>
-                        <strong>Under Admin Review:</strong> Your plan change request is being evaluated by Admin HQ. Once approved from the Admin Panel, the Pay Now option will appear here to complete the tier upgrade.
-                      </div>
-                    </div>
-                  )}
-
-                  {/* STAGE 2: ADMIN APPROVED -> PAY NOW BUTTON */}
-                  {isAwaitingPay && (() => {
+                  {/* STAGE 1: PAY NOW OPTION (1-STEP UPGRADE PROTOCOL) */}
+                  {(isAwaitingPay || isPending) && (() => {
                     const getTierBase = (tier: string) =>
                       tier === "silver" ? 10000 : tier === "platinum" ? 50000 : 20000;
                     const reqBase = getTierBase((t.requestedPlan || "silver").toLowerCase());
@@ -715,11 +788,11 @@ function VendorDashboardContent() {
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                           <div>
                             <div className="text-xs font-black text-blue-950 flex items-center gap-1.5">
-                              <CheckCircle2 className="w-4 h-4 text-blue-600" />
-                              <span>Upgrade Approved by Admin! Please Pay Upgrade Fee:</span>
+                              <CreditCard className="w-4 h-4 text-blue-600" />
+                              <span>1-Step Upgrade: Pay Upgrade Fee via Cashfree</span>
                             </div>
                             <p className="text-[11px] text-slate-600 mt-0.5">
-                              Click Pay Now to complete payment. Once paid, Admin HQ will generate your new credentials.
+                              Click <strong>Pay Now</strong> to redirect to Cashfree PG. Once payment is completed, this ticket request automatically goes to Admin HQ for approval and credential dispatch.
                             </p>
                           </div>
 
@@ -740,12 +813,12 @@ function VendorDashboardContent() {
                             {payingTicketId === t.ticketId ? (
                               <>
                                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                <span>Processing...</span>
+                                <span>Connecting Cashfree...</span>
                               </>
                             ) : (
                               <>
                                 <CreditCard className="w-4 h-4" />
-                                <span>Pay Now (₹{effectiveTotal.toLocaleString("en-IN")})</span>
+                                <span>Pay Now with Cashfree (₹{effectiveTotal.toLocaleString("en-IN")})</span>
                               </>
                             )}
                           </button>
@@ -781,16 +854,19 @@ function VendorDashboardContent() {
                     );
                   })()}
 
-                  {/* STAGE 3: PAYMENT COMPLETED -> WAITING FOR HQ CREDENTIALS */}
+                  {/* STAGE 2: PAYMENT COMPLETED -> TICKET SENT TO ADMIN HQ */}
                   {isPaid && (
-                    <div className="bg-purple-100/80 border border-purple-300 rounded-xl p-3.5 text-xs text-purple-950 space-y-1">
+                    <div className="bg-purple-100/90 border border-purple-300 rounded-xl p-3.5 text-xs text-purple-950 space-y-1.5">
                       <div className="font-black flex items-center gap-1.5">
                         <CheckCircle2 className="w-4 h-4 text-purple-700" />
-                        <span>Payment Verified (₹{(t.totalAmount || 0).toLocaleString("en-IN")}) — Sent to Admin HQ</span>
+                        <span>Payment Verified (₹{(t.totalAmount || 0).toLocaleString("en-IN")}) — Request Sent to Admin HQ</span>
                       </div>
                       <p className="text-[11px] text-purple-900 leading-relaxed">
-                        Your payment has been settled (Ref: {t.paymentId || "CF_UPG_PAID"}). Confirmation has been sent to Admin HQ. Admin will now generate your new login credentials and dispatch them to your email / WhatsApp.
+                        Your Cashfree payment has been verified (Ref: {t.paymentId || "CF_UPG_PAID"}). The upgrade request has been sent to Admin HQ. Admin will approve and generate your new User ID and Password.
                       </p>
+                      <div className="p-2 bg-purple-200/60 rounded-lg text-[10px] text-purple-950 font-bold">
+                        🔒 Note: Once Admin approves and dispatches your new credentials, this old username, password, and old plan will automatically close, and your new credentials will open your upgraded plan.
+                      </div>
                     </div>
                   )}
 
@@ -826,6 +902,26 @@ function VendorDashboardContent() {
 
   return (
     <div className="min-h-screen bg-slate-50/90 text-slate-900 font-sans selection:bg-amber-200 selection:text-black">
+      <Script src="https://sdk.cashfree.com/js/v3/cashfree.js" strategy="lazyOnload" />
+
+      {/* Cashfree Payment Status Notifications */}
+      {ticketPaymentStatus === "success" && (
+        <div className="bg-emerald-600 text-white font-black px-4 py-3 text-center text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md sticky top-0 z-50">
+          <CheckCircle2 className="w-5 h-5 text-emerald-200 shrink-0" />
+          <span>
+            🎉 Upgrade payment verified via Cashfree! Your ticket has been forwarded to Admin HQ. Admin will approve and generate your new User ID and Password.
+          </span>
+        </div>
+      )}
+      {ticketPaymentStatus === "failed" && (
+        <div className="bg-rose-600 text-white font-black px-4 py-3 text-center text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md sticky top-0 z-50">
+          <AlertCircle className="w-5 h-5 text-rose-200 shrink-0" />
+          <span>
+            Payment was not completed or was cancelled. You can retry paying your upgrade fee anytime by clicking &quot;Pay Now with Cashfree&quot; on your ticket below.
+          </span>
+        </div>
+      )}
+
       {/* Top Navigation Bar */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-lg border-b border-amber-200/60 py-3 px-4 sm:px-8 shadow-xs">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -1239,14 +1335,64 @@ function VendorDashboardContent() {
                 </select>
               </div>
 
+              {/* Dynamic Price Calculation Box */}
+              {(() => {
+                const getBase = (p: string) => (p === "silver" ? 10000 : p === "platinum" ? 50000 : 20000);
+                const reqBase = getBase(requestedPlan);
+                const curBase = getBase(currentTier);
+                let diff = reqBase > curBase ? reqBase - curBase : reqBase;
+                if (diff <= 0) diff = reqBase;
+                const gw = Math.round(diff * 0.03);
+                const gst = Math.round(diff * 0.05);
+                const total = diff + gw + gst;
+
+                return (
+                  <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 space-y-2.5">
+                    <div className="flex items-center justify-between border-b border-amber-200/60 pb-2">
+                      <span className="text-xs font-black text-amber-950 flex items-center gap-1.5">
+                        <CreditCard className="w-4 h-4 text-amber-700" />
+                        <span>1-Step Instant Upgrade Fee:</span>
+                      </span>
+                      <span className="text-[10px] font-black uppercase bg-amber-200 text-amber-950 px-2 py-0.5 rounded">
+                        Cashfree PG Direct
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 text-[11px]">
+                      <div>
+                        <span className="text-slate-500 font-bold block">Base Difference</span>
+                        <span className="font-extrabold text-slate-800">₹{diff.toLocaleString("en-IN")}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 font-bold block">Gateway (3%)</span>
+                        <span className="font-bold text-slate-700">₹{gw.toLocaleString("en-IN")}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 font-bold block">Govt GST (5%)</span>
+                        <span className="font-bold text-slate-700">₹{gst.toLocaleString("en-IN")}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-amber-200/60">
+                      <span className="text-xs font-bold text-amber-900">Total Payable Amount:</span>
+                      <span className="text-base font-black text-amber-950">₹{total.toLocaleString("en-IN")}</span>
+                    </div>
+
+                    <p className="text-[10px] text-amber-800 leading-tight">
+                      ℹ️ Click <strong>Pay Now with Cashfree</strong> to redirect directly to Cashfree. Upon payment completion, your ticket request is sent to Admin HQ for approval and credential dispatch.
+                    </p>
+                  </div>
+                );
+              })()}
+
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
                   Reason / Showroom Details for HQ <span className="text-amber-600">*</span>
                 </label>
                 <textarea
                   required
-                  rows={3}
-                  placeholder="e.g. We have secured a prime 450 sq.ft commercial showroom in Kolkata and wish to upgrade from Silver to Gold District Exclusivity."
+                  rows={2}
+                  placeholder="e.g. Upgrading territory from Silver to Gold Exclusive District Hub."
                   value={ticketReason}
                   onChange={(e) => setTicketReason(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 text-xs focus:outline-none focus:border-amber-500 resize-none"
@@ -1264,17 +1410,17 @@ function VendorDashboardContent() {
                 <button
                   type="submit"
                   disabled={isSubmittingTicket}
-                  className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 text-slate-950 font-black text-xs rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {isSubmittingTicket ? (
                     <>
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      <span>Submitting Ticket...</span>
+                      <span>Connecting to Cashfree...</span>
                     </>
                   ) : (
                     <>
-                      <Send className="w-3.5 h-3.5" />
-                      <span>Submit Plan Change Ticket</span>
+                      <CreditCard className="w-3.5 h-3.5" />
+                      <span>Pay Now with Cashfree</span>
                     </>
                   )}
                 </button>

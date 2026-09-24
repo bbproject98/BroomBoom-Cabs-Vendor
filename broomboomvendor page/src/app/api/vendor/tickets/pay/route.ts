@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { handleOptions } from "@/lib/cors";
+import { createCashfreeOrder, getCashfreeMode } from "@/lib/cashfree";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -12,7 +13,7 @@ export async function OPTIONS() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { ticketId, paymentMethod = "CASHFREE_UPI" } = body;
+    const { ticketId, paymentMethod = "CASHFREE_UPI", simulate = false } = body;
 
     if (!ticketId) {
       return NextResponse.json(
@@ -32,21 +33,12 @@ export async function POST(request: Request) {
       );
     }
 
-    if (ticket.status !== "AWAITING_PAYMENT" && ticket.status !== "PENDING") {
-      if (ticket.status === "PAYMENT_COMPLETED" || ticket.status === "COMPLETED") {
-        return NextResponse.json({
-          success: true,
-          message: "Payment is already completed for this ticket.",
-          ticket,
-        });
-      }
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Cannot pay for ticket in status "${ticket.status}". Must be approved by Admin first.`,
-        },
-        { status: 400 }
-      );
+    if (ticket.status === "PAYMENT_COMPLETED" || ticket.status === "COMPLETED") {
+      return NextResponse.json({
+        success: true,
+        message: "Payment is already completed for this ticket.",
+        ticket,
+      });
     }
 
     // Resolve non-zero amounts if ticket had legacy 0 amount
@@ -74,13 +66,14 @@ export async function POST(request: Request) {
         ? ticket.totalAmount
         : resolvedBase + resolvedGw + resolvedGst;
 
-    const paidAt = new Date();
-    const paymentId = `CF_UPG_${Date.now().toString().slice(-8)}`;
-    const adminNotes = `Upgrade payment of ₹${resolvedTotal.toLocaleString(
-      "en-IN"
-    )} completed by vendor via ${paymentMethod} (Ref: ${paymentId}). Awaiting Admin HQ to generate and issue new password.`;
+    // SIMULATED TEST PAYMENT (Direct completion)
+    if (simulate) {
+      const paidAt = new Date();
+      const paymentId = `CF_SIM_${Date.now().toString().slice(-8)}`;
+      const adminNotes = `Upgrade payment of ₹${resolvedTotal.toLocaleString(
+        "en-IN"
+      )} confirmed via ${paymentMethod} (${paymentId}). Ticket submitted to Admin HQ for approval and credential dispatch.`;
 
-    try {
       await prisma.planChangeTicket.update({
         where: { ticketId },
         data: {
@@ -95,35 +88,109 @@ export async function POST(request: Request) {
           adminNotes,
         },
       });
-    } catch (updateErr) {
-      // Fallback: direct raw SQL update handles database columns directly even if Prisma client validator was locked during dev
-      await prisma.$executeRaw`
-        UPDATE plan_change_tickets
-        SET 
-          status = 'PAYMENT_COMPLETED',
-          payment_status = 'PAID',
-          upgrade_amount = ${resolvedBase},
-          gateway_fee = ${resolvedGw},
-          gst_amount = ${resolvedGst},
-          total_amount = ${resolvedTotal},
-          payment_id = ${paymentId},
-          paid_at = ${paidAt},
-          admin_notes = ${adminNotes},
-          updated_at = ${new Date()}
-        WHERE ticket_id = ${ticketId} OR id = ${ticket.id}
-      `;
+
+      const updatedTicket = await prisma.planChangeTicket.findUnique({
+        where: { ticketId },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: `Payment of ₹${resolvedTotal.toLocaleString(
+          "en-IN"
+        )} confirmed! Sent to Admin HQ for approval and credentials.`,
+        ticket: updatedTicket,
+      });
     }
 
-    const updatedTicket = await prisma.planChangeTicket.findUnique({
+    // CASHFREE LIVE / SANDBOX ORDER CREATION
+    const origin =
+      request.headers.get("origin") ||
+      (request.headers.get("referer") ? new URL(request.headers.get("referer")!).origin : null);
+    const host = request.headers.get("host") || "localhost:3000";
+    const protocol = host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https";
+    const appUrl = origin || `${protocol}://${host}` || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+    const cleanTicket = ticket.ticketId.replace(/[^a-zA-Z0-9]/g, "_");
+    const orderId = `UPG_${cleanTicket.slice(-12)}_${Date.now().toString().slice(-5)}`;
+    const returnUrl = `${appUrl}/api/payment/callback?order_id={order_id}&ticketId=${encodeURIComponent(
+      ticket.ticketId
+    )}&applicationId=${encodeURIComponent(ticket.applicationId)}&action=ticket_upgrade`;
+
+    const cfRes = await createCashfreeOrder({
+      orderId,
+      orderAmount: resolvedTotal,
+      orderCurrency: "INR",
+      customerId: (ticket.vendorMobile || "cust_vendor").replace(/[^0-9]/g, "") || "cust_vendor",
+      customerName: ticket.vendorName.slice(0, 50),
+      customerEmail: ticket.vendorEmail || "vendor@broomboom.com",
+      customerPhone: ticket.vendorMobile,
+      returnUrl,
+      orderNote: `BroomBoom Plan Upgrade: ${currKey.toUpperCase()} to ${planKey.toUpperCase()} (Ticket #${ticket.ticketId})`,
+      orderTags: {
+        ticketId: ticket.ticketId,
+        applicationId: ticket.applicationId,
+        requestedPlan: planKey,
+      },
+      cartDetails: {
+        cart_items: [
+          {
+            item_name: `Upgrade to ${planKey.toUpperCase()} Partner`,
+            item_price: resolvedBase,
+            item_quantity: 1,
+          },
+          {
+            item_name: "Payment Gateway Fee (3%)",
+            item_price: resolvedGw,
+            item_quantity: 1,
+          },
+          {
+            item_name: "Government GST (5%)",
+            item_price: resolvedGst,
+            item_quantity: 1,
+          },
+        ],
+      },
+    });
+
+    if (!cfRes.success || !cfRes.data) {
+      console.error("[CASHFREE TICKET ORDER ERROR]", cfRes.error);
+      return NextResponse.json(
+        {
+          success: false,
+          error: cfRes.error || "Failed to initialize Cashfree payment gateway session.",
+        },
+        { status: 500 }
+      );
+    }
+
+    // Save order details to ticket
+    await prisma.planChangeTicket.update({
       where: { ticketId },
+      data: {
+        status: "AWAITING_PAYMENT",
+        upgradeAmount: resolvedBase,
+        gatewayFee: resolvedGw,
+        gstAmount: resolvedGst,
+        totalAmount: resolvedTotal,
+        paymentId: cfRes.data.orderId,
+      },
     });
 
     return NextResponse.json({
       success: true,
-      message: `Payment of ₹${resolvedTotal.toLocaleString(
-        "en-IN"
-      )} confirmed! Confirmation has been sent to Admin HQ. Admin will now generate and dispatch your new User ID and Password.`,
-      ticket: updatedTicket,
+      orderId: cfRes.data.orderId,
+      cfOrderId: cfRes.data.cfOrderId,
+      paymentSessionId: cfRes.data.paymentSessionId,
+      amount: resolvedTotal,
+      mode: getCashfreeMode(),
+      ticket: {
+        ...ticket,
+        upgradeAmount: resolvedBase,
+        gatewayFee: resolvedGw,
+        gstAmount: resolvedGst,
+        totalAmount: resolvedTotal,
+        paymentId: cfRes.data.orderId,
+      },
     });
   } catch (error: any) {
     console.error("[TICKET PAYMENT ERROR]", error);
@@ -133,3 +200,4 @@ export async function POST(request: Request) {
     );
   }
 }
+

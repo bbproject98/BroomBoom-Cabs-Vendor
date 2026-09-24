@@ -34,16 +34,58 @@ export async function GET(request: Request) {
 
     if (!user && appId) {
       user = await prisma.vendorUser.findFirst({
-        where: { applicationId: { equals: appId, mode: "insensitive" as const } },
+        where: { applicationId: { equals: appId, mode: "insensitive" as const }, isActive: true },
         orderBy: { createdAt: "desc" },
       });
     }
 
     if (!user && mobile) {
       user = await prisma.vendorUser.findFirst({
-        where: { vendorMobile: mobile },
+        where: { vendorMobile: mobile, isActive: true },
         orderBy: { createdAt: "desc" },
       });
+    }
+
+    // Check if current session account has been deactivated / upgraded
+    if (user && !user.isActive) {
+      return NextResponse.json(
+        {
+          success: false,
+          accountUpgraded: true,
+          error:
+            "Your plan upgrade has been approved! Your old credentials and old plan have been deactivated. Please log in using your new Username and Password.",
+        },
+        { status: 403 }
+      );
+    }
+
+    // Check if a completed upgrade ticket exists for this application with a different (newer) user ID
+    if (user) {
+      const upgradeTicket = await prisma.planChangeTicket.findFirst({
+        where: {
+          applicationId: user.applicationId,
+          status: { in: ["COMPLETED", "APPROVED"] },
+          newUserId: { not: null },
+        },
+        orderBy: { updatedAt: "desc" },
+      });
+
+      if (
+        upgradeTicket &&
+        upgradeTicket.newUserId &&
+        upgradeTicket.newUserId.toLowerCase() !== user.userId.toLowerCase()
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            accountUpgraded: true,
+            newUserId: upgradeTicket.newUserId,
+            error:
+              "Your plan upgrade has been approved by Admin! Your old credentials and old plan have been deactivated. Please log in using your new Username and Password.",
+          },
+          { status: 403 }
+        );
+      }
     }
 
     let targetAppId = appId || user?.applicationId || "";

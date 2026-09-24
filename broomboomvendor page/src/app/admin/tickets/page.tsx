@@ -290,26 +290,26 @@ export default function AdminTicketsPage() {
         <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-slate-800 space-y-3">
           <div className="flex items-center gap-2 text-amber-400 text-xs font-extrabold uppercase tracking-wider">
             <Sparkles className="w-4 h-4" />
-            2-Stage Plan Upgrade &amp; Credential Protocol
+            1-Step Plan Upgrade &amp; Account Migration Protocol
           </div>
           <h2 className="text-xl sm:text-2xl font-black">Plan Change Operations Workflow</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs pt-1">
             <div className="bg-white/10 p-3.5 rounded-2xl border border-white/10 space-y-1">
-              <strong className="text-amber-300 block">Step 1: Admin Approves Request</strong>
+              <strong className="text-amber-300 block">Step 1: Vendor Raises Ticket &amp; Pays (1-Step)</strong>
               <p className="text-slate-300 text-[11px] leading-relaxed">
-                When a partner requests an upgrade (e.g. Silver &rarr; Gold), Admin clicks <strong>Approve Plan</strong>. The fee difference is calculated, and the <strong>Pay Now</strong> button appears on the vendor dashboard.
+                Vendor creates an upgrade ticket and immediately sees the <strong>Pay Now</strong> button. Payment difference is settled directly via <strong>Cashfree Payment Gateway</strong>.
               </p>
             </div>
             <div className="bg-white/10 p-3.5 rounded-2xl border border-white/10 space-y-1">
-              <strong className="text-cyan-300 block">Step 2: Vendor Pays Upgrade Fee</strong>
+              <strong className="text-purple-300 block">Step 2: Paid Ticket Arrives at Admin HQ</strong>
               <p className="text-slate-300 text-[11px] leading-relaxed">
-                The partner logs in to their dashboard and clicks <strong>Pay Now</strong>. Once paid, the ticket automatically moves to <strong>Payment Completed</strong> for final Admin review.
+                After Cashfree verifies the transaction, the ticket moves to <strong>Paid / Action Needed</strong> with confirmed payment ID, ready for Admin approval.
               </p>
             </div>
             <div className="bg-white/10 p-3.5 rounded-2xl border border-white/10 space-y-1">
-              <strong className="text-emerald-300 block">Step 3: Admin Issues New Password</strong>
+              <strong className="text-emerald-300 block">Step 3: Admin Approves &amp; Sends Credentials</strong>
               <p className="text-slate-300 text-[11px] leading-relaxed">
-                Admin verifies the payment and clicks <strong>Generate &amp; Issue Credentials</strong>. The partner is issued their new User ID and Password, and the upgraded plan activates.
+                Admin approves and issues new User ID &amp; Password. <strong>Old credentials and old plan are automatically deactivated</strong>. Partner logs in with new credentials to open their upgraded plan!
               </p>
             </div>
           </div>
@@ -631,7 +631,7 @@ export default function AdminTicketsPage() {
                           <div className="bg-white p-4 rounded-2xl border-2 border-purple-400 shadow-lg space-y-3">
                             <div className="flex items-center gap-1.5 text-purple-950 font-black text-xs">
                               <Sparkles className="w-4 h-4 text-purple-600" />
-                              <span>Stage 3: Issue New Credentials</span>
+                              <span>Stage 3: Approve &amp; Issue Upgraded Credentials</span>
                             </div>
 
                             <div className="bg-purple-50 p-2.5 rounded-xl border border-purple-200 text-xs space-y-0.5">
@@ -646,25 +646,51 @@ export default function AdminTicketsPage() {
                               </span>
                             </div>
 
-                            {/* Password Input / Generator */}
-                            <div className="space-y-1">
-                              <label className="text-[10px] font-bold text-slate-600 block">
-                                Set Vendor Password:
-                              </label>
-                              <input
-                                type="text"
-                                value={
-                                  customPasswords[t.ticketId] ??
-                                  `BroomBoom@${t.requestedPlan.toUpperCase()}2026`
-                                }
-                                onChange={(e) =>
-                                  setCustomPasswords((prev) => ({
-                                    ...prev,
-                                    [t.ticketId]: e.target.value,
-                                  }))
-                                }
-                                className="w-full text-xs font-mono font-bold bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-purple-500"
-                              />
+                            <div className="p-2 bg-amber-50 border border-amber-200 rounded-lg text-[10px] text-amber-900 leading-tight">
+                              🔒 <strong>Auto-Deactivation:</strong> Approving will deactivate the vendor&apos;s old username, password, and old plan. Partner must log in with these new credentials.
+                            </div>
+
+                            {/* User ID and Password Input / Generator */}
+                            <div className="space-y-2">
+                              <div>
+                                <label className="text-[10px] font-bold text-slate-600 block">
+                                  New User ID:
+                                </label>
+                                <input
+                                  type="text"
+                                  value={
+                                    customUserIds[t.ticketId] ??
+                                    `BB-${t.requestedPlan.toUpperCase()}-${t.ticketId.slice(-4)}`
+                                  }
+                                  onChange={(e) =>
+                                    setCustomUserIds((prev) => ({
+                                      ...prev,
+                                      [t.ticketId]: e.target.value,
+                                    }))
+                                  }
+                                  className="w-full text-xs font-mono font-bold bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-slate-900 focus:outline-none focus:border-purple-500"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="text-[10px] font-bold text-slate-600 block">
+                                  Set New Password:
+                                </label>
+                                <input
+                                  type="text"
+                                  value={
+                                    customPasswords[t.ticketId] ??
+                                    `BroomBoom@${t.requestedPlan.toUpperCase()}2026`
+                                  }
+                                  onChange={(e) =>
+                                    setCustomPasswords((prev) => ({
+                                      ...prev,
+                                      [t.ticketId]: e.target.value,
+                                    }))
+                                  }
+                                  className="w-full text-xs font-mono font-bold bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-slate-900 focus:outline-none focus:border-purple-500"
+                                />
+                              </div>
                             </div>
 
                             <button
@@ -678,7 +704,7 @@ export default function AdminTicketsPage() {
                               ) : (
                                 <KeyRound className="w-4 h-4" />
                               )}
-                              <span>Generate &amp; Send New Password</span>
+                              <span>Approve &amp; Send New Credentials</span>
                             </button>
                           </div>
                         )}

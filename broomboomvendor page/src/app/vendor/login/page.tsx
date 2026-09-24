@@ -23,6 +23,7 @@ function VendorLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const appIdParam = searchParams.get("appId") || "";
+  const isUpgraded = searchParams.get("upgraded") === "true";
 
   const [username, setUsername] = useState(appIdParam || "");
   const [password, setPassword] = useState("");
@@ -150,8 +151,26 @@ function VendorLoginForm() {
             </p>
           </div>
 
+          {/* If redirected because account was upgraded by Admin */}
+          {isUpgraded && (
+            <div className="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-4 flex items-start gap-3 shadow-sm animate-in fade-in slide-in-from-top-2">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div className="text-xs space-y-1">
+                <div className="font-black text-emerald-950 text-sm">🎉 Plan Upgrade Completed!</div>
+                <p className="text-emerald-800 text-[11px] leading-relaxed">
+                  Your plan upgrade request has been approved by Admin HQ! <strong>Your old username, password, and old plan are no longer accessible</strong>.
+                </p>
+                <div className="text-emerald-900 font-bold text-[11px] pt-1">
+                  👉 Please log in using your <strong>new User ID &amp; Password</strong> sent by Admin HQ to view your upgraded plan.
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* If arriving with an Application ID parameter */}
-          {appIdParam && (
+          {appIdParam && !isUpgraded && (
             <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-300 rounded-2xl p-4 flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm">
                 <CheckCircle2 className="w-5 h-5" />

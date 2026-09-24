@@ -98,35 +98,73 @@ export async function POST(request: Request) {
 
     await ensureDemoUser();
 
-    // 1. Direct match on VendorUser table (ordered by newest first)
-    // Priority: Exact userId -> Exact applicationId -> Email -> Mobile
+    // 1. Direct match on VendorUser table
+    // Priority: Active user by exact userId -> Active user by applicationId -> Email -> Mobile
     let user = await prisma.vendorUser.findFirst({
-      where: { userId: { equals: trimmedUser, mode: "insensitive" } },
+      where: { userId: { equals: trimmedUser, mode: "insensitive" }, isActive: true },
       orderBy: { createdAt: "desc" },
     });
 
+    let inactiveUser = null;
     if (!user) {
-      user = await prisma.vendorUser.findFirst({
-        where: { applicationId: { equals: trimmedUser, mode: "insensitive" } },
+      inactiveUser = await prisma.vendorUser.findFirst({
+        where: { userId: { equals: trimmedUser, mode: "insensitive" }, isActive: false },
         orderBy: { createdAt: "desc" },
       });
     }
 
-    if (!user && trimmedUser.includes("@")) {
+    if (!user && !inactiveUser) {
       user = await prisma.vendorUser.findFirst({
-        where: { vendorEmail: { equals: trimmedUser, mode: "insensitive" } },
+        where: { applicationId: { equals: trimmedUser, mode: "insensitive" }, isActive: true },
         orderBy: { createdAt: "desc" },
       });
+      if (!user) {
+        inactiveUser = await prisma.vendorUser.findFirst({
+          where: { applicationId: { equals: trimmedUser, mode: "insensitive" }, isActive: false },
+          orderBy: { createdAt: "desc" },
+        });
+      }
     }
 
-    if (!user) {
+    if (!user && !inactiveUser && trimmedUser.includes("@")) {
       user = await prisma.vendorUser.findFirst({
-        where: { vendorMobile: trimmedUser },
+        where: { vendorEmail: { equals: trimmedUser, mode: "insensitive" }, isActive: true },
         orderBy: { createdAt: "desc" },
       });
+      if (!user) {
+        inactiveUser = await prisma.vendorUser.findFirst({
+          where: { vendorEmail: { equals: trimmedUser, mode: "insensitive" }, isActive: false },
+          orderBy: { createdAt: "desc" },
+        });
+      }
     }
 
-    // 2. Fallback: Check if applicant exists in VendorSubscription or VendorLead
+    if (!user && !inactiveUser) {
+      user = await prisma.vendorUser.findFirst({
+        where: { vendorMobile: trimmedUser, isActive: true },
+        orderBy: { createdAt: "desc" },
+      });
+      if (!user) {
+        inactiveUser = await prisma.vendorUser.findFirst({
+          where: { vendorMobile: trimmedUser, isActive: false },
+          orderBy: { createdAt: "desc" },
+        });
+      }
+    }
+
+    // If an inactive account was matched (because it was upgraded):
+    if (!user && inactiveUser) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "This account has been upgraded to a new plan. Your old username, password, and old plan are no longer accessible. Please log in using your new Username and Password sent by Admin HQ.",
+        },
+        { status: 403 }
+      );
+    }
+
+    // 2. Fallback: Check if applicant exists in VendorSubscription or VendorLead (for first-time initial applicants)
     if (!user) {
       const sub = await prisma.vendorSubscription.findFirst({
         where: {
@@ -191,17 +229,48 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!user.isActive) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "This account has been upgraded to a new plan. Your old username, password, and old plan are no longer accessible. Please log in using your new Username and Password sent by Admin HQ.",
+        },
+        { status: 403 }
+      );
+    }
+
     // Match password (supports custom generated passwords or default password)
     const isPasswordValid =
       user.password === trimmedPass ||
       trimmedPass === DEMO_PASSWORD;
 
     if (!isPasswordValid) {
+      // Check if user entered old deactivated password
+      const oldAccount = await prisma.vendorUser.findFirst({
+        where: {
+          applicationId: user.applicationId,
+          isActive: false,
+          password: trimmedPass,
+        },
+      });
+
+      if (oldAccount) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "You entered your old password. Your account has been upgraded to a new plan. Old credentials cannot access your account. Please log in with your new Password issued by Admin.",
+          },
+          { status: 401 }
+        );
+      }
+
       return NextResponse.json(
         {
           success: false,
           error:
-            "Incorrect password. If you recently raised a plan change ticket, please enter your new password from HQ.",
+            "Incorrect password. If you recently raised a plan upgrade ticket, please enter your new password provided by Admin HQ.",
         },
         { status: 401 }
       );

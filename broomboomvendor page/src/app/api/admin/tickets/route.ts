@@ -247,22 +247,21 @@ export async function POST(request: Request) {
         where: { ticketId },
       });
 
-      // 2. Update VendorUser records
+      // 2. Update VendorUser records: Deactivate old credentials and activate ONLY new credentials
       try {
-        const existingUser = await prisma.vendorUser.findFirst({
-          where: { applicationId: ticket.applicationId },
-          orderBy: { createdAt: "desc" },
+        // Deactivate all older vendor accounts for this application/mobile
+        await prisma.vendorUser.updateMany({
+          where: {
+            OR: [
+              { applicationId: ticket.applicationId },
+              { vendorMobile: ticket.vendorMobile },
+            ],
+            userId: { not: generatedUserId },
+          },
+          data: {
+            isActive: false,
+          },
         });
-
-        if (existingUser) {
-          await prisma.vendorUser.update({
-            where: { id: existingUser.id },
-            data: {
-              currentPlan: newPlanKey,
-              password: generatedPassword,
-            },
-          });
-        }
 
         // Upsert direct login account for generatedUserId
         await prisma.vendorUser.upsert({
@@ -287,6 +286,7 @@ export async function POST(request: Request) {
             isActive: true,
           },
         });
+        console.log(`[ADMIN ISSUED] New User: ${generatedUserId} activated with plan ${newPlanKey}. Old credentials deactivated.`);
       } catch (uErr) {
         console.warn("[ADMIN ISSUE CREDENTIALS USER UPDATE WARN]", uErr);
       }

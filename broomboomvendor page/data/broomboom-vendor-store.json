@@ -1,6 +1,60 @@
 {
   "leads": [
     {
+      "fullName": "test new new",
+      "mobile": "1122233389",
+      "alternatePhone": "",
+      "email": "s222@gmail.com",
+      "state": "West Bengal",
+      "city": "SINGUR",
+      "pincode": "712124",
+      "proposedAddress": "",
+      "spaceStatus": "Owned commercial space ready",
+      "carpetArea": "800 - 1,200 sq.ft (Ideal for Platinum Master)",
+      "preferredPackage": "platinum",
+      "packageName": "Platinum Partner",
+      "investmentBudget": "₹50,000 (Platinum Package - 50% OFF Exclusive Deal)",
+      "financeRequired": "Self-Funded / Ready Capital",
+      "loanAssistance": "No (Self-Funded)",
+      "currentProfession": "",
+      "hasExperience": "Yes, currently in travel / taxi / logistics",
+      "message": "",
+      "source": "apply_page",
+      "adminNotes": "Application recorded into BroomBoom operations system.",
+      "id": "lead-1790251410841-ltqtu",
+      "applicationId": "BB-VENDOR-2026-1093",
+      "status": "new",
+      "createdAt": "2026-09-24T12:03:30.841Z",
+      "updatedAt": "2026-09-24T12:03:30.841Z"
+    },
+    {
+      "fullName": "test new",
+      "mobile": "1122334455",
+      "alternatePhone": "",
+      "email": "partha@gmail.com",
+      "state": "West Bengal",
+      "city": "SINGUR",
+      "pincode": "712124",
+      "proposedAddress": "",
+      "spaceStatus": "Owned commercial space ready",
+      "carpetArea": "100 - 150 sq.ft (Ideal for Silver Kiosk)",
+      "preferredPackage": "silver",
+      "packageName": "Silver Partner",
+      "investmentBudget": "₹10,000 (Silver Partner - 50% OFF Exclusive Deal)",
+      "financeRequired": "Self-Funded / Ready Capital",
+      "loanAssistance": "No (Self-Funded)",
+      "currentProfession": "",
+      "hasExperience": "Yes, currently in travel / taxi / logistics",
+      "message": "",
+      "source": "apply_page",
+      "adminNotes": "Application recorded into BroomBoom operations system.",
+      "id": "lead-1790247344732-27ksk",
+      "applicationId": "BB-VENDOR-2026-1092",
+      "status": "new",
+      "createdAt": "2026-09-24T10:55:44.732Z",
+      "updatedAt": "2026-09-24T10:55:44.732Z"
+    },
+    {
       "fullName": "test",
       "mobile": "2345566677",
       "alternatePhone": "",
@@ -2549,6 +2603,18 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "log-1790251410841",
+      "action": "LEAD_CREATED",
+      "details": "New vendor application BB-VENDOR-2026-1093 submitted by test new new (SINGUR, PLATINUM)",
+      "timestamp": "2026-09-24T12:03:30.841Z"
+    },
+    {
+      "id": "log-1790247344732",
+      "action": "LEAD_CREATED",
+      "details": "New vendor application BB-VENDOR-2026-1092 submitted by test new (SINGUR, SILVER)",
+      "timestamp": "2026-09-24T10:55:44.732Z"
+    },
     {
       "id": "log-1790242060844",
       "action": "LEAD_CREATED",
