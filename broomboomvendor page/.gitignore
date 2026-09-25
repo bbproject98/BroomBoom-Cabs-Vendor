@@ -22,3 +22,5 @@ Thumbs.db
 
 *.tsbuildinfo
 *.log
+# Local JSON database / runtime data
+/data/

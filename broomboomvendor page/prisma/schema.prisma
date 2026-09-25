@@ -43,40 +43,6 @@ model VendorLead {
   @@map("vendor_leads")
 }
 
-// Franchise Leads (Preserved from Franchise Portal)
-model FranchiseLead {
-  id                String   @id @default(cuid())
-  applicationId     String   @unique @map("application_id")
-  fullName          String   @map("full_name")
-  mobile            String
-  alternatePhone    String?  @map("alternate_phone")
-  email             String
-  state             String?
-  city              String
-  pincode           String?
-  proposedAddress   String?  @map("proposed_address")
-  spaceStatus       String?  @map("space_status")
-  carpetArea        String?  @map("carpet_area")
-  preferredPackage  String   @map("preferred_package")
-  packageName       String?  @map("package_name")
-  investmentBudget  String?  @map("investment_budget")
-  financeRequired   String?  @default("Self-Funded") @map("finance_required")
-  loanAssistance    String?  @default("No") @map("loan_assistance")
-  currentProfession String?  @map("current_profession")
-  hasExperience     String?  @map("has_experience")
-  message           String?
-  source            String?  @default("apply_page")
-  status            String   @default("new")
-  adminNotes        String?  @map("admin_notes")
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
-
-  @@index([status])
-  @@index([city])
-  @@index([preferredPackage])
-  @@index([createdAt(sort: Desc)])
-  @@map("franchise_leads")
-}
 
 // Brochure Downloads
 model BrochureDownload {
