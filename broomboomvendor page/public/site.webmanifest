@@ -1,0 +1,27 @@
+{
+  "name": "BroomBoom Vendor Partner",
+  "short_name": "BroomBoom Vendor",
+  "description": "Attach Your Cabs & Fleet with India's Leading Network",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFDF5",
+  "theme_color": "#F59E0B",
+  "icons": [
+    {
+      "src": "/broomboom-logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

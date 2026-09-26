@@ -34,12 +34,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenApplyModal, onOpenBrochure
         <div className="hidden md:flex items-center justify-between h-16 max-w-7xl mx-auto px-4 sm:px-6">
           {/* Brand Logo with "Vendor" label */}
           <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-            <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-brand-yellow shadow-sm group-hover:scale-105 transition-transform">
+            <div className="relative w-11 h-11 rounded-full overflow-hidden border-2 border-brand-yellow shadow-sm group-hover:scale-105 transition-transform bg-white flex items-center justify-center p-0.5">
               <Image
                 src="/broomboom-logo.png"
                 alt="BroomBoom Vendor Logo"
                 fill
-                className="object-cover"
+                className="object-contain"
                 priority
               />
             </div>
@@ -101,12 +101,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenApplyModal, onOpenBrochure
         <div className="md:hidden flex items-center justify-between min-h-[56px] h-14 sm:h-16 py-2 px-3 sm:px-4">
           {/* 1. Left: Logo + BroomBoom | Vendor */}
           <Link href="/" className="flex items-center gap-1.5 shrink-0">
-            <div className="relative w-7 h-7 sm:w-8 sm:h-8 rounded-full overflow-hidden border border-brand-yellow shadow-sm">
+            <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border border-brand-yellow shadow-sm bg-white flex items-center justify-center p-0.5">
               <Image
                 src="/broomboom-logo.png"
                 alt="BroomBoom Vendor Logo"
                 fill
-                className="object-cover"
+                className="object-contain"
                 priority
               />
             </div>

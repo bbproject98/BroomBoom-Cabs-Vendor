@@ -120,8 +120,8 @@ Web: https://broomboom.com`
         ) : (
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="relative w-11 h-11 rounded-full overflow-hidden border-2 border-amber-400 shrink-0">
-                <Image src="/broomboom-logo.png" alt="BroomBoom Logo" fill className="object-cover" />
+              <div className="relative w-11 h-11 rounded-full overflow-hidden border-2 border-amber-400 shrink-0 bg-white flex items-center justify-center p-0.5">
+                <Image src="/broomboom-logo.png" alt="BroomBoom Logo" fill className="object-contain" />
               </div>
               <div>
                 <h3 className="text-lg font-black text-slate-950">Download Vendor Kit</h3>

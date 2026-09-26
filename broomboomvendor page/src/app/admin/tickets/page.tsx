@@ -221,8 +221,8 @@ export default function AdminTicketsPage() {
       <header className="bg-slate-950 text-white border-b border-slate-800 sticky top-0 z-30 px-4 sm:px-8 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-amber-400">
-              <Image src="/broomboom-logo.png" alt="BroomBoom" fill className="object-cover" />
+            <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-amber-400 bg-white flex items-center justify-center p-0.5">
+              <Image src="/broomboom-logo.png" alt="BroomBoom" fill className="object-contain" />
             </div>
             <div>
               <div className="flex items-center gap-2">

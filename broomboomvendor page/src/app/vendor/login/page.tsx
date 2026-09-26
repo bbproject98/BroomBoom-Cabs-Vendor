@@ -38,7 +38,7 @@ function VendorLoginForm() {
   }, [appIdParam, username]);
 
   const handleFillDemo = (customId?: string, customPass?: string) => {
-    setUsername(customId || "support@broomboomcabs.com");
+    setUsername(customId || "vendor@broomboom.com");
     setPassword(customPass || "broomboom2026");
     setError(null);
   };
@@ -103,12 +103,12 @@ function VendorLoginForm() {
       {/* Top Header */}
       <header className="max-w-6xl mx-auto w-full flex items-center justify-between z-10 mb-6">
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative w-11 h-11 rounded-full overflow-hidden border-2 border-amber-400 shadow-md group-hover:scale-105 transition-transform duration-300">
+          <div className="relative w-11 h-11 rounded-full overflow-hidden border-2 border-amber-400 shadow-md group-hover:scale-105 transition-transform duration-300 bg-white flex items-center justify-center p-0.5">
             <Image
               src="/broomboom-logo.png"
               alt="BroomBoom Logo"
               fill
-              className="object-cover"
+              className="object-contain"
               priority
             />
           </div>
@@ -175,11 +175,11 @@ function VendorLoginForm() {
                 <Sparkles className="w-3.5 h-3.5 text-amber-600" />
                 Testing Demo Account?
               </span>
-              <span className="font-mono text-slate-600 text-[10px]">support@broomboomcabs.com</span>
+              <span className="font-mono text-slate-600 text-[10px]">vendor@broomboom.com</span>
             </div>
             <button
               type="button"
-              onClick={() => handleFillDemo("support@broomboomcabs.com", "broomboom2026")}
+              onClick={() => handleFillDemo("vendor@broomboom.com", "broomboom2026")}
               className="text-[11px] font-bold text-amber-950 bg-amber-200/80 hover:bg-amber-300 border border-amber-300 px-3 py-1.5 rounded-lg transition-colors cursor-pointer shrink-0 shadow-xs"
             >
               Auto Fill Demo
@@ -215,7 +215,7 @@ function VendorLoginForm() {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. support@broomboomcabs.com or 9876543210"
+                  placeholder="e.g. vendor@broomboom.com or 9876543210"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 bg-slate-50/80 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all font-medium"
@@ -280,8 +280,8 @@ function VendorLoginForm() {
 
         <p className="text-center text-xs text-slate-500 mt-6">
           Need partner onboarding assistance? Call HQ at{" "}
-          <a href="tel:62899524182706600" className="font-bold text-amber-700 hover:underline">
-            6289952418-BROOM-BOOM
+          <a href="tel:18002706600" className="font-bold text-amber-700 hover:underline">
+            1800-BROOM-BOOM
           </a>
         </p>
       </main>

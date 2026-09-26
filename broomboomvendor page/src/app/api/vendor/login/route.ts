@@ -10,7 +10,7 @@ export async function OPTIONS() {
 }
 
 // Default initial demo user credentials
-const DEMO_USER_ID = "support@broomboomcabs.com";
+const DEMO_USER_ID = "vendor@broomboom.com";
 const DEMO_PASSWORD = "broomboom2026";
 const DEMO_APP_ID = "BB-VENDOR-2026-GOLD";
 
@@ -185,7 +185,7 @@ export async function POST(request: Request) {
         {
           success: false,
           error:
-            "No account found with this User ID / Mobile. Try demo credentials: User ID: support@broomboomcabs.com | Password: broomboom2026",
+            "No account found with this User ID / Mobile. Try demo credentials: User ID: vendor@broomboom.com | Password: broomboom2026",
         },
         { status: 401 }
       );

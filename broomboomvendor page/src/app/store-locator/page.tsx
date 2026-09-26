@@ -111,8 +111,8 @@ export default function StoreLocatorPage() {
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-amber-200 py-3.5 px-4 sm:px-8 shadow-sm">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative w-11 h-11 rounded-full overflow-hidden border-2 border-amber-400 shadow-sm">
-              <Image src="/broomboom-logo.png" alt="BroomBoom Logo" fill className="object-cover" priority />
+            <div className="relative w-11 h-11 rounded-full overflow-hidden border-2 border-amber-400 shadow-sm bg-white flex items-center justify-center p-0.5">
+              <Image src="/broomboom-logo.png" alt="BroomBoom Logo" fill className="object-contain" priority />
             </div>
             <div>
               <div className="flex items-center gap-2">
