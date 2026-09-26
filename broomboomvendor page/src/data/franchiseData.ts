@@ -18,7 +18,7 @@ export const FRANCHISE_PACKAGES: FranchisePackage[] = [
     spaceRequired: "100 - 150 sq.ft (or Shop-in-Shop)",
     idealFor: "Travel Agents, Internet Cafes, Mall/Transit Kiosks, Retail Store Owners",
     commissionSlab: "15% - 20% Commission",
-    roiPeriod: "3 - 5 Months",
+    roiPeriod: "3-5 Months",
     keyHighlights: [
       "Immediate activation within 7 working days",
       "Official BroomBoom branding kit & counter standee",
@@ -59,7 +59,7 @@ export const FRANCHISE_PACKAGES: FranchisePackage[] = [
     spaceRequired: "300 - 500 sq.ft Commercial Office",
     idealFor: "Established Entrepreneurs, Fleet Owners, Logistics Professionals",
     commissionSlab: "10% - 15% Commission + Fleet Overrides",
-    roiPeriod: "5 - 8 Months",
+    roiPeriod: "5-8 Months",
     keyHighlights: [
       "Exclusive territorial rights for your District / Sub-City",
       "Driver onboarding hub with verification approval rights",
@@ -99,7 +99,7 @@ export const FRANCHISE_PACKAGES: FranchisePackage[] = [
     spaceRequired: "800 - 1,200 sq.ft Regional Headquarters",
     idealFor: "High Net-Worth Investors, Large Fleet Operators, Regional Corporates",
     commissionSlab: "5% Commission + Sub-Franchise Royalty",
-    roiPeriod: "8 - 12 Months",
+    roiPeriod: "8-12 Months",
     keyHighlights: [
       "Complete Zone or Multi-District Master Exclusivity",
       "Right to appoint Silver & Gold franchisees in your territory",
