@@ -13,11 +13,11 @@ export const FloatingCta: React.FC<FloatingCtaProps> = ({ onApplyClick }) => {
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-md border-t border-slate-800 p-2.5 pb-[calc(0.65rem+env(safe-area-inset-bottom,0px))] shadow-[0_-4px_25px_rgba(0,0,0,0.4)]">
       <div className="flex items-center gap-2 max-w-md mx-auto">
         <a
-          href="tel:18002706600"
+          href="tel:82407654992706600"
           className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border border-slate-700 bg-slate-900/90 rounded-xl text-xs font-bold text-slate-200 hover:text-white transition-colors active:scale-95"
         >
           <Phone className="w-3.5 h-3.5 text-brand-yellow" />
-          <span>Call 1800-BROOM</span>
+          <span>Call 8240765499-BROOM</span>
         </a>
 
         <Link

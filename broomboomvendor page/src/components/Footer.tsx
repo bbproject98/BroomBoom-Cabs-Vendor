@@ -135,18 +135,18 @@ export const Footer: React.FC<FooterProps> = ({ onOpenApplyModal, onOpenBrochure
             <h4 className="text-white font-bold text-xs uppercase tracking-wider">Vendor Helpdesk</h4>
             <div className="space-y-2.5 text-xs text-slate-400">
               <a
-                href="tel:18002706600"
+                href="tel:82407654992706600"
                 className="flex items-center gap-2 hover:text-brand-yellow transition-colors"
               >
                 <Phone className="w-4 h-4 text-brand-yellow shrink-0" />
-                <span>1800-BROOM-BOOM (Toll-Free)</span>
+                <span>8240765499</span>
               </a>
               <a
-                href="mailto:vendor@broomboom.com"
+                href="mailto:support@broomboomcabs.com"
                 className="flex items-center gap-2 hover:text-brand-yellow transition-colors"
               >
                 <Mail className="w-4 h-4 text-brand-yellow shrink-0" />
-                <span>vendor@broomboom.com</span>
+                <span>support@broomboomcabs.com</span>
               </a>
               <div className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-brand-yellow shrink-0 mt-0.5" />

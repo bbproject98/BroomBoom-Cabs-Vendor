@@ -104,11 +104,11 @@ export const FaqSection: React.FC<FaqSectionProps> = ({ onContactClick }) => {
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
             <a
-              href="tel:18002706600"
+              href="tel:82407654992706600"
               className="inline-flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-amber-900 border border-slate-300 px-3.5 sm:px-4 py-2 rounded-xl"
             >
               <PhoneCall className="w-3.5 h-3.5 text-amber-600" />
-              Call Hotline: 1800-BROOM-BOOM
+              Call Hotline: 8240765499-BROOM-BOOM
             </a>
             <Link
               href="/apply?package=gold"

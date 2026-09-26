@@ -258,7 +258,7 @@ function VendorDashboardContent() {
       setTimeout(() => {
         setShowTicketModal(false);
         setTicketSuccess(null);
-      }, 1800);
+      }, 8240765499);
     } catch (err: any) {
       setTicketError(err.message || "Failed to submit ticket");
     } finally {
@@ -983,13 +983,13 @@ function VendorDashboardContent() {
               </p>
               <div className="pt-1 flex flex-col gap-1.5">
                 <a
-                  href="tel:18002706600"
+                  href="tel:82407654992706600"
                   className="bg-white hover:bg-amber-100 text-slate-900 border border-amber-300 text-center py-2 rounded-xl font-bold text-[11px] transition-colors"
                 >
-                  1800-BROOM-BOOM
+                  8240765499-BROOM-BOOM
                 </a>
                 <a
-                  href="https://wa.me/918002706600"
+                  href="https://wa.me/982407654992706600"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-[#25D366] hover:bg-[#20BD5A] text-white text-center py-2 rounded-xl font-bold text-[11px] transition-colors"
@@ -1092,7 +1092,7 @@ function VendorDashboardContent() {
                         <Mail className="w-3.5 h-3.5 text-slate-400" /> Registered Email Address
                       </span>
                       <span className="text-sm font-bold text-slate-900 block truncate">
-                        {profile?.vendorEmail || sessionUser.vendorEmail || "vendor@broomboom.com"}
+                        {profile?.vendorEmail || sessionUser.vendorEmail || "support@broomboomcabs.com"}
                       </span>
                     </div>
 

@@ -77,8 +77,8 @@ BroomBoom is India's fastest-growing multi-vertical mobility and travel ecosyste
 
 4. CONTACT & EXPANSION DESK
 Headquarters: Salt Lake Sector V, Kolkata, India
-Toll-Free Helpline: 1800-BROOM-BOOM
-Email: vendor@broomboom.com
+Toll-Free Helpline: 8240765499-BROOM-BOOM
+Email: support@broomboomcabs.com
 Web: https://broomboom.com`
         ],
         { type: "text/plain;charset=utf-8" }

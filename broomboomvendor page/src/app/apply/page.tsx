@@ -331,11 +331,11 @@ function ApplyFormContent() {
 
           <div className="flex items-center gap-4">
             <a
-              href="tel:18002706600"
+              href="tel:82407654992706600"
               className="hidden sm:flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-amber-800 transition-colors"
             >
               <Phone className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
-              <span>1800-BROOM-BOOM</span>
+              <span>8240765499-BROOM-BOOM</span>
             </a>
             <Link
               href="/"
@@ -1318,7 +1318,7 @@ function ApplyFormContent() {
             </span>
           </div>
           <p className="text-sm mb-2">© {new Date().getFullYear()} BroomBoom Mobility Technologies Ltd. All rights reserved.</p>
-          <p className="text-sm">For urgent vendor partner inquiries: <span className="font-bold text-amber-500">1800-BROOM-BOOM</span> | <span className="font-bold text-amber-500">vendor@broomboom.com</span></p>
+          <p className="text-sm">For urgent vendor partner inquiries: <span className="font-bold text-amber-500">8240765499-BROOM-BOOM</span> | <span className="font-bold text-amber-500">support@broomboomcabs.com</span></p>
         </div>
       </footer>
     </div>

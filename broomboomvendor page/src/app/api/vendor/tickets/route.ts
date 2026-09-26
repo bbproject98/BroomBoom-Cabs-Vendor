@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       applicationId = "BB-VENDOR-2026",
       vendorName = "Valued Partner",
       vendorMobile = "9999999999",
-      vendorEmail = "vendor@broomboom.com",
+      vendorEmail = "support@broomboomcabs.com",
       currentPlan = "silver",
       requestedPlan = "gold",
       reason = "Requesting plan change / tier upgrade",

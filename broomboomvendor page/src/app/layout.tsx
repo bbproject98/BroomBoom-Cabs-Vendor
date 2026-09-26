@@ -15,6 +15,12 @@ export const metadata: Metadata = {
     "attach car with travel agency",
     "BroomBoom cabs",
   ],
+
+  robots: {
+    index: false,
+    follow: false,
+  },
+
   icons: {
     icon: "/broomboom-logo.png",
     shortcut: "/broomboom-logo.png",
@@ -41,4 +47,3 @@ export default function RootLayout({
     </html>
   );
 }
-
