@@ -280,8 +280,8 @@ function VendorLoginForm() {
 
         <p className="text-center text-xs text-slate-500 mt-6">
           Need partner onboarding assistance? Call HQ at{" "}
-          <a href="tel:82407654992706600" className="font-bold text-amber-700 hover:underline">
-            8240765499-BROOM-BOOM
+          <a href="tel:62899524182706600" className="font-bold text-amber-700 hover:underline">
+            6289952418-BROOM-BOOM
           </a>
         </p>
       </main>

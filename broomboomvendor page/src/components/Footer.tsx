@@ -135,11 +135,11 @@ export const Footer: React.FC<FooterProps> = ({ onOpenApplyModal, onOpenBrochure
             <h4 className="text-white font-bold text-xs uppercase tracking-wider">Vendor Helpdesk</h4>
             <div className="space-y-2.5 text-xs text-slate-400">
               <a
-                href="tel:82407654992706600"
+                href="tel:62899524182706600"
                 className="flex items-center gap-2 hover:text-brand-yellow transition-colors"
               >
                 <Phone className="w-4 h-4 text-brand-yellow shrink-0" />
-                <span>8240765499</span>
+                <span>6289952418</span>
               </a>
               <a
                 href="mailto:support@broomboomcabs.com"

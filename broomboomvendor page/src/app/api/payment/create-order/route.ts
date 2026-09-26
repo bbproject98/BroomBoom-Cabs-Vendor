@@ -39,7 +39,7 @@ export async function POST(request: Request) {
       packageId = "gold",
       fullName = "Valued Partner",
       mobile = "9999999999",
-      email = "vendor@broomboom.com",
+      email = "support@broomboomcabs.com",
       city = "India",
     } = body;
 
@@ -73,7 +73,7 @@ export async function POST(request: Request) {
       orderCurrency: "INR",
       customerId: (mobile || "cust_vendor").replace(/[^0-9]/g, "") || "cust_vendor",
       customerName: fullName,
-      customerEmail: email || "vendor@broomboom.com",
+      customerEmail: email || "support@broomboomcabs.com",
       customerPhone: mobile,
       returnUrl,
       orderNote: `BroomBoom ${pkg.name} | Base: ₹${baseAmount.toLocaleString('en-IN')} + 3% Gateway Fee: ₹${gatewayFee.toLocaleString('en-IN')} + 5% GST: ₹${gstFee.toLocaleString('en-IN')} | Total: ₹${totalAmount.toLocaleString('en-IN')}`,
@@ -134,7 +134,7 @@ export async function POST(request: Request) {
 
     const finalVendorName = fullName || leadRecord?.fullName || "Valued Partner";
     const finalMobile = mobile || leadRecord?.mobile || "9999999999";
-    const finalEmail = email || leadRecord?.email || "vendor@broomboom.com";
+    const finalEmail = email || leadRecord?.email || "support@broomboomcabs.com";
     const finalCity = city || leadRecord?.city || "India";
     const finalState = leadRecord?.state || null;
 

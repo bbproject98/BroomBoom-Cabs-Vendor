@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, Suspense, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
@@ -27,9 +27,14 @@ import {
   Quote,
   HelpCircle,
   Zap,
+  Pencil,
+  RotateCcw,
 } from "lucide-react";
 import { FRANCHISE_PACKAGES } from "@/data/franchiseData";
 import { fireConfetti } from "@/lib/confetti";
+
+// 🔐 Local "account" storage key — one vendor account per browser/device
+const STORAGE_KEY = "broomboom_vendor_account_v1";
 
 function ApplyFormContent() {
   const searchParams = useSearchParams();
@@ -98,6 +103,43 @@ function ApplyFormContent() {
   );
   const [applicationId, setApplicationId] = useState(appIdParam || "");
   const [formError, setFormError] = useState<string | null>(null);
+  // Flag to know whether the currently shown "success/pay view" came from a saved account
+  const [hasSavedAccount, setHasSavedAccount] = useState(false);
+  const [isHydrating, setIsHydrating] = useState(true);
+
+  // ✅ On mount: restore saved vendor "account" from sessionStorage
+  useEffect(() => {
+    try {
+      const saved = typeof window !== "undefined" ? sessionStorage.getItem(STORAGE_KEY) : null;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed?.formData) {
+          setFormData((prev) => ({ ...prev, ...parsed.formData }));
+        }
+        if (parsed?.packageId && ["silver", "gold", "platinum"].includes(parsed.packageId)) {
+          setSelectedPackage(parsed.packageId);
+        }
+        if (parsed?.applicationId && !appIdParam) {
+          setApplicationId(parsed.applicationId);
+        }
+        // Skip the form entirely — go straight to Pay Now view
+        setIsSuccess(true);
+        setHasSavedAccount(true);
+      }
+    } catch (err) {
+      console.warn("[sessionStorage LOAD FAILED]", err);
+    } finally {
+      setIsHydrating(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ✅ Scroll to top whenever the view switches (form <-> success page)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }
+  }, [isSuccess]);
 
   const currentPkgDetails =
     FRANCHISE_PACKAGES.find((p) => p.id === selectedPackage) || FRANCHISE_PACKAGES[1];
@@ -122,7 +164,7 @@ function ApplyFormContent() {
       case "silver":
         return {
           pageBg: "bg-[#f8fafc]",
-          bg: "bg-gradient-to-br from-slate-100 via-gray-200 to-slate-300", // Bright Silver
+          bg: "bg-gradient-to-br from-slate-100 via-gray-200 to-slate-300",
           border: "border-slate-300",
           accentText: "text-slate-700",
           priceBoxBg: "bg-white/95",
@@ -137,7 +179,7 @@ function ApplyFormContent() {
       case "platinum":
         return {
           pageBg: "bg-[#ecfeff]",
-          bg: "bg-gradient-to-br from-cyan-100 via-blue-100 to-cyan-200", // Bright Platinum
+          bg: "bg-gradient-to-br from-cyan-100 via-blue-100 to-cyan-200",
           border: "border-cyan-300",
           accentText: "text-cyan-800",
           priceBoxBg: "bg-white/95",
@@ -153,7 +195,7 @@ function ApplyFormContent() {
       default:
         return {
           pageBg: "bg-[#fffbeb]",
-          bg: "bg-gradient-to-br from-yellow-100 via-amber-200 to-yellow-300", // Bright Gold
+          bg: "bg-gradient-to-br from-yellow-100 via-amber-200 to-yellow-300",
           border: "border-amber-300",
           accentText: "text-amber-800",
           priceBoxBg: "bg-white/95",
@@ -169,6 +211,51 @@ function ApplyFormContent() {
   };
 
   const theme = getCheckoutTheme(selectedPackage);
+
+  // 🆕 Go back to the form to edit saved details
+  const handleEditDetails = () => {
+    setIsSuccess(false);
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  };
+
+  // 🆕 Clear saved account from this device & restart from blank form
+  const handleClearAccount = () => {
+    if (
+      typeof window !== "undefined" &&
+      window.confirm(
+        "This will remove your saved vendor details from this device and start a fresh application. Continue?"
+      )
+    ) {
+      try {
+        sessionStorage.removeItem(STORAGE_KEY);
+      } catch (err) {
+        console.warn("[sessionStorage CLEAR FAILED]", err);
+      }
+      setHasSavedAccount(false);
+      setIsSuccess(false);
+      setApplicationId("");
+      setFormData({
+        fullName: "",
+        mobile: "",
+        alternatePhone: "",
+        email: "",
+        state: "",
+        city: "",
+        pincode: "",
+        proposedAddress: "",
+        spaceStatus: "Owned commercial space ready",
+        carpetArea: "300 - 500 sq.ft (Ideal for Gold Hub)",
+        investmentBudget: "₹20,000 (Gold Package - 50% OFF Exclusive Deal)",
+        financeRequired: "Self-Funded / Ready Capital",
+        loanAssistance: "No (Self-Funded)",
+        currentProfession: "",
+        hasExperience: "Yes, currently in travel / taxi / logistics",
+        message: "",
+      });
+      setSelectedPackage("gold");
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }
+  };
 
   const handlePayNow = async () => {
     setIsPaying(true);
@@ -192,7 +279,6 @@ function ApplyFormContent() {
         throw new Error(orderData.error || "Failed to initialize payment session");
       }
 
-      // Launch Cashfree Checkout redirect with all charges included
       const launchCashfreeCheckout = () => {
         if (typeof window !== "undefined" && (window as any).Cashfree && orderData.paymentSessionId) {
           const cashfree = (window as any).Cashfree({ mode: orderData.mode || "sandbox" });
@@ -291,16 +377,49 @@ function ApplyFormContent() {
       console.warn("Backend submission fallback:", err);
     }
 
+    // 💾 Save the vendor "account" locally so next visit skips the form
+    try {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({
+            formData: { ...formData, investmentBudget: finalBudget },
+            packageId: selectedPackage,
+            applicationId: assignedId,
+            savedAt: Date.now(),
+          })
+        );
+      }
+    } catch (err) {
+      console.warn("[sessionStorage SAVE FAILED]", err);
+    }
+
     setApplicationId(assignedId);
     setIsSubmitting(false);
     setIsSuccess(true);
+    setHasSavedAccount(true);
+
+    // ✅ Immediately scroll to top so the user sees the success hero from the beginning
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }
+
     fireConfetti();
   };
+
+  // ⏳ Small loader while reading sessionStorage on first paint (prevents a form flash)
+  if (isHydrating) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-700 font-bold text-base animate-pulse">
+        Loading your vendor account...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-amber-200 selection:text-black font-sans">
       <Script src="https://sdk.cashfree.com/js/v3/cashfree.js" strategy="lazyOnload" />
-      
+
       {/* Top Header */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-amber-200/50 py-3.5 px-4 sm:px-8 shadow-sm transition-all duration-300">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -331,11 +450,11 @@ function ApplyFormContent() {
 
           <div className="flex items-center gap-4">
             <a
-              href="tel:82407654992706600"
+              href="tel:62899524182706600"
               className="hidden sm:flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-amber-800 transition-colors"
             >
               <Phone className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
-              <span>8240765499-BROOM-BOOM</span>
+              <span>6289952418-BROOM-BOOM</span>
             </a>
             <Link
               href="/"
@@ -353,42 +472,71 @@ function ApplyFormContent() {
         {isSuccess ? (
           /* FULL LANDING PAGE STRUCTURE - DYNAMIC BACKGROUND */
           <div className={`relative min-h-[90vh] overflow-hidden ${theme.pageBg}`}>
-            
+
             {/* Ambient Background Effects */}
             <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-amber-400/20 rounded-full blur-[120px] animate-pulse pointer-events-none" />
             <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-yellow-500/20 rounded-full blur-[150px] animate-pulse delay-1000 pointer-events-none" />
             <div className="absolute top-[20%] right-[10%] w-[30vw] h-[30vw] bg-orange-300/10 rounded-full blur-[100px] pointer-events-none" />
-            
+
             {/* Subtle Grid Pattern Overlay */}
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
 
             {/* SECTION 1 & 2: TOP SPLIT LAYOUT (Hero Left, Package Right) */}
             <section className="relative z-10 pt-12 pb-16 px-4 sm:px-6">
               <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-center">
-                
+
                 {/* LEFT COLUMN: Hero / Congratulations - SMALLER TEXT */}
                 <div className="flex flex-col justify-center h-full space-y-6 text-center lg:text-left">
                   <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-md border border-amber-200 text-amber-900 text-[10px] font-black px-3.5 py-1.5 rounded-full uppercase tracking-wider shadow-[0_4px_20px_rgba(245,158,11,0.15)] self-center lg:self-start hover:scale-105 transition-transform cursor-default">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                    Same package selected earlier
+                    {hasSavedAccount ? "Saved vendor account loaded" : "Same package selected earlier"}
                   </div>
-                  
+
                   <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-tight">
-                    Congratulations! <span className="inline-block animate-bounce text-2xl sm:text-3xl">🎉</span>
+                    {hasSavedAccount ? "Welcome Back!" : "Congratulations!"}{" "}
+                    <span className="inline-block animate-bounce text-2xl sm:text-3xl">🎉</span>
                   </h1>
-                  
+
                   <h2 className="text-base sm:text-lg font-bold text-slate-700 leading-snug">
-                    You have successfully selected the <br className="hidden sm:block" />
-                    <span className={`${theme.accentText} font-black text-xl sm:text-2xl block mt-1.5 bg-clip-text text-transparent bg-gradient-to-r from-amber-600 to-yellow-500`}>
-                      {currentPkgDetails.name} Subscription
-                    </span>
+                    {hasSavedAccount ? (
+                      <>Your application is ready. Just complete the payment.</>
+                    ) : (
+                      <>
+                        You have successfully selected the <br className="hidden sm:block" />
+                        <span className={`${theme.accentText} font-black text-xl sm:text-2xl block mt-1.5 bg-clip-text text-transparent bg-gradient-to-r from-amber-600 to-yellow-500`}>
+                          {currentPkgDetails.name} Subscription
+                        </span>
+                      </>
+                    )}
                   </h2>
-                  
+
                   <p className="text-sm sm:text-base text-slate-600 max-w-md mx-auto lg:mx-0 leading-relaxed">
                     Complete the payment to secure your territory and unlock all exclusive partner benefits. Your journey to market leadership starts here.
                   </p>
 
-                  {/* Active Highlight List - Smaller padding and gap */}
+                  {/* 🆕 EDIT / RESET CONTROLS — visible only if there is a saved account */}
+                  {hasSavedAccount && (
+                    <div className="flex flex-wrap gap-2 justify-center lg:justify-start pt-1">
+                      <button
+                        type="button"
+                        onClick={handleEditDetails}
+                        className="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-700 hover:text-amber-800 bg-white/80 hover:bg-white border border-slate-300 hover:border-amber-400 px-3 py-1.5 rounded-lg shadow-sm transition-all"
+                      >
+                        <Pencil className="w-3 h-3" />
+                        Edit My Details
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleClearAccount}
+                        className="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-500 hover:text-rose-700 bg-white/70 hover:bg-white border border-slate-200 hover:border-rose-300 px-3 py-1.5 rounded-lg shadow-sm transition-all"
+                      >
+                        <RotateCcw className="w-3 h-3" />
+                        Start New Application
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Active Highlight List */}
                   <div className="space-y-3 pt-3 max-w-md mx-auto lg:mx-0 text-left w-full">
                     <div className="group flex items-center gap-3 bg-white/60 backdrop-blur-md p-3 rounded-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(16,185,129,0.15)] hover:-translate-y-1 transition-all duration-300">
                       <div className="p-2 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-lg shadow-inner group-hover:scale-110 transition-transform">
@@ -411,15 +559,13 @@ function ApplyFormContent() {
                   </div>
                 </div>
 
-                {/* RIGHT COLUMN: Package & Pay Now - SMALLER CARD SIZE */}
+                {/* RIGHT COLUMN: Package & Pay Now */}
                 <div className="relative h-full flex flex-col justify-center perspective-1000 w-full max-w-md mx-auto lg:max-w-none">
-                  
-                  {/* Animated Glow Border behind the card */}
+
                   <div className={`absolute -inset-1 bg-gradient-to-r ${theme.cardGlow} rounded-[2.5rem] blur-xl opacity-60 group-hover:opacity-80 transition duration-1000 animate-tilt`}></div>
-                  
+
                   <div className={`relative ${theme.bg} backdrop-blur-2xl border border-white/60 rounded-[2rem] p-6 shadow-2xl ${theme.glow} transform transition-all duration-500 hover:scale-[1.01] hover:-translate-y-1`}>
-                    
-                    {/* Top Row: Badges (Left and Center) */}
+
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-6">
                       <div className="flex gap-2">
                         <span className="bg-gradient-to-r from-rose-500 to-red-500 text-white text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider shadow-md shadow-rose-500/30">
@@ -437,33 +583,29 @@ function ApplyFormContent() {
                       )}
                     </div>
 
-                    {/* Header: Name on left, Price on right, aligned on the same line */}
                     <div className="flex items-start justify-between gap-4 mb-6">
-                        {/* Package Name & Tagline on the LEFT */}
-                        <div className="flex-1 pr-4">
-                            <h2 className="text-xl sm:text-2xl font-black text-slate-950 tracking-tight drop-shadow-sm leading-tight">
-                                {currentPkgDetails.name}
-                            </h2>
-                            <p className={`text-[10px] sm:text-xs font-bold ${theme.accentText} mt-1.5 leading-snug`}>
-                                {currentPkgDetails.tagline}
-                            </p>
-                        </div>
+                      <div className="flex-1 pr-4">
+                        <h2 className="text-xl sm:text-2xl font-black text-slate-950 tracking-tight drop-shadow-sm leading-tight">
+                          {currentPkgDetails.name}
+                        </h2>
+                        <p className={`text-[10px] sm:text-xs font-bold ${theme.accentText} mt-1.5 leading-snug`}>
+                          {currentPkgDetails.tagline}
+                        </p>
+                      </div>
 
-                        {/* Price block on the RIGHT */}
-                        <div className="flex flex-col items-end shrink-0 text-right">
-                            <span className="text-[11px] font-black text-rose-500 line-through decoration-rose-500/50 decoration-2 leading-none">
-                                {getPrices(selectedPackage).original}
-                            </span>
-                            <span className="text-3xl font-black text-slate-950 leading-none tracking-tighter drop-shadow-md mt-1">
-                                {getPrices(selectedPackage).discounted}
-                            </span>
-                            <span className="text-[9px] font-bold text-emerald-700 bg-white/80 px-1.5 py-0.5 rounded mt-2 border border-emerald-200 shadow-sm">
-                                You Save {getPrices(selectedPackage).save}
-                            </span>
-                        </div>
+                      <div className="flex flex-col items-end shrink-0 text-right">
+                        <span className="text-[11px] font-black text-rose-500 line-through decoration-rose-500/50 decoration-2 leading-none">
+                          {getPrices(selectedPackage).original}
+                        </span>
+                        <span className="text-3xl font-black text-slate-950 leading-none tracking-tighter drop-shadow-md mt-1">
+                          {getPrices(selectedPackage).discounted}
+                        </span>
+                        <span className="text-[9px] font-bold text-emerald-700 bg-white/80 px-1.5 py-0.5 rounded mt-2 border border-emerald-200 shadow-sm">
+                          You Save {getPrices(selectedPackage).save}
+                        </span>
+                      </div>
                     </div>
 
-                    {/* Inclusions Summary */}
                     <div className="mb-6 bg-white/80 backdrop-blur-md rounded-xl p-4 border border-white/90 shadow-sm">
                       <h4 className="text-[11px] font-black uppercase text-slate-950 tracking-wider mb-3 flex items-center gap-2">
                         <BadgeCheck className="w-3.5 h-3.5 text-amber-600" />
@@ -479,7 +621,6 @@ function ApplyFormContent() {
                       </div>
                     </div>
 
-                    {/* Error Notification */}
                     {paymentError && (
                       <div className="mb-4 p-3 bg-rose-50/90 backdrop-blur-sm border border-rose-200 rounded-xl text-rose-900 text-[11px] font-bold flex items-center gap-3 animate-in fade-in slide-in-from-top-2 shadow-sm">
                         <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
@@ -487,7 +628,6 @@ function ApplyFormContent() {
                       </div>
                     )}
 
-                    {/* Pay Now Button - Highly Highlighted but slightly smaller */}
                     <div className={`space-y-3 pt-4 border-t ${theme.border} border-opacity-50`}>
                       <button
                         type="button"
@@ -495,9 +635,8 @@ function ApplyFormContent() {
                         disabled={isPaying}
                         className={`relative w-full py-4 px-6 ${theme.button} font-black text-lg rounded-xl shadow-[0_10px_40px_-10px_rgba(245,158,11,0.8)] hover:shadow-[0_15px_50px_-10px_rgba(245,158,11,1)] transition-all duration-300 flex items-center justify-center gap-2.5 group cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed transform active:scale-[0.97] overflow-hidden border border-white/20`}
                       >
-                        {/* Shimmer effect */}
                         <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-                        
+
                         {isPaying ? (
                           <>
                             <Loader2 className="w-5 h-5 animate-spin" />
@@ -537,7 +676,6 @@ function ApplyFormContent() {
             {/* SECTION 2.5: RATINGS & VENDOR TRUST BREAKDOWN */}
             <section className="relative z-10 py-16 px-4 bg-[#fdfcf5] border-t border-amber-100">
               <div className="max-w-6xl mx-auto">
-                {/* Header */}
                 <div className="text-center mb-12">
                   <div className="inline-flex items-center gap-1.5 bg-amber-100/80 text-amber-900 border border-amber-300 px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider mb-5 shadow-sm">
                     <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
@@ -551,9 +689,8 @@ function ApplyFormContent() {
                   </p>
                 </div>
 
-                {/* Cards Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {/* Card 1: Google Play Store - Vendor App */}
+                  {/* Card 1 */}
                   <div className="bg-white rounded-3xl p-6 border-2 border-amber-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col h-full hover:border-amber-400 hover:shadow-lg transition-all">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center gap-3">
@@ -567,7 +704,7 @@ function ApplyFormContent() {
                       </div>
                       <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-200">Verified App</span>
                     </div>
-                    
+
                     <div className="flex items-baseline gap-2 mb-4">
                       <span className="text-4xl font-black text-slate-900">4.6</span>
                       <div className="flex gap-0.5">
@@ -587,12 +724,12 @@ function ApplyFormContent() {
                     </div>
                   </div>
 
-                  {/* Card 2: Justdial - B2B Directory */}
+                  {/* Card 2 */}
                   <div className="bg-white rounded-3xl p-6 border-2 border-amber-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col h-full hover:border-amber-400 hover:shadow-lg transition-all">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-[#f0f6ff] rounded-full flex items-center justify-center p-2 shadow-sm border border-blue-100 overflow-hidden">
-                           <div className="bg-[#1156a6] text-white font-black text-[10px] w-full h-full flex items-center justify-center rounded uppercase tracking-tighter">jd</div>
+                          <div className="bg-[#1156a6] text-white font-black text-[10px] w-full h-full flex items-center justify-center rounded uppercase tracking-tighter">jd</div>
                         </div>
                         <div>
                           <h3 className="font-bold text-slate-900 leading-tight text-sm">Justdial</h3>
@@ -603,7 +740,7 @@ function ApplyFormContent() {
                         4.8 <Star className="w-3 h-3 fill-amber-500 text-amber-500" /> Top Vendor
                       </span>
                     </div>
-                    
+
                     <div className="flex items-baseline gap-2 mb-4">
                       <span className="text-4xl font-black text-slate-900">4.8</span>
                       <div className="flex gap-0.5">
@@ -622,7 +759,7 @@ function ApplyFormContent() {
                     </div>
                   </div>
 
-                  {/* Card 3: Local Fleet Association */}
+                  {/* Card 3 */}
                   <div className="bg-white rounded-3xl p-6 border-2 border-amber-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col h-full hover:border-amber-400 hover:shadow-lg transition-all">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center gap-3">
@@ -636,7 +773,7 @@ function ApplyFormContent() {
                       </div>
                       <span className="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-indigo-200">Recommended</span>
                     </div>
-                    
+
                     <div className="flex items-baseline gap-2 mb-4">
                       <span className="text-4xl font-black text-slate-900">4.9</span>
                       <div className="flex gap-0.5">
@@ -658,115 +795,115 @@ function ApplyFormContent() {
               </div>
             </section>
 
-            {/* SECTION 3: BENEFITS TEXT AND IMAGES */}
-              <section className="relative z-10 py-20 px-4 bg-white/80 backdrop-blur-xl border-y border-amber-100">
-  <div className="max-w-7xl mx-auto">
-    <div className="text-center mb-16">
-      <h2 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">
-        Exclusive Partner Benefits
-      </h2>
-      <p className="text-xl text-slate-600 mt-4 max-w-2xl mx-auto">
-        Everything you need to scale your fleet business successfully with BroomBoom.
-      </p>
-    </div>
+            {/* SECTION 3: BENEFITS */}
+            <section className="relative z-10 py-20 px-4 bg-white/80 backdrop-blur-xl border-y border-amber-100">
+              <div className="max-w-7xl mx-auto">
+                <div className="text-center mb-16">
+                  <h2 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">
+                    Exclusive Partner Benefits
+                  </h2>
+                  <p className="text-xl text-slate-600 mt-4 max-w-2xl mx-auto">
+                    Everything you need to scale your fleet business successfully with BroomBoom.
+                  </p>
+                </div>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-      {/* Benefit 1 - Amber UI */}
-      <div className="bg-gradient-to-br from-amber-50 via-white to-white rounded-3xl p-6 border border-amber-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(245,158,11,0.25)] hover:-translate-y-2 transition-all duration-500 flex flex-col items-start group">
-        <div className="w-full h-40 rounded-2xl overflow-hidden mb-5 border border-amber-200 relative">
-          <img
-            src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=600&h=300"
-            alt="High ROI Dashboard"
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-amber-500/30 via-amber-500/5 to-transparent" />
-        </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {/* Benefit 1 */}
+                  <div className="bg-gradient-to-br from-amber-50 via-white to-white rounded-3xl p-6 border border-amber-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(245,158,11,0.25)] hover:-translate-y-2 transition-all duration-500 flex flex-col items-start group">
+                    <div className="w-full h-40 rounded-2xl overflow-hidden mb-5 border border-amber-200 relative">
+                      <img
+                        src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=600&h=300"
+                        alt="High ROI Dashboard"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-amber-500/30 via-amber-500/5 to-transparent" />
+                    </div>
 
-        <div className="flex items-center gap-3 mb-3">
-          <div className="p-2 bg-amber-100 rounded-xl group-hover:bg-amber-200 transition-colors">
-            <TrendingUp className="w-6 h-6 text-amber-700" />
-          </div>
-          <h3 className="text-xl font-bold text-amber-900">High ROI</h3>
-        </div>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2 bg-amber-100 rounded-xl group-hover:bg-amber-200 transition-colors">
+                        <TrendingUp className="w-6 h-6 text-amber-700" />
+                      </div>
+                      <h3 className="text-xl font-bold text-amber-900">High ROI</h3>
+                    </div>
 
-        <p className="text-sm text-slate-600 leading-relaxed">
-          Earn up to 15% commission on every ride with our exclusive vendor dashboard and volume rebates.
-        </p>
-      </div>
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                      Earn up to 15% commission on every ride with our exclusive vendor dashboard and volume rebates.
+                    </p>
+                  </div>
 
-      {/* Benefit 2 - Blue UI */}
-      <div className="bg-gradient-to-br from-blue-50 via-white to-white rounded-3xl p-6 border border-blue-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(59,130,246,0.25)] hover:-translate-y-2 transition-all duration-500 flex flex-col items-start group">
-        <div className="w-full h-40 rounded-2xl overflow-hidden mb-5 border border-blue-200 relative">
-          <img
-            src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&q=80&w=600&h=300"
-            alt="Dedicated Support"
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-blue-500/30 via-blue-500/5 to-transparent" />
-        </div>
+                  {/* Benefit 2 */}
+                  <div className="bg-gradient-to-br from-blue-50 via-white to-white rounded-3xl p-6 border border-blue-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(59,130,246,0.25)] hover:-translate-y-2 transition-all duration-500 flex flex-col items-start group">
+                    <div className="w-full h-40 rounded-2xl overflow-hidden mb-5 border border-blue-200 relative">
+                      <img
+                        src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&q=80&w=600&h=300"
+                        alt="Dedicated Support"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-blue-500/30 via-blue-500/5 to-transparent" />
+                    </div>
 
-        <div className="flex items-center gap-3 mb-3">
-          <div className="p-2 bg-blue-100 rounded-xl group-hover:bg-blue-200 transition-colors">
-            <Headphones className="w-6 h-6 text-blue-700" />
-          </div>
-          <h3 className="text-xl font-bold text-blue-900">Account Manager</h3>
-        </div>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2 bg-blue-100 rounded-xl group-hover:bg-blue-200 transition-colors">
+                        <Headphones className="w-6 h-6 text-blue-700" />
+                      </div>
+                      <h3 className="text-xl font-bold text-blue-900">Account Manager</h3>
+                    </div>
 
-        <p className="text-sm text-slate-600 leading-relaxed">
-          Get a dedicated Account Relationship Manager (ARM) to help you with daily operations and settlements.
-        </p>
-      </div>
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                      Get a dedicated Account Relationship Manager (ARM) to help you with daily operations and settlements.
+                    </p>
+                  </div>
 
-      {/* Benefit 3 - Emerald UI */}
-      <div className="bg-gradient-to-br from-emerald-50 via-white to-white rounded-3xl p-6 border border-emerald-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(16,185,129,0.25)] hover:-translate-y-2 transition-all duration-500 flex flex-col items-start group">
-        <div className="w-full h-40 rounded-2xl overflow-hidden mb-5 border border-emerald-200 relative">
-          <img
-            src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&q=80&w=600&h=300"
-            alt="Marketing Support"
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-emerald-500/30 via-emerald-500/5 to-transparent" />
-        </div>
+                  {/* Benefit 3 */}
+                  <div className="bg-gradient-to-br from-emerald-50 via-white to-white rounded-3xl p-6 border border-emerald-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(16,185,129,0.25)] hover:-translate-y-2 transition-all duration-500 flex flex-col items-start group">
+                    <div className="w-full h-40 rounded-2xl overflow-hidden mb-5 border border-emerald-200 relative">
+                      <img
+                        src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&q=80&w=600&h=300"
+                        alt="Marketing Support"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-emerald-500/30 via-emerald-500/5 to-transparent" />
+                    </div>
 
-        <div className="flex items-center gap-3 mb-3">
-          <div className="p-2 bg-emerald-100 rounded-xl group-hover:bg-emerald-200 transition-colors">
-            <Users className="w-6 h-6 text-emerald-700" />
-          </div>
-          <h3 className="text-xl font-bold text-emerald-900">Driver Onboarding</h3>
-        </div>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2 bg-emerald-100 rounded-xl group-hover:bg-emerald-200 transition-colors">
+                        <Users className="w-6 h-6 text-emerald-700" />
+                      </div>
+                      <h3 className="text-xl font-bold text-emerald-900">Driver Onboarding</h3>
+                    </div>
 
-        <p className="text-sm text-slate-600 leading-relaxed">
-          We handle driver recruitment, verification, and offline inspection so you can focus on growing.
-        </p>
-      </div>
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                      We handle driver recruitment, verification, and offline inspection so you can focus on growing.
+                    </p>
+                  </div>
 
-      {/* Benefit 4 - Violet UI */}
-      <div className="bg-gradient-to-br from-violet-50 via-white to-white rounded-3xl p-6 border border-violet-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(139,92,246,0.25)] hover:-translate-y-2 transition-all duration-500 flex flex-col items-start group">
-        <div className="w-full h-40 rounded-2xl overflow-hidden mb-5 border border-violet-200 relative">
-          <img
-            src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=600&h=300"
-            alt="Branding Kit"
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-violet-500/30 via-violet-500/5 to-transparent" />
-        </div>
+                  {/* Benefit 4 */}
+                  <div className="bg-gradient-to-br from-violet-50 via-white to-white rounded-3xl p-6 border border-violet-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(139,92,246,0.25)] hover:-translate-y-2 transition-all duration-500 flex flex-col items-start group">
+                    <div className="w-full h-40 rounded-2xl overflow-hidden mb-5 border border-violet-200 relative">
+                      <img
+                        src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=600&h=300"
+                        alt="Branding Kit"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-violet-500/30 via-violet-500/5 to-transparent" />
+                    </div>
 
-        <div className="flex items-center gap-3 mb-3">
-          <div className="p-2 bg-violet-100 rounded-xl group-hover:bg-violet-200 transition-colors">
-            <Building2 className="w-6 h-6 text-violet-700" />
-          </div>
-          <h3 className="text-xl font-bold text-violet-900">Office Branding</h3>
-        </div>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2 bg-violet-100 rounded-xl group-hover:bg-violet-200 transition-colors">
+                        <Building2 className="w-6 h-6 text-violet-700" />
+                      </div>
+                      <h3 className="text-xl font-bold text-violet-900">Office Branding</h3>
+                    </div>
 
-        <p className="text-sm text-slate-600 leading-relaxed">
-          Receive a complete office branding kit and digital marketing ad budget to establish your presence.
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                      Receive a complete office branding kit and digital marketing ad budget to establish your presence.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
 
-            {/* SECTION 4: TESTIMONIALS OF VENDORS */}
+            {/* SECTION 4: TESTIMONIALS */}
             <section className="relative z-10 py-20 px-4">
               <div className="max-w-5xl mx-auto">
                 <div className="text-center mb-16">
@@ -777,12 +914,11 @@ function ApplyFormContent() {
                   <p className="text-xl text-slate-600 mt-4">Hear from partners who are already growing with BroomBoom.</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Testimonial 1 */}
                   <div className="bg-white/90 backdrop-blur-xl rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-white/60 flex flex-col sm:flex-row gap-6 items-start relative hover:shadow-[0_20px_50px_rgba(245,158,11,0.15)] hover:-translate-y-1 transition-all duration-500">
                     <Quote className="absolute top-6 right-6 w-12 h-12 text-amber-100" />
-                    <img 
-                      src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=150&h=150" 
-                      alt="Rajesh Kumar" 
+                    <img
+                      src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=150&h=150"
+                      alt="Rajesh Kumar"
                       className="w-20 h-20 rounded-full object-cover shrink-0 border-4 border-white shadow-lg"
                     />
                     <div>
@@ -797,12 +933,11 @@ function ApplyFormContent() {
                     </div>
                   </div>
 
-                  {/* Testimonial 2 */}
                   <div className="bg-white/90 backdrop-blur-xl rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-white/60 flex flex-col sm:flex-row gap-6 items-start relative hover:shadow-[0_20px_50px_rgba(245,158,11,0.15)] hover:-translate-y-1 transition-all duration-500">
                     <Quote className="absolute top-6 right-6 w-12 h-12 text-amber-100" />
-                    <img 
-                      src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150&h=150" 
-                      alt="Amit Singh" 
+                    <img
+                      src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150&h=150"
+                      alt="Amit Singh"
                       className="w-20 h-20 rounded-full object-cover shrink-0 border-4 border-white shadow-lg"
                     />
                     <div>
@@ -861,13 +996,19 @@ function ApplyFormContent() {
             <div className="text-center max-w-3xl mx-auto space-y-3">
               <div className="inline-flex items-center gap-2 bg-white border border-amber-300 text-amber-900 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-sm">
                 <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
-                Territory Exclusivity Application 2026-27
+                {hasSavedAccount ? "Editing Your Saved Application" : "Territory Exclusivity Application 2026-27"}
               </div>
               <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-950">
-                Apply for Your <span className="text-yellow-gradient">BroomBoom Vendor Partner</span>
+                {hasSavedAccount ? (
+                  <>Update Your <span className="text-yellow-gradient">Vendor Details</span></>
+                ) : (
+                  <>Apply for Your <span className="text-yellow-gradient">BroomBoom Vendor Partner</span></>
+                )}
               </h1>
               <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto">
-                Fill in the details below to register your territory interest. Your completed application will be dispatched directly to our Senior Expansion Director for fast-track evaluation.
+                {hasSavedAccount
+                  ? "Review or update your saved details below. Once submitted, you can go straight to payment next time."
+                  : "Fill in the details below to register your territory interest. Your completed application will be dispatched directly to our Senior Expansion Director for fast-track evaluation."}
               </p>
             </div>
 
@@ -887,7 +1028,7 @@ function ApplyFormContent() {
                 {FRANCHISE_PACKAGES.map((pkg) => {
                   const isSelected = selectedPackage === pkg.id;
                   const prices = getPrices(pkg.id);
-                  
+
                   let cardStyles = "cursor-pointer rounded-3xl p-6 border-2 transition-all relative ";
                   if (pkg.id === "silver") {
                     cardStyles += isSelected
@@ -990,7 +1131,7 @@ function ApplyFormContent() {
               onSubmit={handleSubmit}
               className="bg-white border border-amber-200 rounded-3xl p-6 sm:p-10 shadow-xl space-y-8"
             >
-              {/* STEP 2: Personal & Contact Information */}
+              {/* STEP 2 */}
               <div className="space-y-4">
                 <h3 className="text-base sm:text-lg font-black text-slate-950 flex items-center gap-2 border-b border-slate-100 pb-3">
                   <span className="w-6 h-6 rounded-full bg-brand-yellow text-black font-black text-xs flex items-center justify-center">
@@ -1057,7 +1198,7 @@ function ApplyFormContent() {
                 </div>
               </div>
 
-              {/* STEP 3: Territory & Location */}
+              {/* STEP 3 */}
               <div className="space-y-4">
                 <h3 className="text-base sm:text-lg font-black text-slate-950 flex items-center gap-2 border-b border-slate-100 pb-3">
                   <span className="w-6 h-6 rounded-full bg-brand-yellow text-black font-black text-xs flex items-center justify-center">
@@ -1124,7 +1265,7 @@ function ApplyFormContent() {
                 </div>
               </div>
 
-              {/* STEP 4: Store Space & Investment Readiness */}
+              {/* STEP 4 */}
               <div className="space-y-4">
                 <h3 className="text-base sm:text-lg font-black text-slate-950 flex items-center gap-2 border-b border-slate-100 pb-3">
                   <span className="w-6 h-6 rounded-full bg-brand-yellow text-black font-black text-xs flex items-center justify-center">
@@ -1211,7 +1352,6 @@ function ApplyFormContent() {
                   />
                 </div>
 
-                {/* Financing & Loan Desk Support */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-100">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center justify-between">
@@ -1250,7 +1390,7 @@ function ApplyFormContent() {
                 </div>
               </div>
 
-              {/* STEP 5: Comments & Notes */}
+              {/* STEP 5 */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Questions or Additional Requirements for HQ
@@ -1264,7 +1404,7 @@ function ApplyFormContent() {
                 />
               </div>
 
-              {/* Error Notification Banner */}
+              {/* Error Banner */}
               {formError && (
                 <div className="p-4 bg-rose-50 border-2 border-rose-300 rounded-2xl text-rose-900 text-xs font-bold flex items-center gap-3 animate-in fade-in slide-in-from-top-1 duration-200">
                   <div className="w-8 h-8 rounded-full bg-rose-200 text-rose-700 flex items-center justify-center shrink-0">
@@ -1294,14 +1434,14 @@ function ApplyFormContent() {
                     <>
                       <Send className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                       <span>
-                        Submit &amp; Apply for {currentPkgDetails.name} (Save &amp; Email)
+                        {hasSavedAccount ? "Save Changes & Continue to Payment" : `Submit & Apply for ${currentPkgDetails.name} (Save & Email)`}
                       </span>
                     </>
                   )}
                 </button>
 
                 <p className="text-xs text-center text-slate-500">
-                  🔒 Data is securely registered in the BroomBoom Territory Operations Portal.
+                  🔒 Your details are securely saved on this device — next time you visit, you can go straight to payment without re-filling the form.
                 </p>
               </div>
             </form>
@@ -1318,7 +1458,7 @@ function ApplyFormContent() {
             </span>
           </div>
           <p className="text-sm mb-2">© {new Date().getFullYear()} BroomBoom Mobility Technologies Ltd. All rights reserved.</p>
-          <p className="text-sm">For urgent vendor partner inquiries: <span className="font-bold text-amber-500">8240765499-BROOM-BOOM</span> | <span className="font-bold text-amber-500">support@broomboomcabs.com</span></p>
+          <p className="text-sm">For urgent vendor partner inquiries: <span className="font-bold text-amber-500">6289952418-BROOM-BOOM</span> | <span className="font-bold text-amber-500">support@broomboomcabs.com</span></p>
         </div>
       </footer>
     </div>

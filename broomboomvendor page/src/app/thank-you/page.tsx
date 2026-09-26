@@ -115,7 +115,7 @@ export default function ThankYouPage() {
           </Link>
 
           <a
-            href="https://wa.me/982407654992706600?text=Hi%20BroomBoom%20HQ%2C%20I%20have%20completed%20my%20vendor%20application."
+            href="https://wa.me/962899524182706600?text=Hi%20BroomBoom%20HQ%2C%20I%20have%20completed%20my%20vendor%20application."
             target="_blank"
             rel="noopener noreferrer"
             className="group relative flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20BD5A] text-white font-bold text-sm px-6 py-3.5 rounded-2xl shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md hover:shadow-green-500/20 overflow-hidden"
