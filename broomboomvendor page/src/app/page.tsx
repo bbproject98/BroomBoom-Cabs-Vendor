@@ -14,6 +14,7 @@ import { FaqSection } from "@/components/FaqSection";
 import { Footer } from "@/components/Footer";
 import { BrochureModal } from "@/components/BrochureModal";
 import { FloatingCta } from "@/components/FloatingCta";
+import { PwaInstallPrompt } from "@/components/PwaInstallPrompt";
 
 export default function Home() {
   const router = useRouter();
@@ -68,6 +69,9 @@ export default function Home() {
         onOpenApplyModal={handleNavigateToApply}
         onOpenBrochureModal={() => setIsBrochureModalOpen(true)}
       />
+
+      {/* PWA Smart Auto-Install Mobile Banner & Event Handler */}
+      <PwaInstallPrompt />
 
       {/* Sticky Mobile Conversion Bar */}
       <FloatingCta onApplyClick={() => handleNavigateToApply(selectedPackage)} />

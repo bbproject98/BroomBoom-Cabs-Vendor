@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Menu, X, MapPin, ArrowRight } from "lucide-react";
+import { Menu, X, MapPin, ArrowRight, Download } from "lucide-react";
 
 interface NavbarProps {
   onOpenApplyModal?: (packageName?: string) => void;
@@ -80,6 +80,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenApplyModal, onOpenBrochure
 
           {/* Desktop Navigation CTAs */}
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  window.dispatchEvent(new Event("trigger-pwa-install"));
+                }
+              }}
+              className="hidden lg:flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-amber-800 border border-slate-300 hover:border-amber-400 px-3 py-2 rounded-xl transition-all cursor-pointer bg-white shadow-xs"
+              title="Install BroomBoom App"
+            >
+              <Download className="w-3.5 h-3.5 text-amber-500" />
+              <span>Install App</span>
+            </button>
             <Link
               href="/store-locator"
               className="flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-brand-yellow-dark border border-slate-300 hover:border-brand-yellow-dark px-4 py-2.5 rounded-xl transition-all"
@@ -128,8 +140,21 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenApplyModal, onOpenBrochure
             <span className="text-[10px] font-black tracking-wider leading-none mt-0.5">NOW</span>
           </Link>
 
-          {/* 3. Right: STORE LOCATOR Direct Action + Menu Toggle */}
+          {/* 3. Right: INSTALL + STORE LOCATOR + Menu Toggle */}
           <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  window.dispatchEvent(new Event("trigger-pwa-install"));
+                }
+              }}
+              className="flex flex-col items-center justify-center p-1 rounded-lg text-amber-700 hover:text-amber-800 hover:bg-amber-50/80 transition-colors cursor-pointer"
+              title="Install App"
+              aria-label="Install App"
+            >
+              <Download className="w-4 h-4 stroke-[2.5]" />
+              <span className="text-[8px] font-black tracking-tighter leading-none mt-0.5">APP</span>
+            </button>
             <Link
               href="/store-locator"
               className="flex flex-col items-center justify-center text-right leading-none text-slate-900 hover:text-amber-800 transition-colors font-black"
@@ -200,6 +225,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenApplyModal, onOpenBrochure
               <MapPin className="w-4 h-4" />
               Store Locator
             </Link>
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                if (typeof window !== "undefined") {
+                  window.dispatchEvent(new Event("trigger-pwa-install"));
+                }
+              }}
+              className="w-full text-center py-2.5 bg-slate-900 hover:bg-slate-800 text-amber-400 rounded-xl font-black text-xs border border-amber-400/40 shadow-sm flex items-center justify-center gap-2 cursor-pointer transition-all"
+            >
+              <Download className="w-4 h-4 stroke-[2.5]" />
+              <span>Install Vendor App</span>
+            </button>
             <Link
               href="/apply?package=gold"
               onClick={() => setMobileMenuOpen(false)}
