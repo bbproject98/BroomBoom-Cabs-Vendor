@@ -144,13 +144,6 @@ export const PwaInstallPrompt: React.FC = () => {
                 <Download className="w-3.5 h-3.5 stroke-[2.5]" />
                 <span>Install</span>
               </button>
-              <button
-                onClick={handleDismiss}
-                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-                aria-label="Close install banner"
-              >
-                <X className="w-4 h-4" />
-              </button>
             </div>
           </div>
         </div>
