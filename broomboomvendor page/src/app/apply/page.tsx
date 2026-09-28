@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Suspense, useEffect } from "react";
+import React, { useState, Suspense, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
@@ -44,6 +44,18 @@ function ApplyFormContent() {
 
   const initialPackage = ["silver", "gold", "platinum"].includes(packageParam) ? packageParam : "gold";
   const [selectedPackage, setSelectedPackage] = useState<string>(initialPackage);
+
+  // Ref for the horizontal scrolling container on mobile
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Function to handle arrow button clicks
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, clientWidth } = scrollContainerRef.current;
+      const scrollTo = direction === 'left' ? scrollLeft - clientWidth * 0.8 : scrollLeft + clientWidth * 0.8;
+      scrollContainerRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
+    }
+  };
 
   const getPackageDefaults = (pkgId: string) => {
     switch (pkgId) {
@@ -1021,106 +1033,153 @@ function ApplyFormContent() {
                   </span>
                   Select Vendor Package
                 </h3>
-                <span className="text-xs text-amber-800 font-bold">Click card to select</span>
+                <span className="text-xs text-amber-800 font-bold hidden md:block">Click card to select</span>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {FRANCHISE_PACKAGES.map((pkg) => {
-                  const isSelected = selectedPackage === pkg.id;
-                  const prices = getPrices(pkg.id);
+              {/* Mobile Swipe Indicator */}
+              <div className="flex md:hidden items-center justify-between text-xs font-bold text-amber-800 bg-amber-50 py-2 px-3 rounded-lg border border-amber-200 shadow-sm">
+                <div className="flex items-center gap-1">
+                  <ArrowLeft className="w-3.5 h-3.5 animate-pulse" />
+                  <span>Swipe left</span>
+                </div>
+                <span className="text-[10px] text-amber-600">Or use arrows</span>
+                <div className="flex items-center gap-1">
+                  <span>Swipe right</span>
+                  <ArrowRight className="w-3.5 h-3.5 animate-pulse" />
+                </div>
+              </div>
 
-                  let cardStyles = "cursor-pointer rounded-3xl p-6 border-2 transition-all relative ";
-                  if (pkg.id === "silver") {
-                    cardStyles += isSelected
-                      ? "bg-gradient-to-br from-slate-100 to-slate-300 border-slate-500 shadow-xl ring-4 ring-slate-400/20 scale-[1.02]"
-                      : "bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200 hover:border-slate-400 opacity-90 hover:opacity-100";
-                  } else if (pkg.id === "platinum") {
-                    cardStyles += isSelected
-                      ? "bg-gradient-to-br from-cyan-50 to-cyan-200 border-cyan-500 shadow-xl ring-4 ring-cyan-400/20 scale-[1.02]"
-                      : "bg-gradient-to-br from-slate-50 to-cyan-50 border-cyan-200 hover:border-cyan-400 opacity-90 hover:opacity-100";
-                  } else {
-                    cardStyles += isSelected
-                      ? "bg-gradient-to-br from-yellow-200 to-amber-400 border-amber-600 shadow-xl ring-4 ring-amber-500/30 scale-[1.02]"
-                      : "bg-gradient-to-br from-yellow-50 to-amber-100 border-amber-200 hover:border-amber-400 opacity-90 hover:opacity-100";
-                  }
+              <div className="relative">
+                {/* Left Arrow Button (Mobile Only) */}
+                <button
+                  type="button"
+                  onClick={() => scroll('left')}
+                  className="absolute left-1 top-1/2 -translate-y-1/2 z-20 bg-white/90 backdrop-blur-md border border-amber-300 shadow-lg rounded-full p-2 md:hidden flex items-center justify-center hover:bg-amber-50 active:scale-90 transition-all"
+                  aria-label="Scroll left"
+                >
+                  <ArrowLeft className="w-4 h-4 text-amber-700" />
+                </button>
 
-                  let checkStyles = "w-6 h-6 rounded-full border-2 flex items-center justify-center ";
-                  if (isSelected) {
-                    if (pkg.id === "silver") checkStyles += "bg-slate-600 border-slate-600 text-white";
-                    else if (pkg.id === "platinum") checkStyles += "bg-cyan-600 border-cyan-600 text-white";
-                    else checkStyles += "bg-amber-600 border-amber-600 text-white";
-                  } else {
-                    checkStyles += "border-slate-300 bg-white/70";
-                  }
+                {/* Cards Container: Horizontal Scroll on Mobile, Grid on Desktop */}
+                <div
+                  ref={scrollContainerRef}
+                  className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 pt-1 px-10 md:px-0 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:pb-0 md:pt-0 [&::-webkit-scrollbar]:hidden"
+                >
+                  {FRANCHISE_PACKAGES.map((pkg) => {
+                    const isSelected = selectedPackage === pkg.id;
+                    const prices = getPrices(pkg.id);
 
-                  return (
-                    <div
-                      key={pkg.id}
-                      onClick={() => {
-                        setSelectedPackage(pkg.id);
-                        const defs = getPackageDefaults(pkg.id);
-                        setFormData((prev) => ({
-                          ...prev,
-                          investmentBudget: defs.investmentBudget,
-                          carpetArea: defs.carpetArea,
-                        }));
-                      }}
-                      className={cardStyles}
-                    >
-                      {pkg.popular && (
-                        <div className="absolute -top-4 right-6 bg-brand-yellow text-black text-[11px] font-black px-3 py-1 rounded-full uppercase tracking-wider border-2 border-amber-400 shadow-md">
-                          ★ Most Popular
-                        </div>
-                      )}
+                    let cardStyles = "min-w-[280px] snap-center md:min-w-0 cursor-pointer rounded-2xl p-4 border-2 transition-all relative flex flex-col ";
+                    if (pkg.id === "silver") {
+                      cardStyles += isSelected
+                        ? "bg-gradient-to-br from-slate-100 to-slate-300 border-slate-500 shadow-xl ring-4 ring-slate-400/20 scale-[1.02]"
+                        : "bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200 hover:border-slate-400 opacity-90 hover:opacity-100";
+                    } else if (pkg.id === "platinum") {
+                      cardStyles += isSelected
+                        ? "bg-gradient-to-br from-cyan-50 to-cyan-200 border-cyan-500 shadow-xl ring-4 ring-cyan-400/20 scale-[1.02]"
+                        : "bg-gradient-to-br from-slate-50 to-cyan-50 border-cyan-200 hover:border-cyan-400 opacity-90 hover:opacity-100";
+                    } else {
+                      cardStyles += isSelected
+                        ? "bg-gradient-to-br from-yellow-200 to-amber-400 border-amber-600 shadow-xl ring-4 ring-amber-500/30 scale-[1.02]"
+                        : "bg-gradient-to-br from-yellow-50 to-amber-100 border-amber-200 hover:border-amber-400 opacity-90 hover:opacity-100";
+                    }
 
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="bg-emerald-600 text-white text-[11px] font-black px-2.5 py-1 rounded-md uppercase tracking-wide shadow-sm">
-                          {pkg.discountTag || "50% OFF"}
-                        </span>
-                        <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[11px] font-black px-2.5 py-1 rounded-md uppercase tracking-wide shadow-sm">
-                          {pkg.dealTag || "Exclusive Deal"}
-                        </span>
-                      </div>
+                    let checkStyles = "w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ";
+                    if (isSelected) {
+                      if (pkg.id === "silver") checkStyles += "bg-slate-600 border-slate-600 text-white";
+                      else if (pkg.id === "platinum") checkStyles += "bg-cyan-600 border-cyan-600 text-white";
+                      else checkStyles += "bg-amber-600 border-amber-600 text-white";
+                    } else {
+                      checkStyles += "border-slate-300 bg-white/70";
+                    }
 
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="text-xl font-black text-slate-950">{pkg.name}</h4>
-                        <div className={checkStyles}>
-                          {isSelected && <Check className="w-4 h-4 stroke-[3]" />}
-                        </div>
-                      </div>
+                    return (
+                      <div
+                        key={pkg.id}
+                        onClick={() => {
+                          setSelectedPackage(pkg.id);
+                          const defs = getPackageDefaults(pkg.id);
+                          setFormData((prev) => ({
+                            ...prev,
+                            investmentBudget: defs.investmentBudget,
+                            carpetArea: defs.carpetArea,
+                          }));
+                        }}
+                        className={cardStyles}
+                      >
+                        {pkg.popular && (
+                          <div className="absolute -top-3 right-4 bg-brand-yellow text-black text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider border-2 border-amber-400 shadow-md">
+                            ★ Most Popular
+                          </div>
+                        )}
 
-                      <div className="flex flex-col items-start gap-1 mt-3 mb-2">
-                        <span className="text-sm font-bold text-slate-500/80 line-through decoration-rose-500 decoration-2 leading-none">
-                          {prices.original}
-                        </span>
-                        <span className="text-4xl font-black text-amber-900 leading-none">
-                          {prices.discounted}
-                        </span>
-                      </div>
-
-                      {pkg.savings && (
-                        <div className="mt-3">
-                          <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100/80 px-2 py-1 rounded border border-emerald-300/50">
-                            {pkg.savings}
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <span className="bg-emerald-600 text-white text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wide shadow-sm">
+                            {pkg.discountTag || "50% OFF"}
+                          </span>
+                          <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wide shadow-sm">
+                            {pkg.dealTag || "Exclusive Deal"}
                           </span>
                         </div>
-                      )}
 
-                      <p className="text-sm text-slate-700 font-medium mt-4">{pkg.tagline}</p>
-
-                      <div className="mt-5 pt-4 border-t border-slate-900/10 text-xs space-y-2 text-slate-800">
-                        <div className="flex justify-between">
-                          <span>Space:</span>
-                          <span className="font-bold">{pkg.spaceRequired}</span>
+                        <div className="flex items-center justify-between mb-1">
+                          <div>
+                            <h4 className="text-lg font-black text-slate-950">{pkg.name}</h4>
+                            <p className="text-[10px] font-bold text-slate-600 mt-0.5">{pkg.subtitle}</p>
+                          </div>
+                          <div className={checkStyles}>
+                            {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                          </div>
                         </div>
-                        <div className="flex justify-between">
-                          <span>Commission:</span>
-                          <span className="font-bold text-emerald-700">{pkg.commissionSlab}</span>
+
+                        <div className="flex flex-col items-start gap-1 mt-2 mb-2">
+                          <span className="text-xs font-bold text-slate-500/80 line-through decoration-rose-500 decoration-2 leading-none">
+                            {prices.original}
+                          </span>
+                          <span className="text-3xl font-black text-amber-900 leading-none">
+                            {prices.discounted}
+                          </span>
+                        </div>
+
+                        {pkg.savings && (
+                          <div className="mt-1">
+                            <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/80 px-1.5 py-0.5 rounded border border-emerald-300/50">
+                              {pkg.savings}
+                            </span>
+                          </div>
+                        )}
+
+                        <p className="text-xs text-slate-700 font-medium mt-3 line-clamp-3">{pkg.description}</p>
+
+                        <div className="mt-3 pt-3 border-t border-slate-900/10 text-xs flex-grow">
+                          
+                          <div className="bg-white/80 backdrop-blur-md rounded-lg p-2.5 border border-white/90 shadow-sm">
+                            <span className="font-black flex items-center gap-1.5 mb-1.5 text-[10px] uppercase tracking-wider text-slate-800">
+                              <BadgeCheck className="w-3 h-3 text-amber-600" />
+                              Features Included:
+                            </span>
+                            <ul className="list-disc pl-3.5 space-y-1 text-[10px] font-semibold text-slate-700">
+                              {pkg.features.map((feature, idx) => (
+                                <li key={idx} className="leading-snug">{feature}</li>
+                              ))}
+                            </ul>
+                          </div>
+
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
+
+                {/* Right Arrow Button (Mobile Only) */}
+                <button
+                  type="button"
+                  onClick={() => scroll('right')}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 z-20 bg-white/90 backdrop-blur-md border border-amber-300 shadow-lg rounded-full p-2 md:hidden flex items-center justify-center hover:bg-amber-50 active:scale-90 transition-all"
+                  aria-label="Scroll right"
+                >
+                  <ArrowRight className="w-4 h-4 text-amber-700" />
+                </button>
               </div>
             </div>
 
