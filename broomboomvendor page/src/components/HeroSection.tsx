@@ -37,7 +37,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           />
         </div>
 
-        {/* Mobile View: Clean background with centered text & highlighted JOIN NOW button in the middle */}
+        {/* Mobile View: Text and JOIN NOW button positioned nicely in the middle/lower part of the image */}
         <div className="md:hidden relative w-full overflow-hidden bg-[#7dc3db] aspect-[920/616]">
           <Image
             src="/hero-banner-mobile-v2.png"
@@ -47,21 +47,23 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             priority
           />
 
-          {/* Lower-Middle Content: Text and Button moved further down into middle-bottom */}
-          <div className="absolute inset-0 flex flex-col items-center justify-end pb-3 sm:pb-5 text-center px-4">
-            {/* Main Heading Text */}
-            <span className="text-[12px] sm:text-sm font-serif italic text-slate-900 font-bold drop-shadow-[0_1px_3px_rgba(255,255,255,0.95)] tracking-wider">
-              Let&apos;s Make
-            </span>
-            <h1 className="text-[19px] sm:text-[23px] font-serif font-black text-slate-950 tracking-tight leading-tight drop-shadow-[0_2px_4px_rgba(255,255,255,0.95)] max-w-[280px] sm:max-w-xs mx-auto mt-0.5">
-              Travel Dreams Come True Together!
-            </h1>
-            <p className="text-[11px] sm:text-xs font-extrabold text-slate-900 mt-0.5 sm:mt-1 max-w-[290px] mx-auto drop-shadow-[0_1px_3px_rgba(255,255,255,0.95)] leading-tight">
-              Become a Proud Broom Boom Cabs Franchise Owner Today
-            </p>
+          {/* Content container with balanced top padding to stay clear of the app banner */}
+          <div className="absolute inset-0 flex flex-col items-center justify-between pt-16 sm:pt-20 pb-4 sm:pb-6 text-center px-4">
+            <div>
+              {/* Main Heading Text */}
+              <span className="text-[12px] sm:text-sm font-serif italic text-slate-900 font-bold drop-shadow-[0_1px_3px_rgba(255,255,255,0.95)] tracking-wider">
+                Let&apos;s Make
+              </span>
+              <h1 className="text-[19px] sm:text-[23px] font-serif font-black text-slate-950 tracking-tight leading-tight drop-shadow-[0_2px_4px_rgba(255,255,255,0.95)] max-w-[280px] sm:max-w-xs mx-auto mt-0.5">
+                Travel Dreams Come True Together!
+              </h1>
+              <p className="text-[11px] sm:text-xs font-extrabold text-slate-900 mt-0.5 sm:mt-1 max-w-[290px] mx-auto drop-shadow-[0_1px_3px_rgba(255,255,255,0.95)] leading-tight">
+                Become a Proud Broom Boom Cabs Franchise Owner Today
+              </p>
+            </div>
 
-            {/* Highlighted JOIN NOW Button - Lower Middle matching the green box */}
-            <div className="mt-2.5 sm:mt-3">
+            {/* JOIN NOW Button placed right in the middle/lower image area */}
+            <div className="mt-2">
               <span className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 font-black text-xs sm:text-sm px-7 sm:px-8 py-2 sm:py-2.5 rounded-full shadow-[0_4px_22px_rgba(245,158,11,0.65)] border-2 border-white ring-2 ring-amber-400/60 hover:brightness-105 active:scale-95 transition-all">
                 <span>JOIN NOW</span>
                 <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />

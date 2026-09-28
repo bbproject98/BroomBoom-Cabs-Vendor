@@ -6,7 +6,7 @@ import { Download, X, Share2, PlusSquare } from "lucide-react";
 
 export const PwaInstallPrompt: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [showBanner, setShowBanner] = useState(false);
+  const [showBanner, setShowBanner] = useState(true);
   const [isIOS, setIsIOS] = useState(false);
   const [showIOSModal, setShowIOSModal] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -19,6 +19,7 @@ export const PwaInstallPrompt: React.FC = () => {
 
     if (isStandalone) {
       setIsInstalled(true);
+      setShowBanner(false);
       return;
     }
 
@@ -35,17 +36,12 @@ export const PwaInstallPrompt: React.FC = () => {
     const isAppleDevice = /iphone|ipad|ipod/.test(userAgent);
     setIsIOS(isAppleDevice);
 
-    // Listen for beforeinstallprompt event (Android / Chromium)
+    // Listen for beforeinstallprompt event (Android / Chromium / Desktop Chrome / Edge)
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
       (window as any).deferredPrompt = e;
-
-      // Auto-show install banner on mobile view if user hasn't dismissed recently
-      const dismissed = sessionStorage.getItem("pwa_install_dismissed");
-      if (!dismissed) {
-        setShowBanner(true);
-      }
+      setShowBanner(true);
     };
 
     // Listen for custom trigger from any button across the app
@@ -70,15 +66,6 @@ export const PwaInstallPrompt: React.FC = () => {
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     window.addEventListener("trigger-pwa-install", handleCustomTrigger);
 
-    // For iOS users on mobile, auto-show the banner after 3 seconds if not dismissed
-    if (isAppleDevice && !isStandalone) {
-      const dismissed = sessionStorage.getItem("pwa_install_dismissed");
-      if (!dismissed) {
-        const timer = setTimeout(() => setShowBanner(true), 3000);
-        return () => clearTimeout(timer);
-      }
-    }
-
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
       window.removeEventListener("trigger-pwa-install", handleCustomTrigger);
@@ -99,25 +86,20 @@ export const PwaInstallPrompt: React.FC = () => {
     } else if (isIOS) {
       setShowIOSModal(true);
     } else {
-      alert("To install the BroomBoom Vendor App: Tap your browser's menu (⋮) and select 'Install app' or 'Add to Home screen'.");
+      alert("To install the BroomBoom Vendor App: Click the Install icon (⊕) in your browser address bar or menu (⋮) -> 'Install BroomBoom Vendor'.");
     }
-  };
-
-  const handleDismiss = () => {
-    setShowBanner(false);
-    sessionStorage.setItem("pwa_install_dismissed", "true");
   };
 
   if (isInstalled) return null;
 
   return (
     <>
-      {/* Smart Mobile Auto-Install Banner (PWA) */}
+      {/* Universal Install Banner for Mobile, Tablet, Laptop, and Desktop */}
       {showBanner && (
-        <div className="md:hidden fixed top-14 sm:top-16 left-0 right-0 z-50 px-3 py-2 animate-in slide-in-from-top-2 duration-300">
-          <div className="bg-slate-950/95 backdrop-blur-md border border-amber-400/40 rounded-2xl p-2.5 shadow-[0_8px_30px_rgba(0,0,0,0.5)] flex items-center justify-between gap-2.5">
-            <div className="flex items-center gap-2.5 shrink-0">
-              <div className="relative w-9 h-9 rounded-xl overflow-hidden border border-amber-400 bg-white flex items-center justify-center p-0.5 shrink-0 shadow-sm">
+        <div className="fixed top-14 sm:top-16 md:top-20 left-0 right-0 z-50 px-3 sm:px-4 py-2 flex justify-center animate-in slide-in-from-top-2 duration-300 pointer-events-none">
+          <div className="pointer-events-auto w-full max-w-lg md:max-w-xl bg-slate-950/95 backdrop-blur-md border border-amber-400/40 rounded-2xl p-2.5 sm:px-4 sm:py-3 shadow-[0_8px_30px_rgba(0,0,0,0.5)] flex items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+              <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden border border-amber-400 bg-white flex items-center justify-center p-0.5 shrink-0 shadow-sm">
                 <Image
                   src="/broomboom-logo.png"
                   alt="BroomBoom Vendor App"
@@ -126,11 +108,11 @@ export const PwaInstallPrompt: React.FC = () => {
                 />
               </div>
               <div className="text-left">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-black text-white">BroomBoom Vendor</span>
-                  <span className="bg-amber-400 text-black text-[9px] font-black px-1.5 py-0.2 rounded">APP</span>
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <span className="text-xs sm:text-sm font-black text-white">BroomBoom Vendor</span>
+                  <span className="bg-amber-400 text-black text-[9px] sm:text-[10px] font-black px-1.5 py-0.2 sm:px-2 sm:py-0.5 rounded">APP</span>
                 </div>
-                <p className="text-[10px] text-slate-300 font-medium leading-tight">
+                <p className="text-[10px] sm:text-[11px] text-slate-300 font-medium leading-tight mt-0.5">
                   Install for 1-tap orders &amp; fleet control
                 </p>
               </div>
@@ -139,9 +121,9 @@ export const PwaInstallPrompt: React.FC = () => {
             <div className="flex items-center gap-1.5 shrink-0">
               <button
                 onClick={handleInstallClick}
-                className="bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-950 px-3.5 py-1.5 rounded-xl font-black text-xs flex items-center gap-1 shadow-sm active:scale-95 transition-transform cursor-pointer"
+                className="bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-500 hover:to-yellow-500 text-slate-950 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-xl font-black text-xs sm:text-sm flex items-center gap-1.5 shadow-sm hover:shadow-yellow-glow active:scale-95 transition-all cursor-pointer"
               >
-                <Download className="w-3.5 h-3.5 stroke-[2.5]" />
+                <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
                 <span>Install</span>
               </button>
             </div>
