@@ -4,6 +4,9 @@ export interface FranchisePackage {
   tagline: string;
   popular?: boolean;
   badge?: string;
+   subtitle: string;
+   description: string;
+   fleetSize: string;
   originalPrice?: string;
   price?: string;
   discountTag?: string;

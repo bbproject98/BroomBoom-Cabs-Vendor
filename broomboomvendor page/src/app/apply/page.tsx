@@ -1054,7 +1054,7 @@ function ApplyFormContent() {
                 <button
                   type="button"
                   onClick={() => scroll('left')}
-                  className="absolute left-1 top-1/2 -translate-y-1/2 z-20 bg-white/90 backdrop-blur-md border border-amber-300 shadow-lg rounded-full p-2 md:hidden flex items-center justify-center hover:bg-amber-50 active:scale-90 transition-all"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-white/90 backdrop-blur-md border border-amber-300 shadow-lg rounded-full p-1.5 md:hidden flex items-center justify-center hover:bg-amber-50 active:scale-90 transition-all"
                   aria-label="Scroll left"
                 >
                   <ArrowLeft className="w-4 h-4 text-amber-700" />
@@ -1063,13 +1063,14 @@ function ApplyFormContent() {
                 {/* Cards Container: Horizontal Scroll on Mobile, Grid on Desktop */}
                 <div
                   ref={scrollContainerRef}
-                  className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 pt-1 px-10 md:px-0 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:pb-0 md:pt-0 [&::-webkit-scrollbar]:hidden"
+                  className="flex overflow-x-auto snap-x snap-mandatory gap-3 pb-4 pt-1 px-8 md:px-0 md:grid md:grid-cols-3 md:gap-3 md:overflow-visible md:pb-0 md:pt-0 [&::-webkit-scrollbar]:hidden"
                 >
                   {FRANCHISE_PACKAGES.map((pkg) => {
                     const isSelected = selectedPackage === pkg.id;
                     const prices = getPrices(pkg.id);
 
-                    let cardStyles = "min-w-[280px] snap-center md:min-w-0 cursor-pointer rounded-2xl p-4 border-2 transition-all relative flex flex-col ";
+                    // DECREASED FURTHER: p-3, min-w-[240px]
+                    let cardStyles = "min-w-[240px] snap-center md:min-w-0 cursor-pointer rounded-xl p-3 border-2 transition-all relative flex flex-col ";
                     if (pkg.id === "silver") {
                       cardStyles += isSelected
                         ? "bg-gradient-to-br from-slate-100 to-slate-300 border-slate-500 shadow-xl ring-4 ring-slate-400/20 scale-[1.02]"
@@ -1084,7 +1085,7 @@ function ApplyFormContent() {
                         : "bg-gradient-to-br from-yellow-50 to-amber-100 border-amber-200 hover:border-amber-400 opacity-90 hover:opacity-100";
                     }
 
-                    let checkStyles = "w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ";
+                    let checkStyles = "w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ";
                     if (isSelected) {
                       if (pkg.id === "silver") checkStyles += "bg-slate-600 border-slate-600 text-white";
                       else if (pkg.id === "platinum") checkStyles += "bg-cyan-600 border-cyan-600 text-white";
@@ -1108,57 +1109,61 @@ function ApplyFormContent() {
                         className={cardStyles}
                       >
                         {pkg.popular && (
-                          <div className="absolute -top-3 right-4 bg-brand-yellow text-black text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider border-2 border-amber-400 shadow-md">
+                          <div className="absolute -top-2.5 right-3 bg-brand-yellow text-black text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider border-2 border-amber-400 shadow-md">
                             ★ Most Popular
                           </div>
                         )}
 
-                        <div className="flex items-center gap-1.5 mb-2">
-                          <span className="bg-emerald-600 text-white text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wide shadow-sm">
+                        <div className="flex items-center gap-1 mb-1.5">
+                          <span className="bg-emerald-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wide shadow-sm">
                             {pkg.discountTag || "50% OFF"}
                           </span>
-                          <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wide shadow-sm">
+                          <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wide shadow-sm">
                             {pkg.dealTag || "Exclusive Deal"}
                           </span>
                         </div>
 
                         <div className="flex items-center justify-between mb-1">
                           <div>
-                            <h4 className="text-lg font-black text-slate-950">{pkg.name}</h4>
-                            <p className="text-[10px] font-bold text-slate-600 mt-0.5">{pkg.subtitle}</p>
+                            {/* REDUCED TITLE TO text-[15px] */}
+                            <h4 className="text-[15px] font-black text-slate-950">{pkg.name}</h4>
+                            <p className="text-[9px] font-bold text-slate-600 mt-0.5">{pkg.subtitle}</p>
                           </div>
                           <div className={checkStyles}>
-                            {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                            {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
                           </div>
                         </div>
 
-                        <div className="flex flex-col items-start gap-1 mt-2 mb-2">
-                          <span className="text-xs font-bold text-slate-500/80 line-through decoration-rose-500 decoration-2 leading-none">
+                        <div className="flex flex-col items-start gap-0.5 mt-1.5 mb-1.5">
+                          <span className="text-[11px] font-bold text-slate-500/80 line-through decoration-rose-500 decoration-2 leading-none">
                             {prices.original}
                           </span>
-                          <span className="text-3xl font-black text-amber-900 leading-none">
+                          {/* REDUCED PRICE TO text-2xl */}
+                          <span className="text-2xl font-black text-amber-900 leading-none">
                             {prices.discounted}
                           </span>
                         </div>
 
                         {pkg.savings && (
                           <div className="mt-1">
-                            <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/80 px-1.5 py-0.5 rounded border border-emerald-300/50">
+                            <span className="text-[9px] font-bold text-emerald-800 bg-emerald-100/80 px-1.5 py-0.5 rounded border border-emerald-300/50">
                               {pkg.savings}
                             </span>
                           </div>
                         )}
 
-                        <p className="text-xs text-slate-700 font-medium mt-3 line-clamp-3">{pkg.description}</p>
+                        {/* REDUCED DESCRIPTION TO text-[11px] */}
+                        <p className="text-[11px] text-slate-700 font-medium mt-2 line-clamp-3 leading-tight">{pkg.description}</p>
 
-                        <div className="mt-3 pt-3 border-t border-slate-900/10 text-xs flex-grow">
+                        <div className="mt-2 pt-2 border-t border-slate-900/10 text-xs flex-grow">
                           
-                          <div className="bg-white/80 backdrop-blur-md rounded-lg p-2.5 border border-white/90 shadow-sm">
-                            <span className="font-black flex items-center gap-1.5 mb-1.5 text-[10px] uppercase tracking-wider text-slate-800">
+                          {/* HIGHLIGHTED FEATURES BOX - REDUCED PADDING p-2 AND text-[9px] */}
+                          <div className="bg-white/80 backdrop-blur-md rounded-lg p-2 border border-white/90 shadow-sm">
+                            <span className="font-black flex items-center gap-1.5 mb-1 text-[9px] uppercase tracking-wider text-slate-800">
                               <BadgeCheck className="w-3 h-3 text-amber-600" />
                               Features Included:
                             </span>
-                            <ul className="list-disc pl-3.5 space-y-1 text-[10px] font-semibold text-slate-700">
+                            <ul className="list-disc pl-3 space-y-0.5 text-[9px] font-semibold text-slate-700">
                               {pkg.features.map((feature, idx) => (
                                 <li key={idx} className="leading-snug">{feature}</li>
                               ))}
@@ -1175,7 +1180,7 @@ function ApplyFormContent() {
                 <button
                   type="button"
                   onClick={() => scroll('right')}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 z-20 bg-white/90 backdrop-blur-md border border-amber-300 shadow-lg rounded-full p-2 md:hidden flex items-center justify-center hover:bg-amber-50 active:scale-90 transition-all"
+                  className="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-white/90 backdrop-blur-md border border-amber-300 shadow-lg rounded-full p-1.5 md:hidden flex items-center justify-center hover:bg-amber-50 active:scale-90 transition-all"
                   aria-label="Scroll right"
                 >
                   <ArrowRight className="w-4 h-4 text-amber-700" />
