@@ -233,7 +233,7 @@ export const TESTIMONIALS: Testimonial[] = [
     rating: 5,
     quote:
       "I run two Ertigas between Pune and Mumbai. The daily bank settlement means I never run out of diesel money. 0% commission in my first month helped me set up my business smoothly.",
-    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
+    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80",
   },
 ];
 
