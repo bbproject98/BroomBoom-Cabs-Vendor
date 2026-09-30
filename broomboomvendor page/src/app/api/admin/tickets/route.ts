@@ -22,11 +22,11 @@ export async function GET(request: Request) {
     const allTickets = await prisma.planChangeTicket.findMany();
     const stats = {
       total: allTickets.length,
-      pending: allTickets.filter((t) => t.status === "PENDING").length,
-      awaitingPayment: allTickets.filter((t) => t.status === "AWAITING_PAYMENT").length,
-      paymentCompleted: allTickets.filter((t) => t.status === "PAYMENT_COMPLETED").length,
-      completed: allTickets.filter((t) => t.status === "COMPLETED" || t.status === "APPROVED").length,
-      rejected: allTickets.filter((t) => t.status === "REJECTED").length,
+      pending: allTickets.filter((t: any) => t.status === "PENDING").length,
+      awaitingPayment: allTickets.filter((t: any) => t.status === "AWAITING_PAYMENT").length,
+      paymentCompleted: allTickets.filter((t: any) => t.status === "PAYMENT_COMPLETED").length,
+      completed: allTickets.filter((t: any) => t.status === "COMPLETED" || t.status === "APPROVED").length,
+      rejected: allTickets.filter((t: any) => t.status === "REJECTED").length,
     };
 
     return NextResponse.json({ success: true, count: tickets.length, stats, tickets });

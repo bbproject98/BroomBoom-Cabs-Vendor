@@ -23,12 +23,31 @@ export const PwaInstallPrompt: React.FC = () => {
       return;
     }
 
-    // Register Service Worker for PWA
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker
-        .register("/sw.js")
-        .then((reg) => console.log("PWA Service Worker registered:", reg.scope))
-        .catch((err) => console.log("PWA SW registration failed:", err));
+    // Register Service Worker for PWA (production and non-localhost only)
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      const isLocalhost =
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1" ||
+        window.location.hostname.endsWith(".local");
+
+      if (isLocalhost || process.env.NODE_ENV !== "production") {
+        // Automatically cleanup any active or broken service workers on localhost
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          for (const registration of registrations) {
+            registration.unregister();
+          }
+        });
+        if ("caches" in window) {
+          caches.keys().then((keys) => {
+            keys.forEach((key) => caches.delete(key));
+          });
+        }
+      } else {
+        navigator.serviceWorker
+          .register("/sw.js")
+          .then((reg) => console.log("PWA Service Worker registered:", reg.scope))
+          .catch((err) => console.log("PWA SW registration failed:", err));
+      }
     }
 
     // Detect iOS

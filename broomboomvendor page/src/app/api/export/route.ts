@@ -58,7 +58,7 @@ export async function GET(_request: Request) {
       "Updated At",
     ];
 
-    const rows = leads.map((lead) => [
+    const rows = leads.map((lead: any) => [
       lead.id,
       lead.applicationId,
       lead.fullName,
@@ -88,7 +88,7 @@ export async function GET(_request: Request) {
 
     const csvData = [
       headers.map(escapeCsv).join(","),
-      ...rows.map((row) => row.map(escapeCsv).join(",")),
+      ...rows.map((row: any[]) => row.map(escapeCsv).join(",")),
     ].join("\r\n");
 
     const filename = `broomboom-vendor-leads-${new Date()

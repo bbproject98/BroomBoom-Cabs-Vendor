@@ -30,8 +30,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           <Image
             src="/hero-banner-v2.png"
             alt="Let's Make Travel Dreams Come True Together! Become a Proud Broom Boom Cabs Vendor Partner Today"
-            width={1920}
-            height={600}
+            width={1024}
+            height={331}
             className="w-full h-auto object-cover"
             priority
           />
@@ -58,7 +58,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 Travel Dreams Come True Together!
               </h1>
               <p className="text-[11px] sm:text-xs font-extrabold text-slate-900 mt-0.5 sm:mt-1 max-w-[290px] mx-auto drop-shadow-[0_1px_3px_rgba(255,255,255,0.95)] leading-tight">
-                Become a Proud Broom Boom Cabs Franchise Owner Today
+                Become a Proud BroomBoom Cabs Vendor Owner Today
               </p>
             </div>
 
