@@ -92,7 +92,7 @@ export async function GET(request: Request) {
       } else {
         // Fallback: Create subscription entry if one didn't exist
         const pkgKey = (cfOrder.order_tags?.package || "gold").toLowerCase();
-        const baseAmt = parseFloat(cfOrder.order_tags?.base_amount || "0") || (pkgKey === "silver" ? 10000 : pkgKey === "platinum" ? 50000 : 20000);
+        const baseAmt = parseFloat(cfOrder.order_tags?.base_amount || "0") || (pkgKey === "silver" ? 5000 : pkgKey === "platinum" ? 20000 : 10000);
         const gwFee = parseFloat(cfOrder.order_tags?.gateway_fee_3_percent || "0") || Math.round(baseAmt * 0.03);
         const gstAmt = parseFloat(cfOrder.order_tags?.gst_5_percent || "0") || Math.round(baseAmt * 0.05);
         const totAmt = parseFloat(String(cfOrder.order_amount)) || (baseAmt + gwFee + gstAmt);

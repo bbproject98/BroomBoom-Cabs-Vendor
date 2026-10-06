@@ -61,18 +61,18 @@ function ApplyFormContent() {
     switch (pkgId) {
       case "silver":
         return {
-          investmentBudget: "₹10,000 (Silver Partner - 50% OFF Exclusive Deal)",
+          investmentBudget: "₹5,000 (Silver Partner - 75% OFF Exclusive Deal)",
           carpetArea: "100 - 150 sq.ft (Ideal for Silver Kiosk)",
         };
       case "platinum":
         return {
-          investmentBudget: "₹50,000 (Platinum Package - 50% OFF Exclusive Deal)",
+          investmentBudget: "₹20,000 (Platinum Package - 80% OFF Exclusive Deal)",
           carpetArea: "800 - 1,200 sq.ft (Ideal for Platinum Master)",
         };
       case "gold":
       default:
         return {
-          investmentBudget: "₹20,000 (Gold Package - 50% OFF Exclusive Deal)",
+          investmentBudget: "₹10,000 (Gold Package - 75% OFF Exclusive Deal)",
           carpetArea: "300 - 500 sq.ft (Ideal for Gold Hub)",
         };
     }
@@ -160,13 +160,13 @@ function ApplyFormContent() {
   const getPrices = (id: string) => {
     switch (id) {
       case "silver":
-        return { original: "₹20,000", discounted: "₹10,000", numPrice: 10000, save: "₹10,000" };
+        return { original: "₹20,000", discounted: "₹5,000", numPrice: 5000, save: "₹15,000" };
       case "gold":
-        return { original: "₹40,000", discounted: "₹20,000", numPrice: 20000, save: "₹20,000" };
+        return { original: "₹40,000", discounted: "₹10,000", numPrice: 10000, save: "₹30,000" };
       case "platinum":
-        return { original: "₹1,00,000", discounted: "₹50,000", numPrice: 50000, save: "₹50,000" };
+        return { original: "₹1,00,000", discounted: "₹20,000", numPrice: 20000, save: "₹80,000" };
       default:
-        return { original: "₹20,000", discounted: "₹10,000", numPrice: 10000, save: "₹10,000" };
+        return { original: "₹20,000", discounted: "₹5,000", numPrice: 5000, save: "₹15,000" };
     }
   };
 
@@ -257,7 +257,7 @@ function ApplyFormContent() {
         proposedAddress: "",
         spaceStatus: "Owned commercial space ready",
         carpetArea: "300 - 500 sq.ft (Ideal for Gold Hub)",
-        investmentBudget: "₹20,000 (Gold Package - 50% OFF Exclusive Deal)",
+        investmentBudget: "₹10,000 (Gold Package - 75% OFF Exclusive Deal)",
         financeRequired: "Self-Funded / Ready Capital",
         loanAssistance: "No (Self-Funded)",
         currentProfession: "",
@@ -580,10 +580,10 @@ function ApplyFormContent() {
 
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-6">
                       <div className="flex gap-2">
-                        <span className="bg-gradient-to-r from-rose-500 to-red-500 text-white text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider shadow-md shadow-rose-500/30">
-                          50% OFF
+                        <span className="bg-gradient-to-r from-red-600 to-rose-600 text-white text-xs sm:text-sm font-black px-3 py-1.5 rounded-lg uppercase tracking-wider shadow-lg shadow-red-500/30 ring-2 ring-red-400/40">
+                          🔥 {currentPkgDetails.discountTag || "75% OFF"}
                         </span>
-                        <span className="bg-white/90 backdrop-blur-sm text-slate-900 border border-slate-200 text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider shadow-sm">
+                        <span className="bg-white/90 backdrop-blur-sm text-slate-900 border border-slate-200 text-[11px] font-black px-2.5 py-1.5 rounded-lg uppercase tracking-wider shadow-sm flex items-center">
                           EXCLUSIVE DEAL
                         </span>
                       </div>
@@ -606,14 +606,19 @@ function ApplyFormContent() {
                       </div>
 
                       <div className="flex flex-col items-end shrink-0 text-right">
-                        <span className="text-[11px] font-black text-rose-500 line-through decoration-rose-500/50 decoration-2 leading-none">
-                          {getPrices(selectedPackage).original}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[12px] font-bold text-rose-500 line-through decoration-rose-500/60 decoration-2 leading-none">
+                            {getPrices(selectedPackage).original}
+                          </span>
+                          <span className="bg-red-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-xs uppercase tracking-wide">
+                            {currentPkgDetails.discountTag || "75% OFF"}
+                          </span>
+                        </div>
                         <span className="text-3xl font-black text-slate-950 leading-none tracking-tighter drop-shadow-md mt-1">
                           {getPrices(selectedPackage).discounted}
                         </span>
-                        <span className="text-[9px] font-bold text-emerald-700 bg-white/80 px-1.5 py-0.5 rounded mt-2 border border-emerald-200 shadow-sm">
-                          You Save {getPrices(selectedPackage).save}
+                        <span className="text-[10px] font-black text-emerald-800 bg-emerald-100/90 px-2 py-1 rounded-md mt-2 border border-emerald-300 shadow-sm">
+                          Save {getPrices(selectedPackage).save}
                         </span>
                       </div>
                     </div>
@@ -624,12 +629,21 @@ function ApplyFormContent() {
                         Package Benefits:
                       </h4>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {currentPkgDetails.features.map((item: string, idx: number) => (
-                          <div key={idx} className="flex items-start gap-2 text-[11px] text-slate-700 font-semibold group">
-                            <CheckCircle2 className={`w-3.5 h-3.5 ${theme.checkIcon} shrink-0 mt-0.5 group-hover:scale-110 transition-transform`} />
-                            <span className="leading-snug">{item}</span>
-                          </div>
-                        ))}
+                        {currentPkgDetails.features.map((item: string, idx: number) => {
+                          const isZero = currentPkgDetails.id === "platinum" && (item.trim().startsWith("0%") || item.toLowerCase() === "0% commission");
+                          return (
+                            <div key={idx} className="flex items-start gap-2 text-[11px] text-slate-700 font-semibold group">
+                              <CheckCircle2 className={`w-3.5 h-3.5 ${theme.checkIcon} shrink-0 mt-0.5 group-hover:scale-110 transition-transform`} />
+                              {isZero ? (
+                                <span className="bg-emerald-600 text-white font-black px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wide inline-flex items-center gap-1">
+                                  ★ 0% Commission (Zero Fee)
+                                </span>
+                              ) : (
+                                <span className="leading-snug">{item}</span>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
 
@@ -1114,11 +1128,11 @@ function ApplyFormContent() {
                           </div>
                         )}
 
-                        <div className="flex items-center gap-1 mb-1.5">
-                          <span className="bg-emerald-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wide shadow-sm">
-                            {pkg.discountTag || "50% OFF"}
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <span className="bg-gradient-to-r from-red-600 to-rose-600 text-white text-[10.5px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider shadow-md shadow-red-500/30 ring-1 ring-red-400">
+                            {pkg.discountTag || "75% OFF"}
                           </span>
-                          <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wide shadow-sm">
+                          <span className="bg-amber-100 text-amber-950 border border-amber-300 text-[9.5px] font-black px-2 py-0.5 rounded-md uppercase tracking-wide shadow-xs">
                             {pkg.dealTag || "Exclusive Deal"}
                           </span>
                         </div>
@@ -1134,10 +1148,15 @@ function ApplyFormContent() {
                           </div>
                         </div>
 
-                        <div className="flex flex-col items-start gap-0.5 mt-1.5 mb-1.5">
-                          <span className="text-[11px] font-bold text-slate-500/80 line-through decoration-rose-500 decoration-2 leading-none">
-                            {prices.original}
-                          </span>
+                        <div className="flex flex-col items-start gap-1 mt-1.5 mb-1.5">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[11px] font-bold text-slate-500/80 line-through decoration-rose-500 decoration-2 leading-none">
+                              {prices.original}
+                            </span>
+                            <span className="bg-red-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-full shadow-xs uppercase tracking-wide">
+                              {pkg.discountTag || "75% OFF"}
+                            </span>
+                          </div>
                           {/* REDUCED PRICE TO text-2xl */}
                           <span className="text-2xl font-black text-amber-900 leading-none">
                             {prices.discounted}
@@ -1146,8 +1165,8 @@ function ApplyFormContent() {
 
                         {pkg.savings && (
                           <div className="mt-1">
-                            <span className="text-[9px] font-bold text-emerald-800 bg-emerald-100/80 px-1.5 py-0.5 rounded border border-emerald-300/50">
-                              {pkg.savings}
+                            <span className="text-[10px] font-black text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded border border-emerald-300/60 shadow-xs">
+                              {pkg.savings} with offer
                             </span>
                           </div>
                         )}
@@ -1164,9 +1183,23 @@ function ApplyFormContent() {
                               Features Included:
                             </span>
                             <ul className="list-disc pl-3 space-y-0.5 text-[9px] font-semibold text-slate-700">
-                              {pkg.features.map((feature, idx) => (
-                                <li key={idx} className="leading-snug">{feature}</li>
-                              ))}
+                              {pkg.features.map((feature, idx) => {
+                                const isZeroComm =
+                                  pkg.id === "platinum" &&
+                                  (feature.trim().startsWith("0%") ||
+                                    feature.toLowerCase() === "0% commission");
+                                return (
+                                  <li key={idx} className="leading-snug">
+                                    {isZeroComm ? (
+                                      <span className="bg-emerald-600 text-white font-black px-1.5 py-0.5 rounded text-[8.5px] uppercase tracking-wide inline-flex items-center gap-1">
+                                        ★ 0% Commission (Zero Fee)
+                                      </span>
+                                    ) : (
+                                      feature
+                                    )}
+                                  </li>
+                                );
+                              })}
                             </ul>
                           </div>
 
@@ -1380,10 +1413,10 @@ function ApplyFormContent() {
                       onChange={(e) => setFormData({ ...formData, investmentBudget: e.target.value })}
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-amber-500 text-sm"
                     >
-                      <option value="₹10,000 (Silver Partner - 50% OFF Exclusive Deal)">₹10,000 (Silver Partner • 50% OFF Exclusive Deal)</option>
-                      <option value="₹20,000 (Gold Package - 50% OFF Exclusive Deal)">₹20,000 (Gold Partner • 50% OFF Exclusive Deal ★)</option>
-                      <option value="₹50,000 (Platinum Package - 50% OFF Exclusive Deal)">₹50,000 (Platinum Master • 50% OFF Exclusive Deal)</option>
-                      <option value="Above ₹50,000 (State Master Operator)">Above ₹50,000 (State Master Operator)</option>
+                      <option value="₹5,000 (Silver Partner - 75% OFF Exclusive Deal)">₹5,000 (Silver Partner • 75% OFF Exclusive Deal)</option>
+                      <option value="₹10,000 (Gold Package - 75% OFF Exclusive Deal)">₹10,000 (Gold Partner • 75% OFF Exclusive Deal ★)</option>
+                      <option value="₹20,000 (Platinum Package - 80% OFF Exclusive Deal)">₹20,000 (Platinum Master • 80% OFF • 0% Commission)</option>
+                      <option value="Above ₹20,000 (State Master Operator)">Above ₹20,000 (State Master Operator)</option>
                     </select>
                   </div>
 

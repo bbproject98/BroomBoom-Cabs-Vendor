@@ -12,22 +12,22 @@ export async function OPTIONS() {
 
 const PACKAGE_PRICES: Record<string, { amount: number; name: string; originalPrice: string; discountedPrice: string }> = {
   silver: {
-    amount: 10000,
+    amount: 5000,
     name: "Silver Partner (Booking Kiosk)",
     originalPrice: "₹20,000",
-    discountedPrice: "₹10,000",
+    discountedPrice: "₹5,000",
   },
   gold: {
-    amount: 20000,
+    amount: 10000,
     name: "Gold Partner (District Exclusive Hub)",
     originalPrice: "₹40,000",
-    discountedPrice: "₹20,000",
+    discountedPrice: "₹10,000",
   },
   platinum: {
-    amount: 50000,
+    amount: 20000,
     name: "Platinum Partner (Regional Master Hub)",
     originalPrice: "₹1,00,000",
-    discountedPrice: "₹50,000",
+    discountedPrice: "₹20,000",
   },
 };
 

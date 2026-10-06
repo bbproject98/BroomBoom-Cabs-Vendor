@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     // Resolve non-zero amounts if ticket had legacy 0 amount
     const planKey = (ticket.requestedPlan || "silver").toLowerCase();
     const currKey = (ticket.currentPlan || "gold").toLowerCase();
-    const getBase = (p: string) => (p === "silver" ? 10000 : p === "platinum" ? 50000 : 20000);
+    const getBase = (p: string) => (p === "silver" ? 5000 : p === "platinum" ? 20000 : 10000);
     const targetBase = getBase(planKey);
     const curBase = getBase(currKey);
     const defaultDiff = targetBase > curBase ? targetBase - curBase : targetBase;

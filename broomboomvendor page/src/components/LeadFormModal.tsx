@@ -24,7 +24,7 @@ export const LeadFormModal: React.FC<LeadFormModalProps> = ({
     state: "",
     city: "",
     preferredPackage: defaultPackage || "gold",
-    investmentBudget: "₹20,000 (Gold Package - 50% OFF Exclusive Deal)",
+    investmentBudget: "₹10,000 (Gold Package - 75% OFF Exclusive Deal)",
     spaceStatus: "Owned commercial space ready",
     hasExperience: "Yes, currently in travel / taxi / logistics",
     message: "",
@@ -80,11 +80,11 @@ export const LeadFormModal: React.FC<LeadFormModalProps> = ({
     // Format complete email summary for the sender's mobile email app
     const packageDisplayName =
       formData.preferredPackage === "silver"
-        ? "SILVER PARTNER (Booking Kiosk — ₹10,000 • 50% OFF Exclusive Deal)"
+        ? "SILVER PARTNER (Booking Kiosk — ₹5,000 • 75% OFF Exclusive Deal)"
         : formData.preferredPackage === "gold"
-        ? "GOLD PARTNER (District Exclusive Hub — ₹20,000 • 50% OFF Exclusive Deal)"
+        ? "GOLD PARTNER (District Exclusive Hub — ₹10,000 • 75% OFF Exclusive Deal)"
         : formData.preferredPackage === "platinum"
-        ? "PLATINUM PARTNER (Regional Master — ₹50,000 • 50% OFF Exclusive Deal)"
+        ? "PLATINUM PARTNER (Regional Master — ₹20,000 • 80% OFF Exclusive Deal)"
         : "CUSTOM VENDOR INQUIRY";
 
     const emailSubject = `Vendor Application [${assignedId}]: ${formData.fullName} - ${formData.city}`;
@@ -325,14 +325,17 @@ Official Desk: support@broomboomcabs.com | Toll-Free: 6289952418-BROOM-BOOM`;
                     className={`cursor-pointer rounded-xl p-2.5 sm:p-3 text-center transition-all border-2 relative flex flex-col justify-center
                       ${
                         formData.preferredPackage === "silver"
-                          ? "border-slate-500 shadow-md scale-[1.02]"
+                          ? "border-slate-600 shadow-md scale-[1.02]"
                           : "border-transparent opacity-80 hover:opacity-100"
                       } bg-gradient-to-br from-slate-200 to-slate-400`}
                   >
+                    <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[8px] sm:text-[9px] px-2 py-0.5 rounded-full font-black uppercase shadow-sm whitespace-nowrap z-10 tracking-wider">
+                      75% OFF
+                    </div>
                     {formData.preferredPackage === "silver" && (
                       <Check className="absolute top-1.5 right-1.5 w-3.5 h-3.5 text-slate-800" />
                     )}
-                    <span className="text-[10px] sm:text-xs font-black uppercase text-slate-800 tracking-wider">
+                    <span className="text-[10px] sm:text-xs font-black uppercase text-slate-800 tracking-wider mt-1">
                       Silver
                     </span>
                     <div className="mt-1 flex flex-col items-center text-slate-800">
@@ -340,7 +343,10 @@ Official Desk: support@broomboomcabs.com | Toll-Free: 6289952418-BROOM-BOOM`;
                         ₹20,000
                       </span>
                       <span className="text-[13px] sm:text-[15px] font-black leading-none mt-1">
-                        ₹10,000
+                        ₹5,000
+                      </span>
+                      <span className="text-[8px] font-black text-emerald-900 bg-white/80 px-1.5 py-0.5 rounded mt-1 shadow-xs">
+                        Save ₹15,000
                       </span>
                     </div>
                   </div>
@@ -355,8 +361,8 @@ Official Desk: support@broomboomcabs.com | Toll-Free: 6289952418-BROOM-BOOM`;
                           : "border-transparent opacity-80 hover:opacity-100"
                       } bg-gradient-to-br from-yellow-300 to-amber-500`}
                   >
-                    <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[8px] sm:text-[9px] px-2 py-0.5 rounded-full font-black uppercase shadow-sm whitespace-nowrap z-10">
-                      ★ Most Popular
+                    <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[8px] sm:text-[9px] px-2 py-0.5 rounded-full font-black uppercase shadow-sm whitespace-nowrap z-10 tracking-wider">
+                      75% OFF &bull; ★ Most Popular
                     </div>
                     {formData.preferredPackage === "gold" && (
                       <Check className="absolute top-1.5 right-1.5 w-3.5 h-3.5 text-amber-950 z-10" />
@@ -369,7 +375,10 @@ Official Desk: support@broomboomcabs.com | Toll-Free: 6289952418-BROOM-BOOM`;
                         ₹40,000
                       </span>
                       <span className="text-[13px] sm:text-[15px] font-black leading-none mt-1">
-                        ₹20,000
+                        ₹10,000
+                      </span>
+                      <span className="text-[8px] font-black text-emerald-900 bg-white/80 px-1.5 py-0.5 rounded mt-1 shadow-xs">
+                        Save ₹30,000
                       </span>
                     </div>
                   </div>
@@ -384,10 +393,13 @@ Official Desk: support@broomboomcabs.com | Toll-Free: 6289952418-BROOM-BOOM`;
                           : "border-transparent opacity-80 hover:opacity-100"
                       } bg-gradient-to-br from-cyan-200 to-teal-400`}
                   >
+                    <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[8px] sm:text-[9px] px-2 py-0.5 rounded-full font-black uppercase shadow-sm whitespace-nowrap z-10 tracking-wider">
+                      80% OFF &bull; 0% Comm.
+                    </div>
                     {formData.preferredPackage === "platinum" && (
                       <Check className="absolute top-1.5 right-1.5 w-3.5 h-3.5 text-cyan-950" />
                     )}
-                    <span className="text-[10px] sm:text-xs font-black uppercase text-cyan-950 tracking-wider">
+                    <span className="text-[10px] sm:text-xs font-black uppercase text-cyan-950 tracking-wider mt-1">
                       Platinum
                     </span>
                     <div className="mt-1 flex flex-col items-center text-cyan-950">
@@ -395,7 +407,10 @@ Official Desk: support@broomboomcabs.com | Toll-Free: 6289952418-BROOM-BOOM`;
                         ₹1,00,000
                       </span>
                       <span className="text-[13px] sm:text-[15px] font-black leading-none mt-1">
-                        ₹50,000
+                        ₹20,000
+                      </span>
+                      <span className="text-[8px] font-black text-emerald-900 bg-white/80 px-1.5 py-0.5 rounded mt-1 shadow-xs">
+                        Save ₹80,000
                       </span>
                     </div>
                   </div>
@@ -413,10 +428,10 @@ Official Desk: support@broomboomcabs.com | Toll-Free: 6289952418-BROOM-BOOM`;
                     onChange={(e) => setFormData({ ...formData, investmentBudget: e.target.value })}
                     className="w-full px-3.5 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-amber-500 focus:bg-white transition-all"
                   >
-                    <option value="₹10,000 (Silver Package - 50% OFF)">₹10,000 (Silver Partner • 50% OFF)</option>
-                    <option value="₹20,000 (Gold Package - 50% OFF)">₹20,000 (Gold Partner • 50% OFF ★)</option>
-                    <option value="₹50,000 (Platinum Package - 50% OFF)">₹50,000 (Platinum Master • 50% OFF)</option>
-                    <option value="Above ₹50,000 (State Master)">Above ₹50,000 (State Master Operator)</option>
+                    <option value="₹5,000 (Silver Package - 75% OFF)">₹5,000 (Silver Partner • 75% OFF)</option>
+                    <option value="₹10,000 (Gold Package - 75% OFF)">₹10,000 (Gold Partner • 75% OFF ★)</option>
+                    <option value="₹20,000 (Platinum Package - 80% OFF)">₹20,000 (Platinum Master • 80% OFF • 0% Commission)</option>
+                    <option value="Above ₹20,000 (State Master)">Above ₹20,000 (State Master Operator)</option>
                   </select>
                 </div>
 

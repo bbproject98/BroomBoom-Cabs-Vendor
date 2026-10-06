@@ -63,10 +63,10 @@ Date: ${new Date().toLocaleDateString("en-IN")}
 1. EXECUTIVE SUMMARY
 BroomBoom is India's fastest-growing multi-vertical mobility and travel ecosystem, operating in 120+ cities with over 50,000 active fleet partners.
 
-2. AVAILABLE VENDOR PACKAGES (50% OFF LIMITED TIME EXCLUSIVE DEALS)
-- Silver Partner (Express Booking Kiosk): ₹10,000 (Original: ₹20,000 • 50% OFF)
-- Gold Partner (District Exclusive Hub): ₹20,000 (Original: ₹40,000 • 50% OFF) ★
-- Platinum Partner (Regional Master Hub): ₹50,000 (Original: ₹1,00,000 • 50% OFF)
+2. AVAILABLE VENDOR PACKAGES (EXCLUSIVE LIMITED TIME DEALS)
+- Silver Partner (Express Booking Kiosk): ₹5,000 (Original: ₹20,000 • 75% OFF)
+- Gold Partner (District Exclusive Hub): ₹10,000 (Original: ₹40,000 • 75% OFF) ★
+- Platinum Partner (Regional Master Hub): ₹20,000 (Original: ₹1,00,000 • 80% OFF • 0% Commission)
 
 3. REVENUE STREAMS
 - 15%-25% ride booking commissions

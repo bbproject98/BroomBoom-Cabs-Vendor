@@ -127,10 +127,10 @@ export async function GET(request: Request) {
           : currentPlan === "platinum"
           ? "Platinum Partner (Regional Master Hub)"
           : "Gold Partner (District Exclusive Hub)",
-      baseAmount: subscription?.baseAmount || (currentPlan === "silver" ? 10000 : currentPlan === "platinum" ? 50000 : 20000),
-      gatewayFee: subscription?.gatewayFee || (currentPlan === "silver" ? 300 : currentPlan === "platinum" ? 1500 : 600),
-      gstAmount: subscription?.gstAmount || (currentPlan === "silver" ? 500 : currentPlan === "platinum" ? 2500 : 1000),
-      totalAmount: subscription?.totalAmount || (currentPlan === "silver" ? 10800 : currentPlan === "platinum" ? 54000 : 21600),
+      baseAmount: subscription?.baseAmount || (currentPlan === "silver" ? 5000 : currentPlan === "platinum" ? 20000 : 10000),
+      gatewayFee: subscription?.gatewayFee || (currentPlan === "silver" ? 150 : currentPlan === "platinum" ? 600 : 300),
+      gstAmount: subscription?.gstAmount || (currentPlan === "silver" ? 250 : currentPlan === "platinum" ? 1000 : 500),
+      totalAmount: subscription?.totalAmount || (currentPlan === "silver" ? 5400 : currentPlan === "platinum" ? 21600 : 10800),
       territoryScope: subscription?.territoryScope || (currentPlan === "silver" ? "Local Ward / Pin Code Hub" : currentPlan === "platinum" ? "State / Regional Master Territory" : "Exclusive District Hub"),
       hasExclusivity: subscription ? subscription.hasExclusivity : currentPlan !== "silver",
       paymentStatus: subscription?.paymentStatus || "PAID",

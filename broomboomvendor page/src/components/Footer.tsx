@@ -55,7 +55,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenApplyModal, onOpenBrochure
                   href="/apply?package=silver"
                   className="hover:text-brand-yellow text-slate-400 transition-colors block text-left cursor-pointer"
                 >
-                  Silver Partner (₹10,000 • 50% OFF)
+                  Silver Partner (₹5,000 • 75% OFF)
                 </Link>
               </li>
               <li>
@@ -63,7 +63,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenApplyModal, onOpenBrochure
                   href="/apply?package=gold"
                   className="hover:text-brand-yellow font-bold text-brand-yellow transition-colors block text-left cursor-pointer"
                 >
-                  Gold Partner (₹20,000 • 50% OFF) ★
+                  Gold Partner (₹10,000 • 75% OFF) ★
                 </Link>
               </li>
               <li>
@@ -71,7 +71,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenApplyModal, onOpenBrochure
                   href="/apply?package=platinum"
                   className="hover:text-brand-yellow text-slate-400 transition-colors block text-left cursor-pointer"
                 >
-                  Platinum Partner (₹50,000 • 50% OFF)
+                  Platinum Partner (₹20,000 • 80% OFF • 0% Comm.)
                 </Link>
               </li>
               <li className="pt-1">

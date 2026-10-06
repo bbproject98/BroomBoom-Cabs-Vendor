@@ -37,13 +37,13 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
   const getPrices = (id: string) => {
     switch (id) {
       case "silver":
-        return { original: "₹20,000", discounted: "₹10,000" };
+        return { original: "₹20,000", discounted: "₹5,000" };
       case "gold":
-        return { original: "₹40,000", discounted: "₹20,000" };
+        return { original: "₹40,000", discounted: "₹10,000" };
       case "platinum":
-        return { original: "₹1,00,000", discounted: "₹50,000" };
+        return { original: "₹1,00,000", discounted: "₹20,000" };
       default:
-        return { original: "₹20,000", discounted: "₹10,000" };
+        return { original: "₹20,000", discounted: "₹5,000" };
     }
   };
 
@@ -174,7 +174,7 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
     "1.8 crore+ Indians holidayed abroad in 2022",
     "11.05% growth in domestic tourist visits",
     "US$ 8.3 billion projected Holiday Packages revenue",
-    "Flat 50% OFF on all Vendor Partner Packages",
+    "Flat 75%-80% OFF on all Vendor Partner Packages",
     "Instant verification • Zero hidden charges",
     "Lock your territory before it's gone",
   ];
@@ -231,7 +231,7 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
         <div className="text-center max-w-2xl mx-auto mb-7">
           <div className="inline-flex items-center gap-1.5 bg-amber-500/15 border border-amber-400 text-amber-950 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wide mb-2.5">
             <Sparkles className="w-3 h-3 text-amber-600 animate-pulse" />
-            <span>Limited Time Offer &bull; Flat 50% OFF On All Packages</span>
+            <span>Limited Time Offer &bull; Flat 75%-80% OFF On All Packages</span>
           </div>
 
           <h2 className="text-2xl sm:text-3xl lg:text-[2rem] font-black text-slate-950 tracking-tight leading-tight">
@@ -271,14 +271,14 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
                   className={`px-4 pb-3.5 border-b ${isGold ? "pt-8" : "pt-5"} ${t.headerBg}`}
                 >
                   {/* Badges Row */}
-                  <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
-                    <span className="inline-flex items-center gap-1 bg-emerald-600 text-white text-[9.5px] font-black px-2 py-0.5 rounded uppercase tracking-wide shadow-sm">
-                      <Tag className="w-2.5 h-2.5 stroke-[2.5]" />
+                  <div className="flex flex-wrap items-center gap-2 mb-2.5">
+                    <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-red-600 to-rose-600 text-white text-[11px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider shadow-md shadow-red-500/30 ring-2 ring-red-400/40">
+                      <Tag className="w-3 h-3 stroke-[2.5]" />
                       {pkg.discountTag}
                     </span>
 
                     <span
-                      className={`inline-flex items-center gap-1 text-[9.5px] font-black px-2 py-0.5 rounded uppercase tracking-wide border shadow-sm ${t.badgeDeal}`}
+                      className={`inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wide border shadow-sm ${t.badgeDeal}`}
                     >
                       <Zap className="w-2.5 h-2.5" />
                       {pkg.dealTag}
@@ -307,11 +307,16 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
                   {/* Pricing (Stacked "up down" layout) */}
                   <div className={`mt-3 pt-3 border-t ${t.divider}`}>
                     <div className="flex flex-col items-start gap-0.5">
-                      <span
-                        className={`text-[13px] font-bold line-through decoration-red-500 decoration-2 ${t.strikeColor}`}
-                      >
-                        {prices.original}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`text-sm font-bold line-through decoration-red-500 decoration-2 ${t.strikeColor}`}
+                        >
+                          {prices.original}
+                        </span>
+                        <span className="bg-red-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-xs uppercase tracking-wide">
+                          {pkg.discountTag}
+                        </span>
+                      </div>
                       <span
                         className={`text-4xl font-black tracking-tight leading-none ${t.priceColor}`}
                       >
@@ -319,7 +324,7 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
                       </span>
                     </div>
 
-                    <span className="inline-block mt-2.5 bg-emerald-600 text-white text-[9.5px] font-black px-2 py-0.5 rounded shadow-sm">
+                    <span className="inline-block mt-2 bg-emerald-700 text-white text-[11px] font-black px-2.5 py-1 rounded-md shadow-sm">
                       {pkg.savings} with current offer
                     </span>
                   </div>
@@ -342,19 +347,31 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
                       Inclusions:
                     </div>
                     <ul className="space-y-1.5">
-                      {pkg.features.map((feature, idx) => (
-                        <li
-                          key={idx}
-                          className={`flex items-start gap-2 text-[11px] font-semibold leading-snug ${t.featureText}`}
-                        >
-                          <div
-                            className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 mt-[1px] shadow-sm ${t.checkBg}`}
+                      {pkg.features.map((feature, idx) => {
+                        const isZeroComm =
+                          pkg.id === "platinum" &&
+                          (feature.trim().startsWith("0%") ||
+                            feature.toLowerCase() === "0% commission");
+                        return (
+                          <li
+                            key={idx}
+                            className={`flex items-start gap-2 text-[11px] font-semibold leading-snug ${t.featureText}`}
                           >
-                            <Check className="w-2.5 h-2.5 stroke-[3]" />
-                          </div>
-                          <span>{feature}</span>
-                        </li>
-                      ))}
+                            <div
+                              className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 mt-[1px] shadow-sm ${t.checkBg}`}
+                            >
+                              <Check className="w-2.5 h-2.5 stroke-[3]" />
+                            </div>
+                            {isZeroComm ? (
+                              <span className="bg-emerald-600 text-white font-black px-2 py-0.5 rounded text-[10.5px] uppercase tracking-wide shadow-xs inline-flex items-center gap-1">
+                                ★ 0% Commission (Zero Platform Fee)
+                              </span>
+                            ) : (
+                              <span>{feature}</span>
+                            )}
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
 

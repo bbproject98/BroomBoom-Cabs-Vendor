@@ -694,7 +694,7 @@ function VendorDashboardContent() {
                   {/* STAGE 2: ADMIN APPROVED -> PAY NOW BUTTON */}
                   {isAwaitingPay && (() => {
                     const getTierBase = (tier: string) =>
-                      tier === "silver" ? 10000 : tier === "platinum" ? 50000 : 20000;
+                      tier === "silver" ? 5000 : tier === "platinum" ? 20000 : 10000;
                     const reqBase = getTierBase((t.requestedPlan || "silver").toLowerCase());
                     const curBase = getTierBase((t.currentPlan || "gold").toLowerCase());
                     const defUpgrade = reqBase > curBase ? reqBase - curBase : reqBase;
@@ -1233,9 +1233,9 @@ function VendorDashboardContent() {
                   onChange={(e) => setRequestedPlan(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-xs font-bold focus:outline-none focus:border-amber-500"
                 >
-                  <option value="silver">Silver Partner (Booking Kiosk — ₹10,000)</option>
-                  <option value="gold">Gold Partner (District Exclusive Hub — ₹20,000 ★)</option>
-                  <option value="platinum">Platinum Partner (Regional Master Hub — ₹50,000)</option>
+                  <option value="silver">Silver Partner (Booking Kiosk — ₹5,000)</option>
+                  <option value="gold">Gold Partner (District Exclusive Hub — ₹10,000 ★)</option>
+                  <option value="platinum">Platinum Partner (Regional Master Hub — ₹20,000 • 0% Commission)</option>
                 </select>
               </div>
 

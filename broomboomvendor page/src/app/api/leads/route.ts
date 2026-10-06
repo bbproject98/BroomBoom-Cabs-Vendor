@@ -131,10 +131,10 @@ export async function POST(request: Request) {
     ) {
       investmentBudget =
         preferredPackage === "silver"
-          ? "₹10,000 (Silver Partner - 50% OFF Exclusive Deal)"
+          ? "₹5,000 (Silver Partner - 75% OFF Exclusive Deal)"
           : preferredPackage === "platinum"
-          ? "₹50,000 (Platinum Package - 50% OFF Exclusive Deal)"
-          : "₹20,000 (Gold Package - 50% OFF Exclusive Deal)";
+          ? "₹20,000 (Platinum Package - 80% OFF Exclusive Deal)"
+          : "₹10,000 (Gold Package - 75% OFF Exclusive Deal)";
     }
 
     let carpetArea = body.carpetArea;

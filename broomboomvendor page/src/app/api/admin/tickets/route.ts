@@ -103,7 +103,7 @@ export async function POST(request: Request) {
       const newPlanKey = (ticket.requestedPlan || "gold").toLowerCase();
 
       const getBaseAmount = (tier: string) =>
-        tier === "silver" ? 10000 : tier === "platinum" ? 50000 : 20000;
+        tier === "silver" ? 5000 : tier === "platinum" ? 20000 : 10000;
 
       const currBase = getBaseAmount(currPlanKey);
       const newBase = getBaseAmount(newPlanKey);
@@ -208,7 +208,7 @@ export async function POST(request: Request) {
       const generatedUserId = customUserId || ticket.newUserId || `BB-${newPlanKey.toUpperCase()}-${uniqueSuffix}`;
       const generatedPassword = customPassword || ticket.newPassword || `BroomBoom@${newPlanKey.toUpperCase()}2026`;
 
-      const newBaseAmount = newPlanKey === "silver" ? 10000 : newPlanKey === "platinum" ? 50000 : 20000;
+      const newBaseAmount = newPlanKey === "silver" ? 5000 : newPlanKey === "platinum" ? 20000 : 10000;
       const newGatewayFee = Math.round(newBaseAmount * 0.03);
       const newGstAmount = Math.round(newBaseAmount * 0.05);
       const newTotalAmount = newBaseAmount + newGatewayFee + newGstAmount;
