@@ -16,11 +16,15 @@ out/
 # Logs
 *.log
 
+# TypeScript
+*.tsbuildinfo
+
 # OS files
 .DS_Store
 Thumbs.db
 
-*.tsbuildinfo
-*.log
 # Local JSON database / runtime data
 /data/
+
+# Build/archive files
+*.zip
