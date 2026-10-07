@@ -13,18 +13,43 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const appId = searchParams.get("appId") || searchParams.get("applicationId");
+    const orderId = searchParams.get("orderId") || searchParams.get("order_id");
     const userId = searchParams.get("userId") || searchParams.get("username");
     const mobile = searchParams.get("mobile");
 
-    if (!appId && !userId && !mobile) {
+    if (!appId && !userId && !mobile && !orderId) {
       return NextResponse.json(
-        { success: false, error: "Identifier (appId or userId or mobile) required." },
+        { success: false, error: "Identifier (appId, orderId, userId, or mobile) required." },
         { status: 400 }
       );
     }
 
+    const cleanedMobile = mobile ? mobile.replace(/\D/g, "").slice(-10) : "";
+    const subMobileFilter = cleanedMobile
+      ? {
+          OR: [
+            { vendorMobile: cleanedMobile },
+            { vendorMobile: `0${cleanedMobile}` },
+            { vendorMobile: `91${cleanedMobile}` },
+            { vendorMobile: `+91${cleanedMobile}` },
+            { vendorMobile: { endsWith: cleanedMobile } },
+          ],
+        }
+      : null;
+
+    const leadMobileFilter = cleanedMobile
+      ? {
+          OR: [
+            { mobile: cleanedMobile },
+            { mobile: `0${cleanedMobile}` },
+            { mobile: `91${cleanedMobile}` },
+            { mobile: `+91${cleanedMobile}` },
+            { mobile: { endsWith: cleanedMobile } },
+          ],
+        }
+      : null;
+
     // 1. Fetch user record (ordered by newest first)
-    // Strict priority: userId -> appId -> mobile to prevent bleed
     let user = userId
       ? await prisma.vendorUser.findFirst({
           where: { userId: { equals: userId, mode: "insensitive" as const } },
@@ -39,34 +64,62 @@ export async function GET(request: Request) {
       });
     }
 
-    if (!user && mobile) {
+    if (!user && subMobileFilter) {
       user = await prisma.vendorUser.findFirst({
-        where: { vendorMobile: mobile },
+        where: subMobileFilter,
         orderBy: { createdAt: "desc" },
       });
     }
 
     let targetAppId = appId || user?.applicationId || "";
-    const targetMobile = mobile || user?.vendorMobile || "";
+    const targetMobile = cleanedMobile || user?.vendorMobile || "";
 
-    // 2. Fetch Subscription details (strictly prioritize targetAppId if known)
-    let subscription = targetAppId
-      ? await prisma.vendorSubscription.findFirst({
-          where: { applicationId: targetAppId },
-          orderBy: [
-            { status: "asc" }, // 'active' comes before 'pending'
-            { createdAt: "desc" },
-          ],
-        })
-      : null;
+    // 2. Fetch Subscription details
+    let subscription = null;
 
-    if (!subscription && targetMobile) {
+    // A. By orderId if provided
+    if (orderId) {
       subscription = await prisma.vendorSubscription.findFirst({
-        where: { vendorMobile: targetMobile },
-        orderBy: [
-          { status: "asc" },
-          { createdAt: "desc" },
-        ],
+        where: { orderId },
+        orderBy: { createdAt: "desc" },
+      });
+    }
+
+    // B. Prioritize PAID subscription by targetAppId
+    if (!subscription && targetAppId) {
+      subscription = await prisma.vendorSubscription.findFirst({
+        where: {
+          applicationId: targetAppId,
+          paymentStatus: { in: ["PAID", "paid", "SUCCESS", "success"] },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+    }
+
+    // C. Fallback to any subscription by targetAppId
+    if (!subscription && targetAppId) {
+      subscription = await prisma.vendorSubscription.findFirst({
+        where: { applicationId: targetAppId },
+        orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+      });
+    }
+
+    // D. Prioritize PAID subscription by mobile
+    if (!subscription && subMobileFilter) {
+      subscription = await prisma.vendorSubscription.findFirst({
+        where: {
+          ...subMobileFilter,
+          paymentStatus: { in: ["PAID", "paid", "SUCCESS", "success"] },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+    }
+
+    // E. Fallback to any subscription by mobile
+    if (!subscription && subMobileFilter) {
+      subscription = await prisma.vendorSubscription.findFirst({
+        where: subMobileFilter,
+        orderBy: [{ status: "asc" }, { createdAt: "desc" }],
       });
     }
 
@@ -74,37 +127,88 @@ export async function GET(request: Request) {
       targetAppId = subscription.applicationId;
     }
 
-    // 3. Fetch Lead record (strictly prioritize targetAppId if known)
-    let lead = targetAppId
-      ? await prisma.vendorLead.findFirst({
-          where: { applicationId: targetAppId },
-          orderBy: { createdAt: "desc" },
-        })
-      : null;
+    // 3. Fetch Lead record
+    let lead = null;
 
-    if (!lead && targetMobile) {
+    // Prioritize paid lead by targetAppId
+    if (targetAppId) {
       lead = await prisma.vendorLead.findFirst({
-        where: { mobile: targetMobile },
+        where: {
+          applicationId: targetAppId,
+          status: { in: ["payment_completed", "approved"] },
+        },
         orderBy: { createdAt: "desc" },
       });
     }
 
-    // 4. Fetch Tickets raised specifically for THIS application
-    // Isolate by applicationId to avoid leaking tickets from older/different test applications
+    // Fallback to any lead by targetAppId
+    if (!lead && targetAppId) {
+      lead = await prisma.vendorLead.findFirst({
+        where: { applicationId: targetAppId },
+        orderBy: { createdAt: "desc" },
+      });
+    }
+
+    // Prioritize paid lead by mobile
+    if (!lead && leadMobileFilter) {
+      lead = await prisma.vendorLead.findFirst({
+        where: {
+          ...leadMobileFilter,
+          status: { in: ["payment_completed", "approved"] },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+    }
+
+    // Fallback to any lead by mobile
+    if (!lead && leadMobileFilter) {
+      lead = await prisma.vendorLead.findFirst({
+        where: leadMobileFilter,
+        orderBy: { createdAt: "desc" },
+      });
+    }
+
+    if (!targetAppId && lead?.applicationId) {
+      targetAppId = lead.applicationId;
+    }
+
+    // 4. Determine Payment & Approval State
+    const isPaid = Boolean(
+      (subscription &&
+        ["paid", "active", "success"].includes(
+          (subscription.paymentStatus || "").toLowerCase()
+        )) ||
+      (lead &&
+        ["payment_completed", "approved"].includes(
+          (lead.status || "").toLowerCase()
+        ))
+    );
+
+    const isApproved = Boolean(
+      lead?.status === "approved" || subscription?.status === "approved"
+    );
+
+    const userStatus: "APPROVED" | "PAID_UNDER_PROCESS" | "UNPAID_PENDING_PAYMENT" =
+      isApproved
+        ? "APPROVED"
+        : isPaid
+        ? "PAID_UNDER_PROCESS"
+        : "UNPAID_PENDING_PAYMENT";
+
+    // 5. Fetch Tickets raised specifically for this application/mobile
     const tickets = await prisma.planChangeTicket.findMany({
       where: {
-        ...(targetAppId ? { applicationId: targetAppId } : { vendorMobile: targetMobile }),
+        ...(targetAppId ? { applicationId: targetAppId } : subMobileFilter ? subMobileFilter : {}),
       },
       orderBy: { createdAt: "desc" },
     });
 
-    // Determine current active plan:
-    // Subscription plan tier is the primary source of truth (what was paid and verified)
+    // 6. Active Plan Details
     const currentPlan = (
       subscription?.planTier ||
       user?.currentPlan ||
       lead?.preferredPackage ||
-      "silver"
+      "gold"
     ).toLowerCase();
 
     // Synchronize vendor user currentPlan if it differs from verified active subscription
@@ -133,17 +237,13 @@ export async function GET(request: Request) {
       totalAmount: subscription?.totalAmount || (currentPlan === "silver" ? 5400 : currentPlan === "platinum" ? 21600 : 10800),
       territoryScope: subscription?.territoryScope || (currentPlan === "silver" ? "Local Ward / Pin Code Hub" : currentPlan === "platinum" ? "State / Regional Master Territory" : "Exclusive District Hub"),
       hasExclusivity: subscription ? subscription.hasExclusivity : currentPlan !== "silver",
-      paymentStatus: subscription?.paymentStatus || "PAID",
+      paymentStatus: isPaid ? "PAID" : subscription?.paymentStatus || "PENDING",
       subscriptionId: subscription?.subscriptionId || "SUB-BB-2026-ACTIVE",
-      orderId: subscription?.orderId || "BB-ORDER-VERIFIED",
+      orderId: subscription?.orderId || orderId || "BB-ORDER-VERIFIED",
       startDate: subscription?.startDate || new Date(),
       endDate: subscription?.endDate || null,
-      status: subscription?.status || "active",
+      status: subscription?.status || (isPaid ? "active" : "pending"),
     };
-
-    const isApproved =
-      lead?.status === "approved" ||
-      subscription?.status === "active";
 
     const reviewStage = isApproved
       ? "approved"
@@ -151,8 +251,23 @@ export async function GET(request: Request) {
       ? "rejected"
       : "reviewing";
 
+    const redirectUrl = isPaid
+      ? `/thank-you?applicationId=${encodeURIComponent(
+          targetAppId
+        )}&status=success&from=profile`
+      : `/apply?package=${encodeURIComponent(
+          currentPlan
+        )}&applicationId=${encodeURIComponent(
+          targetAppId
+        )}&step=confirm&from=profile`;
+
     return NextResponse.json({
       success: true,
+      isPaid,
+      isApproved,
+      isAdminApproved: isApproved,
+      userStatus,
+      redirectUrl,
       profile: {
         vendorName: subscription?.vendorName || user?.vendorName || lead?.fullName || "Valued Partner",
         vendorMobile: subscription?.vendorMobile || user?.vendorMobile || lead?.mobile || targetMobile || "",

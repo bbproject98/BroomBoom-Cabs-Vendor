@@ -98,7 +98,18 @@ export const Footer: React.FC<FooterProps> = ({ onOpenApplyModal, onOpenBrochure
                 </button>
               </li>
               <li>
-                <a href="#packages" className="hover:text-brand-yellow transition-colors">
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.dispatchEvent(new Event("trigger-open-profile-otp"));
+                  }}
+                  className="hover:text-brand-yellow text-amber-400 font-bold transition-colors block text-left cursor-pointer"
+                >
+                  My Profile &amp; Plan Status &rarr;
+                </button>
+              </li>
+              <li>
+                <a href="/#packages" className="hover:text-brand-yellow transition-colors">
                   Vendor Packages
                 </a>
               </li>
@@ -159,7 +170,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenApplyModal, onOpenBrochure
         {/* Disclaimer & Copyright */}
         <div className="pt-4 sm:pt-5 flex flex-col md:flex-row items-center justify-between gap-3 text-[11px] text-slate-500">
           <p>
-            © {new Date().getFullYear()} BroomBoom Mobility Technologies Ltd. All rights reserved.
+            © {new Date().getFullYear()} BroomBoom Transportation Services Private Limited. All rights reserved.
           </p>
           <div className="flex items-center gap-4 text-slate-400">
             <span className="hover:text-brand-yellow cursor-pointer">Privacy Policy</span>

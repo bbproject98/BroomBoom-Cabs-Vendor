@@ -1362,7 +1362,7 @@ function VendorDashboardContent() {
 
       {/* Footer */}
       <footer className="text-center text-xs text-slate-400 py-6 border-t border-slate-200 mt-12">
-        © {new Date().getFullYear()} BroomBoom Mobility Technologies Ltd. All rights reserved.
+        © {new Date().getFullYear()} BroomBoom Transportation Services Private Limited. All rights reserved.
       </footer>
     </div>
   );

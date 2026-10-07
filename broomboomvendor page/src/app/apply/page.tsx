@@ -99,12 +99,16 @@ function ApplyFormContent() {
     message: "",
   });
 
+  const stepParam = searchParams.get("step");
+  const fromParam = searchParams.get("from");
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isFailedOrPending = Boolean(
     paymentStatusParam &&
       ["pending", "failed", "cancelled", "user_dropped", "error"].includes(paymentStatusParam.toLowerCase())
   );
-  const [isSuccess, setIsSuccess] = useState(isFailedOrPending);
+  const isConfirmStep = Boolean(stepParam === "confirm" || fromParam === "profile");
+  const [isSuccess, setIsSuccess] = useState(isFailedOrPending || isConfirmStep);
   const [isPaying, setIsPaying] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(
     paymentStatusParam === "pending"
@@ -118,6 +122,38 @@ function ApplyFormContent() {
   // Flag to know whether the currently shown "success/pay view" came from a saved account
   const [hasSavedAccount, setHasSavedAccount] = useState(false);
   const [isHydrating, setIsHydrating] = useState(true);
+
+  // Load applicant profile if arriving from profile/confirm with applicationId
+  useEffect(() => {
+    if (appIdParam && (isConfirmStep || isFailedOrPending)) {
+      fetch(`/api/vendor/profile?appId=${encodeURIComponent(appIdParam)}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && data.profile) {
+            setFormData((prev) => ({
+              ...prev,
+              fullName: data.profile.vendorName || prev.fullName,
+              mobile: data.profile.vendorMobile || prev.mobile,
+              email: data.profile.vendorEmail || prev.email,
+              city: data.profile.city || prev.city,
+              state: data.profile.state || prev.state,
+              carpetArea: data.profile.carpetArea || prev.carpetArea,
+              spaceStatus: data.profile.spaceStatus || prev.spaceStatus,
+            }));
+            if (
+              data.plan?.tier &&
+              ["silver", "gold", "platinum"].includes(data.plan.tier.toLowerCase())
+            ) {
+              setSelectedPackage(data.plan.tier.toLowerCase());
+            }
+            setApplicationId(data.profile.applicationId || appIdParam);
+            setIsSuccess(true);
+            setHasSavedAccount(true);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [appIdParam, isConfirmStep, isFailedOrPending]);
 
   // ✅ On mount: restore saved vendor "account" from sessionStorage
   useEffect(() => {
@@ -466,7 +502,7 @@ function ApplyFormContent() {
               className="hidden sm:flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-amber-800 transition-colors"
             >
               <Phone className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
-              <span>6289952418-BROOM-BOOM</span>
+              <span>6289952418</span>
             </a>
             <Link
               href="/"
@@ -1551,11 +1587,11 @@ function ApplyFormContent() {
         <div className="max-w-7xl mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-6">
             <span className="text-2xl font-black tracking-tight text-white">
-              Broom<span className="text-amber-500">Boom</span>
+              Broom<span className="text-amber-500">Boom</span> Vendor
             </span>
           </div>
-          <p className="text-sm mb-2">© {new Date().getFullYear()} BroomBoom Mobility Technologies Ltd. All rights reserved.</p>
-          <p className="text-sm">For urgent vendor partner inquiries: <span className="font-bold text-amber-500">6289952418-BROOM-BOOM</span> | <span className="font-bold text-amber-500">support@broomboomcabs.com</span></p>
+          <p className="text-sm mb-2">© {new Date().getFullYear()} BroomBoom Transportation Services Private Limited. All rights reserved.</p>
+          <p className="text-sm">For urgent vendor partner inquiries: <span className="font-bold text-amber-500">6289952418</span> | <span className="font-bold text-amber-500">support@broomboomcabs.com</span></p>
         </div>
       </footer>
     </div>

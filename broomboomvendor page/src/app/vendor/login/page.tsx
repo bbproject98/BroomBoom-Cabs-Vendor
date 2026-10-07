@@ -288,7 +288,7 @@ function VendorLoginForm() {
 
       {/* Footer */}
       <footer className="text-center text-xs text-slate-400 py-4 z-10">
-        © {new Date().getFullYear()} BroomBoom Mobility Technologies Ltd. All rights reserved.
+        © {new Date().getFullYear()} BroomBoom Transportation Services Private Limited. All rights reserved.
       </footer>
     </div>
   );

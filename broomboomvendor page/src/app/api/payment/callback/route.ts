@@ -37,31 +37,23 @@ export async function GET(request: Request) {
     }
 
     const cfOrder = result.data;
-    const isPaid = cfOrder.order_status === "PAID";
-    const targetAppId = applicationId || (orderId.includes("_") ? orderId.split("_")[0] : null);
+    const isPaid = ["PAID", "paid", "SUCCESS", "success"].includes(
+      (cfOrder.order_status || "").trim()
+    );
+
+    // Fetch existing subscription for this order to retrieve authoritative applicant data
+    const existingSub = await prisma.vendorSubscription.findFirst({
+      where: { orderId: cfOrder.order_id },
+    });
+
+    const targetAppId =
+      applicationId ||
+      existingSub?.applicationId ||
+      (orderId.includes("_") ? orderId.split("_").slice(0, -1).join("-").replace(/_/g, "-") : null);
 
     if (isPaid) {
       // PAYMENT SUCCESSFUL:
-      // Update database lead & subscription status
-      if (targetAppId) {
-        try {
-          await prisma.vendorLead.updateMany({
-            where: {
-              OR: [
-                { applicationId: targetAppId },
-                { applicationId: { contains: targetAppId, mode: "insensitive" } },
-              ],
-            },
-            data: {
-              status: "payment_completed",
-              adminNotes: `Cashfree Order: ${orderId} | Status: PAID | Amount: ₹${cfOrder.order_amount}`,
-            },
-          });
-        } catch (dbErr) {
-          console.warn("[CALLBACK DB LEAD UPDATE WARN]", dbErr);
-        }
-      }
-
+      // Update database subscription status to active & PAID
       try {
         await prisma.vendorSubscription.updateMany({
           where: { orderId: cfOrder.order_id },
@@ -70,34 +62,69 @@ export async function GET(request: Request) {
             paymentStatus: "PAID",
             cfOrderId: cfOrder.cf_order_id,
             paidAt: new Date(),
-            adminNotes: `Cashfree payment verified as PAID at ${new Date().toISOString()}`,
+            adminNotes: `Cashfree payment verified as PAID at ${new Date().toISOString()} | Amount: ₹${cfOrder.order_amount}`,
           },
         });
       } catch (subErr) {
         console.warn("[CALLBACK DB SUB UPDATE WARN]", subErr);
       }
 
-      // REDIRECT ONLY IF PAYMENT SUCCESS TO THANK-YOU PAGE
+      // Update database lead record to payment_completed
+      if (targetAppId || existingSub?.vendorMobile) {
+        try {
+          const leadOrFilters: any[] = [];
+          if (targetAppId) {
+            leadOrFilters.push(
+              { applicationId: targetAppId },
+              { applicationId: { contains: targetAppId, mode: "insensitive" as const } }
+            );
+          }
+          if (existingSub?.vendorMobile) {
+            const cleanMobile = existingSub.vendorMobile.replace(/\D/g, "").slice(-10);
+            leadOrFilters.push(
+              { mobile: cleanMobile },
+              { mobile: `0${cleanMobile}` },
+              { mobile: `+91${cleanMobile}` },
+              { mobile: { endsWith: cleanMobile } }
+            );
+          }
+
+          if (leadOrFilters.length > 0) {
+            await prisma.vendorLead.updateMany({
+              where: { OR: leadOrFilters },
+              data: {
+                status: "payment_completed",
+                adminNotes: `Cashfree Order: ${orderId} | Status: PAID | Amount: ₹${cfOrder.order_amount}`,
+              },
+            });
+          }
+        } catch (dbErr) {
+          console.warn("[CALLBACK DB LEAD UPDATE WARN]", dbErr);
+        }
+      }
+
+      const resolvedAppId =
+        targetAppId || existingSub?.applicationId || applicationId || `BB-${orderId.slice(-6)}`;
+
+      // REDIRECT TO THANK-YOU PAGE WITH VERIFIED STATUS
       return NextResponse.redirect(
         new URL(
           `/thank-you?order_id=${encodeURIComponent(orderId)}&applicationId=${encodeURIComponent(
-            applicationId || ""
+            resolvedAppId
           )}&pkg=${pkg}&status=success`,
           baseUrl
         )
       );
     } else {
       // PAYMENT PENDING / FAILED / USER_DROPPED:
-      // DO NOT REDIRECT TO THANK-YOU PAGE!
-      // Redirect directly back to the previous page (/apply)
       console.log(
-        `[PAYMENT NOT SUCCESSFUL] Order: ${orderId}, Status: ${cfOrder.order_status}. Redirecting directly back to /apply.`
+        `[PAYMENT NOT SUCCESSFUL] Order: ${orderId}, Status: ${cfOrder.order_status}. Redirecting back to /apply.`
       );
       const failureStatus = (cfOrder.order_status || "failed").toLowerCase();
       return NextResponse.redirect(
         new URL(
           `/apply?package=${pkg}&applicationId=${encodeURIComponent(
-            applicationId || targetAppId || ""
+            targetAppId || applicationId || ""
           )}&payment_status=${failureStatus}&order_id=${encodeURIComponent(orderId)}`,
           baseUrl
         )
@@ -108,4 +135,3 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/apply?payment_status=error", request.url));
   }
 }
-
