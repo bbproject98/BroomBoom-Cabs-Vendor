@@ -161,7 +161,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenApplyModal, onOpenBrochure
               </a>
               <div className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-brand-yellow shrink-0 mt-0.5" />
-                <span>BroomBoom National HQ, DLF Cyber City, Sector 25, Gurugram, India</span>
+                <span>India</span>
               </div>
             </div>
           </div>
@@ -173,9 +173,23 @@ export const Footer: React.FC<FooterProps> = ({ onOpenApplyModal, onOpenBrochure
             © {new Date().getFullYear()} BroomBoom Transportation Services Private Limited. All rights reserved.
           </p>
           <div className="flex items-center gap-4 text-slate-400">
-            <span className="hover:text-brand-yellow cursor-pointer">Privacy Policy</span>
+            <a
+              href="https://www.broomboomcabs.com/privacy-policy"
+              className="hover:text-brand-yellow transition-colors"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Privacy Policy
+            </a>
             <span>•</span>
-            <span className="hover:text-brand-yellow cursor-pointer">Terms of Partnership</span>
+            <a
+              href="https://www.broomboomcabs.com/pilot-terms"
+              className="hover:text-brand-yellow transition-colors"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Terms &amp; Conditions
+            </a>
             <span>•</span>
             <span className="hover:text-brand-yellow cursor-pointer">Disclaimers</span>
           </div>
