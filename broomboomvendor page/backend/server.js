@@ -62,11 +62,11 @@ const handleCreateLead = async (req, res) => {
     const packageName =
       body.packageName ||
       (preferredPackage === "silver"
-        ? "Silver Partner (Booking Kiosk — ₹10,000)"
+        ? "Silver Partner (Booking Kiosk — ₹5,000)"
         : preferredPackage === "gold"
-        ? "Gold Partner (District Exclusive Hub — ₹20,000)"
+        ? "Gold Partner (District Exclusive Hub — ₹10,000)"
         : preferredPackage === "platinum"
-        ? "Platinum Partner (Regional Master Hub — ₹50,000)"
+        ? "Platinum Partner (Regional Master Hub — ₹20,000)"
         : "Custom Vendor Inquiry");
 
     let investmentBudget = body.investmentBudget;
@@ -79,10 +79,10 @@ const handleCreateLead = async (req, res) => {
     ) {
       investmentBudget =
         preferredPackage === "silver"
-          ? "₹10,000 (Silver Partner - 50% OFF Exclusive Deal)"
+          ? "₹5,000 (Silver Partner - 50% OFF Exclusive Deal)"
           : preferredPackage === "platinum"
-          ? "₹50,000 (Platinum Package - 50% OFF Exclusive Deal)"
-          : "₹20,000 (Gold Package - 50% OFF Exclusive Deal)";
+          ? "₹20,000 (Platinum Package - 50% OFF Exclusive Deal)"
+          : "₹10,000 (Gold Package - 50% OFF Exclusive Deal)";
     }
 
     let carpetArea = body.carpetArea;
@@ -269,9 +269,9 @@ const CASHFREE_BASE_URL =
     : "https://sandbox.cashfree.com/pg";
 
 const PACKAGE_PRICES = {
-  silver: { amount: 10000, name: "Silver Partner (Booking Kiosk — ₹10,000)", original: "₹20,000", discounted: "₹10,000" },
-  gold: { amount: 20000, name: "Gold Partner (District Exclusive Hub — ₹20,000)", original: "₹40,000", discounted: "₹20,000" },
-  platinum: { amount: 50000, name: "Platinum Partner (Regional Master Hub — ₹50,000)", original: "₹1,00,000", discounted: "₹50,000" },
+  silver: { amount: 5000, name: "Silver Partner (Booking Kiosk — ₹5,000)", original: "₹20,000", discounted: "₹5,000" },
+  gold: { amount: 10000, name: "Gold Partner (District Exclusive Hub — ₹10,000)", original: "₹40,000", discounted: "₹10,000" },
+  platinum: { amount: 20000, name: "Platinum Partner (Regional Master Hub — ₹20,000)", original: "₹1,00,000", discounted: "₹20,000" },
 };
 
 app.post("/api/payment/create-order", async (req, res) => {
