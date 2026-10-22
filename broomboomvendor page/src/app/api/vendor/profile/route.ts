@@ -196,23 +196,51 @@ export async function GET(request: Request) {
         : "UNPAID_PENDING_PAYMENT";
 
     // 5. Fetch Tickets raised specifically for this application/mobile
-    const tickets = await prisma.planChangeTicket.findMany({
-      where: {
-        ...(targetAppId ? { applicationId: targetAppId } : subMobileFilter ? subMobileFilter : {}),
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    const ticketOrFilters = [
+      ...(targetAppId
+        ? [
+            { applicationId: targetAppId },
+            { applicationId: { contains: targetAppId, mode: "insensitive" as const } },
+            { applicationId: targetAppId.replace(/-/g, "_") },
+            { applicationId: targetAppId.replace(/_/g, "-") },
+          ]
+        : []),
+      ...(cleanedMobile
+        ? [
+            { vendorMobile: cleanedMobile },
+            { vendorMobile: `91${cleanedMobile}` },
+            { vendorMobile: `+91${cleanedMobile}` },
+            { vendorMobile: { endsWith: cleanedMobile } },
+          ]
+        : []),
+    ];
+
+    const tickets =
+      ticketOrFilters.length > 0
+        ? await prisma.planChangeTicket.findMany({
+            where: { OR: ticketOrFilters },
+            orderBy: { createdAt: "desc" },
+          })
+        : [];
 
     // 6. Active Plan Details
-    const currentPlan = (
+    const rawPlan = (
       subscription?.planTier ||
       user?.currentPlan ||
       lead?.preferredPackage ||
-      "gold"
-    ).toLowerCase();
+      ""
+    ).trim().toLowerCase();
+
+    const hasPlan = Boolean(
+      rawPlan &&
+      rawPlan !== "unassigned" &&
+      rawPlan !== "null" &&
+      ["silver", "gold", "platinum"].includes(rawPlan)
+    );
+    const currentPlan = hasPlan ? rawPlan : "";
 
     // Synchronize vendor user currentPlan if it differs from verified active subscription
-    if (user && subscription && user.currentPlan.toLowerCase() !== subscription.planTier.toLowerCase()) {
+    if (user && subscription && subscription.planTier && user.currentPlan.toLowerCase() !== subscription.planTier.toLowerCase()) {
       try {
         await prisma.vendorUser.update({
           where: { id: user.id },
@@ -223,27 +251,63 @@ export async function GET(request: Request) {
       }
     }
 
-    const planDetails = {
-      tier: currentPlan,
-      name:
-        currentPlan === "silver"
-          ? "Silver Partner (Booking Kiosk)"
-          : currentPlan === "platinum"
-          ? "Platinum Partner (Regional Master Hub)"
-          : "Gold Partner (District Exclusive Hub)",
-      baseAmount: subscription?.baseAmount || (currentPlan === "silver" ? 5000 : currentPlan === "platinum" ? 20000 : 10000),
-      gatewayFee: subscription?.gatewayFee || (currentPlan === "silver" ? 150 : currentPlan === "platinum" ? 600 : 300),
-      gstAmount: subscription?.gstAmount || (currentPlan === "silver" ? 250 : currentPlan === "platinum" ? 1000 : 500),
-      totalAmount: subscription?.totalAmount || (currentPlan === "silver" ? 5400 : currentPlan === "platinum" ? 21600 : 10800),
-      territoryScope: subscription?.territoryScope || (currentPlan === "silver" ? "Local Ward / Pin Code Hub" : currentPlan === "platinum" ? "State / Regional Master Territory" : "Exclusive District Hub"),
-      hasExclusivity: subscription ? subscription.hasExclusivity : currentPlan !== "silver",
-      paymentStatus: isPaid ? "PAID" : subscription?.paymentStatus || "PENDING",
-      subscriptionId: subscription?.subscriptionId || "SUB-BB-2026-ACTIVE",
-      orderId: subscription?.orderId || orderId || "BB-ORDER-VERIFIED",
-      startDate: subscription?.startDate || new Date(),
-      endDate: subscription?.endDate || null,
-      status: subscription?.status || (isPaid ? "active" : "pending"),
-    };
+    const planDetails = hasPlan
+      ? {
+          tier: currentPlan,
+          name:
+            currentPlan === "silver"
+              ? "Silver Partner (Booking Kiosk)"
+              : currentPlan === "platinum"
+              ? "Platinum Partner (Regional Master Hub)"
+              : "Gold Partner (District Exclusive Hub)",
+          baseAmount:
+            subscription?.baseAmount && subscription.baseAmount > 0
+              ? subscription.baseAmount
+              : currentPlan === "silver"
+              ? 5000
+              : currentPlan === "platinum"
+              ? 20000
+              : 10000,
+          gatewayFee:
+            subscription?.gatewayFee && subscription.gatewayFee > 0
+              ? subscription.gatewayFee
+              : currentPlan === "silver"
+              ? 150
+              : currentPlan === "platinum"
+              ? 600
+              : 300,
+          gstAmount:
+            subscription?.gstAmount && subscription.gstAmount > 0
+              ? subscription.gstAmount
+              : currentPlan === "silver"
+              ? 250
+              : currentPlan === "platinum"
+              ? 1000
+              : 500,
+          totalAmount:
+            subscription?.totalAmount && subscription.totalAmount > 0
+              ? subscription.totalAmount
+              : currentPlan === "silver"
+              ? 5400
+              : currentPlan === "platinum"
+              ? 21600
+              : 10800,
+          territoryScope:
+            subscription?.territoryScope ||
+            (currentPlan === "silver"
+              ? "Local Ward / Pin Code Hub"
+              : currentPlan === "platinum"
+              ? "State / Regional Master Territory"
+              : "Exclusive District Hub"),
+          hasExclusivity: subscription ? subscription.hasExclusivity : currentPlan !== "silver",
+          paymentStatus: isPaid ? "PAID" : subscription?.paymentStatus || "PENDING",
+          subscriptionId: subscription?.subscriptionId || "SUB-BB-2026-ACTIVE",
+          orderId: subscription?.orderId || orderId || "BB-ORDER-VERIFIED",
+          startDate: subscription?.startDate || new Date(),
+          endDate: subscription?.endDate || null,
+          status: subscription?.status || (isPaid ? "active" : "pending"),
+        }
+      : null;
 
     const reviewStage = isApproved
       ? "approved"
@@ -254,9 +318,9 @@ export async function GET(request: Request) {
     const redirectUrl = isPaid
       ? `/thank-you?applicationId=${encodeURIComponent(
           targetAppId
-        )}&status=success&from=profile`
+        )}&status=success&from=profile${hasPlan ? `&pkg=${encodeURIComponent(currentPlan)}` : ""}`
       : `/apply?package=${encodeURIComponent(
-          currentPlan
+          currentPlan || "gold"
         )}&applicationId=${encodeURIComponent(
           targetAppId
         )}&step=confirm&from=profile`;
@@ -266,6 +330,7 @@ export async function GET(request: Request) {
       isPaid,
       isApproved,
       isAdminApproved: isApproved,
+      hasPlan,
       userStatus,
       redirectUrl,
       profile: {
@@ -275,9 +340,9 @@ export async function GET(request: Request) {
         city: subscription?.city || lead?.city || "",
         state: subscription?.state || lead?.state || "",
         applicationId: targetAppId || subscription?.applicationId || user?.applicationId || "",
-        spaceStatus: lead?.spaceStatus || "Owned commercial space ready",
-        carpetArea: lead?.carpetArea || (currentPlan === "platinum" ? "1000+ sq.ft (Regional Master Hub)" : currentPlan === "gold" ? "300 - 500 sq.ft (District Hub)" : "150 - 300 sq.ft (Local Hub)"),
-        currentProfession: lead?.currentProfession || "Fleet Operations / Logistics Entrepreneur",
+        spaceStatus: lead?.spaceStatus || "",
+        carpetArea: lead?.carpetArea || "",
+        currentProfession: lead?.currentProfession || "",
         appliedAt: subscription?.createdAt || lead?.createdAt || new Date(),
       },
       plan: planDetails,

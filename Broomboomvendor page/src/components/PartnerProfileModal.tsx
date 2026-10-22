@@ -166,7 +166,7 @@ export const PartnerProfileModal: React.FC<PartnerProfileModalProps> = ({
   const handleVerifyOtp = async () => {
     const num = mobile.replace(/\D/g, "").slice(-10);
     if (!otp.trim()) {
-      setError("Please enter the 6-digit OTP code.");
+      setError("Please enter the 4-digit OTP code.");
       return;
     }
 
@@ -354,7 +354,7 @@ export const PartnerProfileModal: React.FC<PartnerProfileModalProps> = ({
                   <KeyRound className="w-6 h-6 stroke-[2.2]" />
                 </div>
                 <h4 className="text-base font-black text-slate-950">
-                  {otpSent ? "Verify 6-Digit OTP Code" : "Enter Mobile to View Profile"}
+                  {otpSent ? "Verify 4-Digit OTP Code" : "Enter Mobile to View Profile"}
                 </h4>
                 <p className="text-xs text-slate-500">
                   {otpSent
@@ -498,7 +498,7 @@ export const PartnerProfileModal: React.FC<PartnerProfileModalProps> = ({
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="text-xs font-bold text-slate-700">
-                        Enter 6-Digit OTP
+                        Enter 4-Digit OTP
                       </label>
                       <button
                         type="button"
@@ -515,13 +515,13 @@ export const PartnerProfileModal: React.FC<PartnerProfileModalProps> = ({
                     <input
                       type="text"
                       inputMode="numeric"
-                      maxLength={6}
+                      maxLength={4}
                       required
                       autoFocus
-                      placeholder="e.g. 123456"
+                      placeholder="e.g. 1234"
                       value={otp}
                       onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                      className="w-full text-center py-3 bg-slate-50 border-2 border-amber-300 rounded-xl text-slate-900 font-mono font-black text-xl tracking-[0.5em] focus:outline-none focus:border-amber-500 focus:bg-white transition-all shadow-inner"
+                      className="w-full text-center py-3 bg-slate-50 border-2 border-amber-300 rounded-xl text-slate-900 font-mono font-black text-2xl tracking-[0.6em] focus:outline-none focus:border-amber-500 focus:bg-white transition-all shadow-inner"
                     />
                   </div>
 

@@ -104,7 +104,7 @@ export const PartnerOtpModal: React.FC<PartnerOtpModalProps> = ({
   const handleVerifyOtp = async () => {
     const num = mobile.replace(/\D/g, "").slice(-10);
     if (!otp.trim()) {
-      setError("Please enter the 6-digit OTP code.");
+      setError("Please enter the 4-digit OTP code.");
       return;
     }
 
@@ -246,7 +246,7 @@ export const PartnerOtpModal: React.FC<PartnerOtpModalProps> = ({
               )}
             </div>
             <h4 className="text-base font-black text-slate-950">
-              {otpSent ? "Enter 6-Digit SMS OTP" : "Login with Mobile Number"}
+              {otpSent ? "Enter 4-Digit SMS OTP" : "Login with Mobile Number"}
             </h4>
             <p className="text-xs text-slate-600">
               {otpSent
@@ -279,7 +279,7 @@ export const PartnerOtpModal: React.FC<PartnerOtpModalProps> = ({
                 <span>SMS Dispatched to +91 {mobile}</span>
               </div>
               <p className="text-[11.5px] text-slate-600">
-                Please check your mobile phone messages inbox for the 6-digit OTP code sent by BroomBoom Cabs (BBCABS).
+                Please check your mobile phone messages inbox for the 4-digit OTP code sent by BroomBoom Cabs (BBCABS).
               </p>
             </div>
           )}
@@ -350,7 +350,7 @@ export const PartnerOtpModal: React.FC<PartnerOtpModalProps> = ({
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-xs font-bold text-slate-700">
-                    Enter 6-Digit OTP from SMS
+                    Enter 4-Digit OTP from SMS
                   </label>
                   <button
                     type="button"
@@ -367,13 +367,13 @@ export const PartnerOtpModal: React.FC<PartnerOtpModalProps> = ({
                 <input
                   type="text"
                   inputMode="numeric"
-                  maxLength={6}
+                  maxLength={4}
                   required
                   autoFocus
-                  placeholder="e.g. 123456"
+                  placeholder="e.g. 1234"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                  className="w-full text-center py-3 bg-slate-50 border-2 border-amber-300 rounded-xl text-slate-900 font-mono font-black text-xl tracking-[0.5em] focus:outline-none focus:border-amber-500 focus:bg-white transition-all shadow-inner"
+                  className="w-full text-center py-3 bg-slate-50 border-2 border-amber-300 rounded-xl text-slate-900 font-mono font-black text-2xl tracking-[0.6em] focus:outline-none focus:border-amber-500 focus:bg-white transition-all shadow-inner"
                 />
               </div>
 
@@ -396,7 +396,7 @@ export const PartnerOtpModal: React.FC<PartnerOtpModalProps> = ({
 
               <button
                 type="submit"
-                disabled={isVerifyingOtp || otp.length !== 6}
+                disabled={isVerifyingOtp || otp.length !== 4}
                 className="w-full py-3.5 px-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-sm rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 active:scale-95"
               >
                 {isVerifyingOtp ? (

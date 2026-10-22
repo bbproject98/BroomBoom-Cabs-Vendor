@@ -28,6 +28,7 @@ import {
   ExternalLink,
   DollarSign,
   AlertTriangle,
+  Users,
 } from "lucide-react";
 
 interface Ticket {
@@ -237,7 +238,23 @@ export default function AdminTicketsPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <Link
+              href="/admin/vendors"
+              className="flex items-center gap-1.5 text-xs font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-3.5 py-2 rounded-xl transition-all"
+            >
+              <Users className="w-3.5 h-3.5" />
+              <span>Vendors Directory</span>
+            </Link>
+
+            <Link
+              href="/admin/tickets"
+              className="flex items-center gap-1.5 text-xs font-bold text-slate-950 bg-amber-400 px-3.5 py-2 rounded-xl shadow-xs"
+            >
+              <TicketIcon className="w-3.5 h-3.5" />
+              <span>Plan Tickets</span>
+            </Link>
+
             <button
               onClick={fetchTickets}
               disabled={loading}
@@ -250,7 +267,7 @@ export default function AdminTicketsPage() {
             <Link
               href="/vendor/dashboard"
               target="_blank"
-              className="flex items-center gap-1.5 text-xs font-bold text-slate-950 bg-amber-400 hover:bg-amber-300 px-3.5 py-2 rounded-xl transition-all shadow-sm"
+              className="flex items-center gap-1.5 text-xs font-bold text-emerald-300 hover:text-emerald-200 bg-emerald-950/80 border border-emerald-800 px-3.5 py-2 rounded-xl transition-all shadow-sm"
             >
               <span>View Vendor Dashboard</span>
               <ExternalLink className="w-3.5 h-3.5" />
@@ -290,26 +307,26 @@ export default function AdminTicketsPage() {
         <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-slate-800 space-y-3">
           <div className="flex items-center gap-2 text-amber-400 text-xs font-extrabold uppercase tracking-wider">
             <Sparkles className="w-4 h-4" />
-            2-Stage Plan Upgrade &amp; Credential Protocol
+            Plan Upgrade Operations Workflow
           </div>
-          <h2 className="text-xl sm:text-2xl font-black">Plan Change Operations Workflow</h2>
+          <h2 className="text-xl sm:text-2xl font-black">Partner Plan Upgrade &amp; Admin Approval Protocol</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs pt-1">
             <div className="bg-white/10 p-3.5 rounded-2xl border border-white/10 space-y-1">
-              <strong className="text-amber-300 block">Step 1: Admin Approves Request</strong>
+              <strong className="text-amber-300 block">Step 1: Partner Upgrades &amp; Pays</strong>
               <p className="text-slate-300 text-[11px] leading-relaxed">
-                When a partner requests an upgrade (e.g. Silver &rarr; Gold), Admin clicks <strong>Approve Plan</strong>. The fee difference is calculated, and the <strong>Pay Now</strong> button appears on the vendor dashboard.
+                When a partner upgrades their plan in the Vendor Dashboard, they pay the upgrade fee difference upfront via Cashfree. The request is submitted to Admin HQ.
               </p>
             </div>
             <div className="bg-white/10 p-3.5 rounded-2xl border border-white/10 space-y-1">
-              <strong className="text-cyan-300 block">Step 2: Vendor Pays Upgrade Fee</strong>
+              <strong className="text-cyan-300 block">Step 2: Admin HQ Reviews &amp; Approves</strong>
               <p className="text-slate-300 text-[11px] leading-relaxed">
-                The partner logs in to their dashboard and clicks <strong>Pay Now</strong>. Once paid, the ticket automatically moves to <strong>Payment Completed</strong> for final Admin review.
+                Admin verifies the payment reference and commercial showroom space. Admin then approves the upgrade and sets the new credentials.
               </p>
             </div>
             <div className="bg-white/10 p-3.5 rounded-2xl border border-white/10 space-y-1">
-              <strong className="text-emerald-300 block">Step 3: Admin Issues New Password</strong>
+              <strong className="text-emerald-300 block">Step 3: New Credentials &amp; Live Activation</strong>
               <p className="text-slate-300 text-[11px] leading-relaxed">
-                Admin verifies the payment and clicks <strong>Generate &amp; Issue Credentials</strong>. The partner is issued their new User ID and Password, and the upgraded plan activates.
+                New User ID and Password are generated and dispatched. The upgraded plan, exclusivity privileges, and license terms immediately become active.
               </p>
             </div>
           </div>
@@ -361,7 +378,7 @@ export default function AdminTicketsPage() {
                 : "bg-white text-slate-800 border-slate-200 hover:bg-purple-50/50"
             }`}
           >
-            <span className="text-[10px] font-bold uppercase tracking-wider block opacity-70">3. Paid (Issue Pass)</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider block opacity-70">Paid — Awaiting Approval</span>
             <span className="text-2xl font-black text-purple-600">{stats.paymentCompleted}</span>
           </button>
 
@@ -626,12 +643,12 @@ export default function AdminTicketsPage() {
                           </div>
                         )}
 
-                        {/* STAGE 3: PAYMENT COMPLETED -> ADMIN GENERATES CREDENTIALS */}
+                        {/* STAGE 3: PAYMENT COMPLETED -> ADMIN APPROVES UPGRADE & ISSUES CREDENTIALS */}
                         {isPaid && (
                           <div className="bg-white p-4 rounded-2xl border-2 border-purple-400 shadow-lg space-y-3">
                             <div className="flex items-center gap-1.5 text-purple-950 font-black text-xs">
                               <Sparkles className="w-4 h-4 text-purple-600" />
-                              <span>Stage 3: Issue New Credentials</span>
+                              <span>Paid — Approve Upgrade &amp; Issue Credentials</span>
                             </div>
 
                             <div className="bg-purple-50 p-2.5 rounded-xl border border-purple-200 text-xs space-y-0.5">
@@ -678,7 +695,7 @@ export default function AdminTicketsPage() {
                               ) : (
                                 <KeyRound className="w-4 h-4" />
                               )}
-                              <span>Generate &amp; Send New Password</span>
+                              <span>Approve Upgrade &amp; Issue Credentials</span>
                             </button>
                           </div>
                         )}

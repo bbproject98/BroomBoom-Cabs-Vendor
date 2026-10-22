@@ -99,6 +99,11 @@ export async function POST(request: Request) {
         });
       }
 
+      // If ticket is already paid, approving it immediately generates credentials & completes the upgrade!
+      if (ticket.status === "PAYMENT_COMPLETED" || ticket.paymentStatus === "PAID") {
+        return await handleGenerateAndCompleteTicket(ticket, body);
+      }
+
       const currPlanKey = (ticket.currentPlan || "silver").toLowerCase();
       const newPlanKey = (ticket.requestedPlan || "gold").toLowerCase();
 
@@ -189,154 +194,7 @@ export async function POST(request: Request) {
     // In this step, after vendor clicks Pay Now and completes payment,
     // Admin HQ reviews payment confirmation and generates new credentials.
     if (action === "generate_credentials" || action === "issue_credentials") {
-      const newPlanKey = (ticket.requestedPlan || "gold").toLowerCase();
-      const newPlanName =
-        newPlanKey === "silver"
-          ? "Silver Partner (Booking Kiosk)"
-          : newPlanKey === "platinum"
-          ? "Platinum Partner (Regional Master Hub)"
-          : "Gold Partner (District Exclusive Hub)";
-
-      const newScope =
-        newPlanKey === "silver"
-          ? "Local Ward / Pin Code Hub"
-          : newPlanKey === "platinum"
-          ? "State / Regional Master Territory"
-          : "Exclusive District Hub";
-
-      const uniqueSuffix = ticket.ticketId.slice(-4);
-      const generatedUserId = customUserId || ticket.newUserId || `BB-${newPlanKey.toUpperCase()}-${uniqueSuffix}`;
-      const generatedPassword = customPassword || ticket.newPassword || `BroomBoom@${newPlanKey.toUpperCase()}2026`;
-
-      const newBaseAmount = newPlanKey === "silver" ? 5000 : newPlanKey === "platinum" ? 20000 : 10000;
-      const newGatewayFee = Math.round(newBaseAmount * 0.03);
-      const newGstAmount = Math.round(newBaseAmount * 0.05);
-      const newTotalAmount = newBaseAmount + newGatewayFee + newGstAmount;
-
-      const credNotes =
-        adminNotes ||
-        `Payment verified. Plan upgraded to ${newPlanName}. New credentials issued by Admin HQ and dispatched to partner.`;
-
-      // 1. Update ticket in DB
-      try {
-        await prisma.planChangeTicket.update({
-          where: { ticketId },
-          data: {
-            status: "COMPLETED",
-            paymentStatus: "PAID",
-            newUserId: generatedUserId,
-            newPassword: generatedPassword,
-            adminNotes: credNotes,
-          },
-        });
-      } catch (err) {
-        await prisma.$executeRaw`
-          UPDATE plan_change_tickets
-          SET 
-            status = 'COMPLETED',
-            payment_status = 'PAID',
-            new_user_id = ${generatedUserId},
-            new_password = ${generatedPassword},
-            admin_notes = ${credNotes},
-            updated_at = ${new Date()}
-          WHERE ticket_id = ${ticketId} OR id = ${ticket.id}
-        `;
-      }
-
-      const updatedTicket = await prisma.planChangeTicket.findUnique({
-        where: { ticketId },
-      });
-
-      // 2. Update VendorUser records
-      try {
-        const existingUser = await prisma.vendorUser.findFirst({
-          where: { applicationId: ticket.applicationId },
-          orderBy: { createdAt: "desc" },
-        });
-
-        if (existingUser) {
-          await prisma.vendorUser.update({
-            where: { id: existingUser.id },
-            data: {
-              currentPlan: newPlanKey,
-              password: generatedPassword,
-            },
-          });
-        }
-
-        // Upsert direct login account for generatedUserId
-        await prisma.vendorUser.upsert({
-          where: { userId: generatedUserId },
-          update: {
-            password: generatedPassword,
-            currentPlan: newPlanKey,
-            applicationId: ticket.applicationId,
-            vendorName: ticket.vendorName,
-            vendorMobile: ticket.vendorMobile,
-            vendorEmail: ticket.vendorEmail,
-            isActive: true,
-          },
-          create: {
-            userId: generatedUserId,
-            password: generatedPassword,
-            applicationId: ticket.applicationId,
-            vendorName: ticket.vendorName,
-            vendorMobile: ticket.vendorMobile,
-            vendorEmail: ticket.vendorEmail,
-            currentPlan: newPlanKey,
-            isActive: true,
-          },
-        });
-      } catch (uErr) {
-        console.warn("[ADMIN ISSUE CREDENTIALS USER UPDATE WARN]", uErr);
-      }
-
-      // 3. Update VendorSubscription in PostgreSQL (scoped to ticket applicationId)
-      try {
-        await prisma.vendorSubscription.updateMany({
-          where: { applicationId: ticket.applicationId },
-          data: {
-            planTier: newPlanKey,
-            planName: newPlanName,
-            territoryScope: newScope,
-            hasExclusivity: newPlanKey !== "silver",
-            baseAmount: newBaseAmount,
-            gatewayFee: newGatewayFee,
-            gstAmount: newGstAmount,
-            totalAmount: newTotalAmount,
-            adminNotes: `Plan upgraded via Ticket #${ticketId} to ${newPlanName}. Payment verified and new credentials issued on ${new Date().toISOString()}`,
-          },
-        });
-      } catch (sErr) {
-        console.warn("[ADMIN ISSUE CREDENTIALS SUB UPDATE WARN]", sErr);
-      }
-
-      // 4. Update VendorLead in PostgreSQL (scoped to ticket applicationId)
-      try {
-        await prisma.vendorLead.updateMany({
-          where: { applicationId: ticket.applicationId },
-          data: {
-            preferredPackage: newPlanKey,
-            packageName: newPlanName,
-            status: "approved",
-            adminNotes: `Application approved with upgraded plan ${newPlanName} (Ticket #${ticketId}).`,
-          },
-        });
-      } catch (lErr) {
-        console.warn("[ADMIN ISSUE CREDENTIALS LEAD UPDATE WARN]", lErr);
-      }
-
-      return NextResponse.json({
-        success: true,
-        message: `New credentials issued! User ID: ${generatedUserId} | Password: ${generatedPassword}. Plan ${newPlanName} is now active.`,
-        ticket: updatedTicket,
-        newCredentials: {
-          userId: generatedUserId,
-          password: generatedPassword,
-          newPlan: newPlanKey,
-          newPlanName,
-        },
-      });
+      return await handleGenerateAndCompleteTicket(ticket, body);
     }
 
     return NextResponse.json(
@@ -350,4 +208,158 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+}
+
+async function handleGenerateAndCompleteTicket(ticket: any, body: any) {
+  const { ticketId, customUserId = "", customPassword = "", adminNotes = "" } = body;
+  const newPlanKey = (ticket.requestedPlan || "gold").toLowerCase();
+  const newPlanName =
+    newPlanKey === "silver"
+      ? "Silver Partner (Booking Kiosk)"
+      : newPlanKey === "platinum"
+      ? "Platinum Partner (Regional Master Hub)"
+      : "Gold Partner (District Exclusive Hub)";
+
+  const newScope =
+    newPlanKey === "silver"
+      ? "Local Ward / Pin Code Hub"
+      : newPlanKey === "platinum"
+      ? "State / Regional Master Territory"
+      : "Exclusive District Hub";
+
+  const uniqueSuffix = ticket.ticketId.slice(-4);
+  const generatedUserId = customUserId || ticket.newUserId || `BB-${newPlanKey.toUpperCase()}-${uniqueSuffix}`;
+  const generatedPassword = customPassword || ticket.newPassword || `BroomBoom@${newPlanKey.toUpperCase()}2026`;
+
+  const newBaseAmount = newPlanKey === "silver" ? 5000 : newPlanKey === "platinum" ? 20000 : 10000;
+  const newGatewayFee = Math.round(newBaseAmount * 0.03);
+  const newGstAmount = Math.round(newBaseAmount * 0.05);
+  const newTotalAmount = newBaseAmount + newGatewayFee + newGstAmount;
+
+  const credNotes =
+    adminNotes ||
+    `Payment verified. Plan upgraded to ${newPlanName}. New credentials issued by Admin HQ and dispatched to partner.`;
+
+  // 1. Update ticket in DB
+  try {
+    await prisma.planChangeTicket.update({
+      where: { ticketId: ticket.ticketId },
+      data: {
+        status: "COMPLETED",
+        paymentStatus: "PAID",
+        newUserId: generatedUserId,
+        newPassword: generatedPassword,
+        adminNotes: credNotes,
+        approvedAt: new Date(),
+      },
+    });
+  } catch (err) {
+    await prisma.$executeRaw`
+      UPDATE plan_change_tickets
+      SET 
+        status = 'COMPLETED',
+        payment_status = 'PAID',
+        new_user_id = ${generatedUserId},
+        new_password = ${generatedPassword},
+        admin_notes = ${credNotes},
+        approved_at = ${new Date()},
+        updated_at = ${new Date()}
+      WHERE ticket_id = ${ticket.ticketId} OR id = ${ticket.id}
+    `;
+  }
+
+  const updatedTicket = await prisma.planChangeTicket.findUnique({
+    where: { ticketId: ticket.ticketId },
+  });
+
+  // 2. Update VendorUser records
+  try {
+    const existingUser = await prisma.vendorUser.findFirst({
+      where: { applicationId: ticket.applicationId },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (existingUser) {
+      await prisma.vendorUser.update({
+        where: { id: existingUser.id },
+        data: {
+          currentPlan: newPlanKey,
+          password: generatedPassword,
+        },
+      });
+    }
+
+    // Upsert direct login account for generatedUserId
+    await prisma.vendorUser.upsert({
+      where: { userId: generatedUserId },
+      update: {
+        password: generatedPassword,
+        currentPlan: newPlanKey,
+        applicationId: ticket.applicationId,
+        vendorName: ticket.vendorName,
+        vendorMobile: ticket.vendorMobile,
+        vendorEmail: ticket.vendorEmail,
+        isActive: true,
+      },
+      create: {
+        userId: generatedUserId,
+        password: generatedPassword,
+        applicationId: ticket.applicationId,
+        vendorName: ticket.vendorName,
+        vendorMobile: ticket.vendorMobile,
+        vendorEmail: ticket.vendorEmail,
+        currentPlan: newPlanKey,
+        isActive: true,
+      },
+    });
+  } catch (uErr) {
+    console.warn("[ADMIN ISSUE CREDENTIALS USER UPDATE WARN]", uErr);
+  }
+
+  // 3. Update VendorSubscription in PostgreSQL (scoped to ticket applicationId)
+  try {
+    await prisma.vendorSubscription.updateMany({
+      where: { applicationId: ticket.applicationId },
+      data: {
+        planTier: newPlanKey,
+        planName: newPlanName,
+        territoryScope: newScope,
+        hasExclusivity: newPlanKey !== "silver",
+        baseAmount: newBaseAmount,
+        gatewayFee: newGatewayFee,
+        gstAmount: newGstAmount,
+        totalAmount: newTotalAmount,
+        adminNotes: `Plan upgraded via Ticket #${ticket.ticketId} to ${newPlanName}. Payment verified and new credentials issued on ${new Date().toISOString()}`,
+      },
+    });
+  } catch (sErr) {
+    console.warn("[ADMIN ISSUE CREDENTIALS SUB UPDATE WARN]", sErr);
+  }
+
+  // 4. Update VendorLead in PostgreSQL (scoped to ticket applicationId)
+  try {
+    await prisma.vendorLead.updateMany({
+      where: { applicationId: ticket.applicationId },
+      data: {
+        preferredPackage: newPlanKey,
+        packageName: newPlanName,
+        status: "approved",
+        adminNotes: `Application approved with upgraded plan ${newPlanName} (Ticket #${ticket.ticketId}).`,
+      },
+    });
+  } catch (lErr) {
+    console.warn("[ADMIN ISSUE CREDENTIALS LEAD UPDATE WARN]", lErr);
+  }
+
+  return NextResponse.json({
+    success: true,
+    message: `New credentials issued! User ID: ${generatedUserId} | Password: ${generatedPassword}. Plan ${newPlanName} is now active.`,
+    ticket: updatedTicket,
+    newCredentials: {
+      userId: generatedUserId,
+      password: generatedPassword,
+      newPlan: newPlanKey,
+      newPlanName,
+    },
+  });
 }

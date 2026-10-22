@@ -12,11 +12,18 @@ export async function GET(request: Request) {
     const applicationId = searchParams.get("applicationId");
     const pkg = (searchParams.get("pkg") || "gold").toLowerCase();
 
+    const type = searchParams.get("type");
+    const ticketId = searchParams.get("ticketId");
+    const isUpgrade = type === "upgrade" || (orderId ? orderId.startsWith("UPG_") : false);
+
     const host = request.headers.get("host") || "localhost:3000";
     const protocol = host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https";
     const baseUrl = origin || `${protocol}://${host}`;
 
     if (!orderId) {
+      if (isUpgrade) {
+        return NextResponse.redirect(new URL("/vendor/dashboard", baseUrl));
+      }
       // No order ID -> redirect back to apply page
       return NextResponse.redirect(new URL(`/apply?package=${pkg}`, baseUrl));
     }
@@ -26,6 +33,16 @@ export async function GET(request: Request) {
 
     if (!result.success || !result.data) {
       console.warn("[CALLBACK VERIFY FAILED]", result.error);
+      if (isUpgrade) {
+        return NextResponse.redirect(
+          new URL(
+            `/vendor/dashboard?upgrade=failed&order_id=${encodeURIComponent(orderId)}&ticketId=${encodeURIComponent(
+              ticketId || ""
+            )}`,
+            baseUrl
+          )
+        );
+      }
       return NextResponse.redirect(
         new URL(
           `/apply?package=${pkg}&applicationId=${encodeURIComponent(
@@ -52,8 +69,47 @@ export async function GET(request: Request) {
       (orderId.includes("_") ? orderId.split("_").slice(0, -1).join("-").replace(/_/g, "-") : null);
 
     if (isPaid) {
-      // PAYMENT SUCCESSFUL:
-      // Update database subscription status to active & PAID
+      // -----------------------------------------------------------------
+      // UPGRADE ORDER PAYMENT SUCCESS:
+      // -----------------------------------------------------------------
+      if (isUpgrade) {
+        try {
+          await prisma.planChangeTicket.updateMany({
+            where: {
+              OR: [
+                ...(ticketId ? [{ ticketId }] : []),
+                ...(targetAppId ? [{ applicationId: targetAppId }] : []),
+                { paymentId: String(cfOrder.cf_order_id || cfOrder.order_id) },
+              ],
+            },
+            data: {
+              status: "PAYMENT_COMPLETED",
+              paymentStatus: "PAID",
+              paymentId: String(cfOrder.cf_order_id || cfOrder.order_id),
+              paidAt: new Date(),
+              adminNotes: `Upgrade payment of ₹${cfOrder.order_amount} verified via Cashfree (Order: ${orderId}, Ref: ${cfOrder.cf_order_id}). Sent to Admin HQ for approval.`,
+            },
+          });
+        } catch (ticketErr) {
+          console.warn("[CALLBACK UPGRADE TICKET UPDATE WARN]", ticketErr);
+        }
+
+        // REDIRECT BACK TO VENDOR DASHBOARD WITH SUCCESS & AWAITING APPROVAL STATUS
+        return NextResponse.redirect(
+          new URL(
+            `/vendor/dashboard?upgrade=success&order_id=${encodeURIComponent(
+              orderId
+            )}&ticketId=${encodeURIComponent(ticketId || "")}&plan=${encodeURIComponent(
+              pkg
+            )}&amount=${encodeURIComponent(cfOrder.order_amount || "")}`,
+            baseUrl
+          )
+        );
+      }
+
+      // -----------------------------------------------------------------
+      // INITIAL REGISTRATION PAYMENT SUCCESS:
+      // -----------------------------------------------------------------
       try {
         await prisma.vendorSubscription.updateMany({
           where: { orderId: cfOrder.order_id },
@@ -118,9 +174,23 @@ export async function GET(request: Request) {
     } else {
       // PAYMENT PENDING / FAILED / USER_DROPPED:
       console.log(
-        `[PAYMENT NOT SUCCESSFUL] Order: ${orderId}, Status: ${cfOrder.order_status}. Redirecting back to /apply.`
+        `[PAYMENT NOT SUCCESSFUL] Order: ${orderId}, Status: ${cfOrder.order_status}.`
       );
       const failureStatus = (cfOrder.order_status || "failed").toLowerCase();
+
+      if (isUpgrade) {
+        return NextResponse.redirect(
+          new URL(
+            `/vendor/dashboard?upgrade=failed&status=${encodeURIComponent(
+              failureStatus
+            )}&order_id=${encodeURIComponent(orderId)}&ticketId=${encodeURIComponent(
+              ticketId || ""
+            )}`,
+            baseUrl
+          )
+        );
+      }
+
       return NextResponse.redirect(
         new URL(
           `/apply?package=${pkg}&applicationId=${encodeURIComponent(
@@ -132,6 +202,9 @@ export async function GET(request: Request) {
     }
   } catch (error: any) {
     console.error("[CALLBACK EXCEPTION]", error);
+    if (request.url.includes("type=upgrade")) {
+      return NextResponse.redirect(new URL("/vendor/dashboard?upgrade=error", request.url));
+    }
     return NextResponse.redirect(new URL("/apply?payment_status=error", request.url));
   }
 }

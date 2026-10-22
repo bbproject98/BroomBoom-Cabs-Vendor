@@ -30,7 +30,7 @@ export default function ThankYouPage() {
   const [canShow, setCanShow] = useState(true);
   const [applicationId, setApplicationId] = useState("");
   const [partnerName, setPartnerName] = useState("Valued Partner");
-  const [planTier, setPlanTier] = useState("Gold Partner");
+  const [planTier, setPlanTier] = useState("");
   const [planDetails, setPlanDetails] = useState<any>(null);
   const [orderReference, setOrderReference] = useState("");
   const [copiedId, setCopiedId] = useState(false);
@@ -42,7 +42,7 @@ export default function ThankYouPage() {
       const orderId = params.get("order_id");
       if (orderId) setOrderReference(orderId);
       const appIdParam = params.get("applicationId") || "";
-      const pkg = (params.get("pkg") || "gold").toLowerCase();
+      const pkg = (params.get("pkg") || "").toLowerCase();
       const statusParam = params.get("status");
       const fromParam = params.get("from");
 
@@ -50,10 +50,25 @@ export default function ThankYouPage() {
         appIdParam || (orderId ? `BB-${orderId.slice(-6)}` : "BB-VENDOR-2026");
       setApplicationId(resolvedAppId);
 
+      const hasUrlPkg = Boolean(
+        pkg && ["silver", "gold", "platinum"].includes(pkg)
+      );
+      if (hasUrlPkg) {
+        setPlanTier(
+          pkg === "silver"
+            ? "Silver Partner"
+            : pkg === "platinum"
+            ? "Platinum Partner"
+            : "Gold Partner"
+        );
+      } else {
+        setPlanTier("");
+      }
+
       // Save initial paid session to localStorage immediately so returning home will always recognize paid state
       const initialRedirectUrl = `/thank-you?applicationId=${encodeURIComponent(
         resolvedAppId
-      )}&status=success&from=profile`;
+      )}&status=success&from=profile${hasUrlPkg ? `&pkg=${encodeURIComponent(pkg)}` : ""}`;
       localStorage.setItem("bb_partner_payment_done", "true");
       localStorage.setItem("bb_partner_paid_appid", resolvedAppId);
       localStorage.setItem("bb_partner_thankyou_url", initialRedirectUrl);
@@ -65,10 +80,12 @@ export default function ThankYouPage() {
           vendorEmail: "",
           applicationId: resolvedAppId,
         },
-        plan: {
-          tier: pkg,
-          name: `${pkg.charAt(0).toUpperCase() + pkg.slice(1)} Partner`,
-        },
+        plan: hasUrlPkg
+          ? {
+              tier: pkg,
+              name: `${pkg.charAt(0).toUpperCase() + pkg.slice(1)} Partner`,
+            }
+          : null,
         isPaid: true,
         isAdminValidated: false,
         userStatus: "PAID_UNDER_PROCESS",
@@ -94,18 +111,21 @@ export default function ThankYouPage() {
         .then((data) => {
           if (data.success && data.profile) {
             const vName = data.profile.vendorName || "Valued Partner";
-            const vTier = data.plan?.name || "Gold Partner";
+            const hasAssignedPlan = Boolean(data.hasPlan && data.plan?.name);
+            const vTier = hasAssignedPlan ? data.plan.name : "";
             const vMobile = data.profile.vendorMobile || "";
             const vEmail = data.profile.vendorEmail || "";
             const vAppId = data.profile.applicationId || resolvedAppId;
             setPartnerName(vName);
-            if (data.plan?.name) setPlanTier(vTier);
+            setPlanTier(vTier);
             if (vAppId) setApplicationId(vAppId);
-            if (data.plan) {
+            if (hasAssignedPlan && data.plan) {
               setPlanDetails(data.plan);
               if (data.plan.orderId && !orderId) {
                 setOrderReference(data.plan.orderId);
               }
+            } else {
+              setPlanDetails(null);
             }
 
             const isAppr = Boolean(
@@ -118,7 +138,7 @@ export default function ThankYouPage() {
 
             const finalRedirectUrl = `/thank-you?applicationId=${encodeURIComponent(
               vAppId
-            )}&status=success&from=profile`;
+            )}&status=success&from=profile${hasAssignedPlan && data.plan?.tier ? `&pkg=${encodeURIComponent(data.plan.tier)}` : ""}`;
             localStorage.setItem("bb_partner_payment_done", "true");
             localStorage.setItem("bb_partner_paid_appid", vAppId);
             localStorage.setItem("bb_partner_thankyou_url", finalRedirectUrl);
@@ -131,10 +151,7 @@ export default function ThankYouPage() {
                 vendorEmail: vEmail,
                 applicationId: vAppId,
               },
-              plan: {
-                tier: pkg,
-                name: vTier,
-              },
+              plan: hasAssignedPlan ? data.plan : null,
               isPaid: true,
               isAdminValidated: isAppr,
               userStatus: isAppr ? "APPROVED" : "PAID_UNDER_PROCESS",
@@ -351,12 +368,18 @@ export default function ThankYouPage() {
               <h1 className="text-lg sm:text-xl font-black tracking-tight bg-gradient-to-r from-amber-600 to-emerald-600 bg-clip-text text-transparent">
                 Welcome, {partnerName}!
               </h1>
-              <p className="text-[11px] sm:text-xs text-slate-600 font-medium leading-relaxed">
-                Your vendor application for{" "}
-                <span className="font-bold text-slate-900">{planTier}</span> is
-                confirmed. Your territory license and operations account are
-                ready.
-              </p>
+              {planTier ? (
+                <p className="text-[11px] sm:text-xs text-slate-600 font-medium leading-relaxed">
+                  Your vendor application for{" "}
+                  <span className="font-bold text-slate-900">{planTier}</span> is
+                  confirmed. Your territory license and operations account are
+                  ready.
+                </p>
+              ) : (
+                <p className="text-[11px] sm:text-xs text-slate-600 font-medium leading-relaxed">
+                  Your partner registration is confirmed. Territory demarcation and plan allocation are under process by Admin HQ.
+                </p>
+              )}
             </div>
 
             {/* Application Ref */}
@@ -418,57 +441,81 @@ export default function ThankYouPage() {
             </div>
 
             {/* Plan Status Condition Card */}
-            <div
-              className={`p-3 sm:p-3.5 rounded-xl border-2 text-left space-y-2 shadow-sm transition-colors ${
-                isAdminApproved
-                  ? "bg-emerald-50/90 border-emerald-400"
-                  : "bg-amber-50/95 border-amber-300"
-              }`}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span
-                  className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${
-                    isAdminApproved
-                      ? "bg-emerald-200 text-emerald-950 border-emerald-300"
-                      : "bg-amber-200 text-amber-950 border-amber-300"
-                  }`}
-                >
-                  {isAdminApproved
-                    ? "Status: Approved & Active"
-                    : "Plan Status: Under Process"}
-                </span>
-                <span
-                  className={`text-[9px] sm:text-[10px] font-bold flex items-center gap-1 ${
-                    isAdminApproved ? "text-emerald-800" : "text-amber-800"
-                  }`}
-                >
-                  {isAdminApproved ? (
-                    <>
-                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                      <span>Admin HQ Approved</span>
-                    </>
-                  ) : (
-                    <>
-                      <Clock className="w-3 h-3 text-amber-600 animate-spin" />
-                      <span>Awaiting Admin Validation</span>
-                    </>
-                  )}
-                </span>
-              </div>
+            {planTier && planDetails ? (
+              <div
+                className={`p-3 sm:p-3.5 rounded-xl border-2 text-left space-y-2 shadow-sm transition-colors ${
+                  isAdminApproved
+                    ? "bg-emerald-50/90 border-emerald-400"
+                    : "bg-amber-50/95 border-amber-300"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span
+                    className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                      isAdminApproved
+                        ? "bg-emerald-200 text-emerald-950 border-emerald-300"
+                        : "bg-amber-200 text-amber-950 border-amber-300"
+                    }`}
+                  >
+                    {isAdminApproved
+                      ? "Status: Approved & Active"
+                      : "Plan Status: Under Process"}
+                  </span>
+                  <span
+                    className={`text-[9px] sm:text-[10px] font-bold flex items-center gap-1 ${
+                      isAdminApproved ? "text-emerald-800" : "text-amber-800"
+                    }`}
+                  >
+                    {isAdminApproved ? (
+                      <>
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                        <span>Admin HQ Approved</span>
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="w-3 h-3 text-amber-600 animate-spin" />
+                        <span>Awaiting Admin Validation</span>
+                      </>
+                    )}
+                  </span>
+                </div>
 
-              <div>
-                <h3 className="text-xs font-black text-slate-950">
-                  {isAdminApproved
-                    ? "Territory License Approved & Exclusivity Active"
-                    : "Your Profile & Chosen Plan is Under Process"}
-                </h3>
-                <p className="text-[10px] text-slate-600 mt-0.5 leading-relaxed">
-                  {isAdminApproved
-                    ? `Congratulations! Admin HQ has verified and approved your commercial documentation and territory license for ${planTier}. Your vendor login credentials have been dispatched to your WhatsApp and Email.`
-                    : `Your payment has been received and confirmed. Admin HQ Operations is currently validating your commercial documentation and territory demarcation for ${planTier}. Turnaround: 24 to 48 hours.`}
-                </p>
+                <div>
+                  <h3 className="text-xs font-black text-slate-950">
+                    {isAdminApproved
+                      ? "Territory License Approved & Exclusivity Active"
+                      : "Your Profile & Chosen Plan is Under Process"}
+                  </h3>
+                  <p className="text-[10px] text-slate-600 mt-0.5 leading-relaxed">
+                    {isAdminApproved
+                      ? `Congratulations! Admin HQ has verified and approved your commercial documentation and territory license for ${planTier}. Your vendor login credentials have been dispatched to your WhatsApp and Email.`
+                      : `Your payment has been received and confirmed. Admin HQ Operations is currently validating your commercial documentation and territory demarcation for ${planTier}. Turnaround: 24 to 48 hours.`}
+                  </p>
+                </div>
               </div>
-            </div>
+            ) : (
+              /* No plan assigned yet: Manual Offline Onboarding */
+              <div className="p-3 sm:p-3.5 rounded-xl border-2 text-left space-y-2 shadow-sm bg-amber-50/95 border-amber-300">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border bg-amber-200 text-amber-950 border-amber-300">
+                    Status: Under Process
+                  </span>
+                  <span className="text-[9px] sm:text-[10px] font-bold flex items-center gap-1 text-amber-800">
+                    <Clock className="w-3 h-3 text-amber-600 animate-spin" />
+                    <span>Awaiting Admin Allocation</span>
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="text-xs font-black text-slate-950">
+                    Profile Registered &amp; Verification Complete
+                  </h3>
+                  <p className="text-[10px] text-slate-600 mt-0.5 leading-relaxed">
+                    Your mobile verification is complete. Admin HQ Operations will assign your territory tier, package scope, and portal access within 24 to 48 hours.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Primary CTA — Vendor Login */}
             <Link

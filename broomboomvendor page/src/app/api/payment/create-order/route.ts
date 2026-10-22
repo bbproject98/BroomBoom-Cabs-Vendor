@@ -41,18 +41,35 @@ export async function POST(request: Request) {
       mobile = "9999999999",
       email = "support@broomboomcabs.com",
       city = "India",
+      orderType,
+      currentPlan = "silver",
+      reason = "Franchise plan upgrade request",
     } = body;
 
+    const isUpgrade = orderType === "upgrade" || body.isUpgrade === true;
     const pkgKey = (packageId || "gold").toLowerCase();
     const pkg = PACKAGE_PRICES[pkgKey] || PACKAGE_PRICES.gold;
 
     // Generate unique order ID
     const cleanAppId = (applicationId || "BB-VENDOR").replace(/[^a-zA-Z0-9]/g, "_");
     const uniqueSuffix = Date.now().toString().slice(-6);
-    const orderId = `${cleanAppId}_${uniqueSuffix}`.slice(0, 45);
+    const orderPrefix = isUpgrade ? "UPG" : cleanAppId;
+    const orderId = isUpgrade
+      ? `UPG_${cleanAppId.slice(0, 20)}_${uniqueSuffix}`.slice(0, 45)
+      : `${cleanAppId}_${uniqueSuffix}`.slice(0, 45);
 
-    // Price & Charges Calculation: Base + 3% Gateway Fee + 5% GST
-    const baseAmount = pkg.amount;
+    const ticketId = `TICK-BB-2026-${uniqueSuffix}`;
+
+    // Price & Charges Calculation
+    let baseAmount: number;
+    if (isUpgrade) {
+      const curBase = PACKAGE_PRICES[(currentPlan || "silver").toLowerCase()]?.amount || 5000;
+      const targetBase = pkg.amount;
+      baseAmount = Math.max(5000, targetBase > curBase ? targetBase - curBase : targetBase);
+    } else {
+      baseAmount = pkg.amount;
+    }
+
     const gatewayFee = Math.round(baseAmount * 0.03); // 3% Gateway Fee
     const gstFee = Math.round(baseAmount * 0.05);     // 5% GST
     const totalAmount = baseAmount + gatewayFee + gstFee;
@@ -62,9 +79,41 @@ export async function POST(request: Request) {
     const host = request.headers.get("host") || "localhost:3000";
     const protocol = host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https";
     const appUrl = origin || `${protocol}://${host}` || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-    const returnUrl = `${appUrl}/api/payment/callback?order_id={order_id}&applicationId=${encodeURIComponent(
-      applicationId || ""
-    )}&pkg=${encodeURIComponent(pkgKey)}`;
+
+    const returnUrl = isUpgrade
+      ? `${appUrl}/api/payment/callback?order_id={order_id}&applicationId=${encodeURIComponent(
+          applicationId || ""
+        )}&pkg=${encodeURIComponent(pkgKey)}&type=upgrade&ticketId=${encodeURIComponent(ticketId)}`
+      : `${appUrl}/api/payment/callback?order_id={order_id}&applicationId=${encodeURIComponent(
+          applicationId || ""
+        )}&pkg=${encodeURIComponent(pkgKey)}`;
+
+    // If upgrade, pre-register the PlanChangeTicket in AWAITING_PAYMENT state
+    if (isUpgrade) {
+      try {
+        await prisma.planChangeTicket.create({
+          data: {
+            ticketId,
+            applicationId: applicationId || "BB-VENDOR",
+            vendorName: fullName || "Valued Partner",
+            vendorMobile: mobile || "9999999999",
+            vendorEmail: email || "support@broomboomcabs.com",
+            currentPlan: (currentPlan || "silver").toLowerCase(),
+            requestedPlan: pkgKey,
+            reason: reason.trim(),
+            status: "AWAITING_PAYMENT",
+            paymentStatus: "UNPAID",
+            upgradeAmount: baseAmount,
+            gatewayFee,
+            gstAmount: gstFee,
+            totalAmount,
+            adminNotes: `Cashfree upgrade order ${orderId} initiated. Awaiting payment on Cashfree gateway.`,
+          },
+        });
+      } catch (ticketErr) {
+        console.warn("[UPGRADE TICKET PRE-CREATE WARN]", ticketErr);
+      }
+    }
 
     // Create Cashfree Order with all charges added directly
     const result = await createCashfreeOrder({
@@ -76,13 +125,17 @@ export async function POST(request: Request) {
       customerEmail: email || "support@broomboomcabs.com",
       customerPhone: mobile,
       returnUrl,
-      orderNote: `BroomBoom ${pkg.name} | Base: ₹${baseAmount.toLocaleString('en-IN')} + 3% Gateway Fee: ₹${gatewayFee.toLocaleString('en-IN')} + 5% GST: ₹${gstFee.toLocaleString('en-IN')} | Total: ₹${totalAmount.toLocaleString('en-IN')}`,
+      orderNote: isUpgrade
+        ? `BroomBoom Upgrade to ${pkg.name} | Base: ₹${baseAmount.toLocaleString('en-IN')} + 3% GW: ₹${gatewayFee.toLocaleString('en-IN')} + 5% GST: ₹${gstFee.toLocaleString('en-IN')} | Total: ₹${totalAmount.toLocaleString('en-IN')}`
+        : `BroomBoom ${pkg.name} | Base: ₹${baseAmount.toLocaleString('en-IN')} + 3% Gateway Fee: ₹${gatewayFee.toLocaleString('en-IN')} + 5% GST: ₹${gstFee.toLocaleString('en-IN')} | Total: ₹${totalAmount.toLocaleString('en-IN')}`,
       orderTags: {
         package: pkgKey,
+        is_upgrade: isUpgrade ? "true" : "false",
         base_amount: String(baseAmount),
         gateway_fee_3_percent: String(gatewayFee),
         gst_5_percent: String(gstFee),
         total_amount: String(totalAmount),
+        ticket_id: isUpgrade ? ticketId : "",
       },
       cartDetails: {
         cart_items: [
@@ -228,6 +281,8 @@ export async function POST(request: Request) {
       cfOrderId: result.data.cfOrderId,
       paymentSessionId: result.data.paymentSessionId,
       subscriptionId: subscriptionRecord?.subscriptionId || subscriptionId,
+      ticketId: isUpgrade ? ticketId : null,
+      isUpgrade,
       amount: totalAmount,
       baseAmount: baseAmount,
       gatewayFee: gatewayFee,
