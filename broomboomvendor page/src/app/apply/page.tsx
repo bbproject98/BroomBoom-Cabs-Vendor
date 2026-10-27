@@ -80,6 +80,10 @@ function ApplyFormContent() {
 
   const initialDefaults = getPackageDefaults(initialPackage);
 
+  const nameParam = searchParams.get("name") || "";
+  const mobileParam = searchParams.get("mobile") || "";
+  const cityParam = searchParams.get("city") || "";
+
   const [formData, setFormData] = useState({
     fullName: "",
     mobile: "",
@@ -122,6 +126,43 @@ function ApplyFormContent() {
   // Flag to know whether the currently shown "success/pay view" came from a saved account
   const [hasSavedAccount, setHasSavedAccount] = useState(false);
   const [isHydrating, setIsHydrating] = useState(true);
+
+  // Synchronize prefilled applicant details from URL searchParams or storage
+  useEffect(() => {
+    const qName = searchParams.get("name");
+    const qMobile = searchParams.get("mobile");
+    const qCity = searchParams.get("city");
+    const qAppId = searchParams.get("applicationId");
+
+    if (qName || qMobile || qCity) {
+      setFormData((prev) => ({
+        ...prev,
+        fullName: qName || prev.fullName,
+        mobile: qMobile || prev.mobile,
+        city: qCity || prev.city,
+      }));
+    } else {
+      try {
+        const saved = localStorage.getItem("bb_lead_prefill");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          setFormData((prev) => ({
+            ...prev,
+            fullName: prev.fullName || parsed.fullName || "",
+            mobile: prev.mobile || parsed.mobile || "",
+            city: prev.city || parsed.city || "",
+          }));
+          if (parsed.applicationId && !applicationId) {
+            setApplicationId(parsed.applicationId);
+          }
+        }
+      } catch (e) {}
+    }
+
+    if (qAppId) {
+      setApplicationId(qAppId);
+    }
+  }, [searchParams]);
 
   // Load applicant profile if arriving from profile/confirm with applicationId
   useEffect(() => {

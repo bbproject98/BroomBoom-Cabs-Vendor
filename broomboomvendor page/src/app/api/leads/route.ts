@@ -96,7 +96,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    if (!body.fullName || !body.mobile || !body.city) {
+    if (!body.fullName || !body.mobile) {
       return jsonResponse(
         {
           success: false,

@@ -15,22 +15,24 @@ import { Footer } from "@/components/Footer";
 import { BrochureModal } from "@/components/BrochureModal";
 import { FloatingCta } from "@/components/FloatingCta";
 import { PwaInstallPrompt } from "@/components/PwaInstallPrompt";
+import { VendorLoginModal } from "@/components/VendorLoginModal";
 
 export default function Home() {
   const router = useRouter();
   const [isBrochureModalOpen, setIsBrochureModalOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<string>("gold");
 
-  const handleNavigateToApply = (packageId: string = "gold") => {
+  const handleOpenLoginModal = (packageId: string = "gold") => {
     setSelectedPackage(packageId);
-    router.push(`/apply?package=${packageId}`);
+    setIsLoginModalOpen(true);
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-puja-cream text-slate-900 selection:bg-brand-yellow selection:text-black font-sans">
       {/* Top Navbar */}
       <Navbar
-        onOpenApplyModal={handleNavigateToApply}
+        onOpenApplyModal={handleOpenLoginModal}
         onOpenBrochureModal={() => setIsBrochureModalOpen(true)}
       />
 
@@ -39,11 +41,11 @@ export default function Home() {
         {/* Hero Section with Banner */}
         <HeroSection
           selectedPackage={selectedPackage ?? "gold"}
-          onOpenApplyModal={handleNavigateToApply}
+          onOpenApplyModal={handleOpenLoginModal}
         />
 
         {/* The 3 Packages Section (Market Trends) */}
-        <PackagesSection onSelectPackage={handleNavigateToApply} />
+        <PackagesSection onSelectPackage={handleOpenLoginModal} />
 
         {/* What a BroomBoom Vendor Does & Services (Overview) */}
         <VendorOverview />
@@ -52,21 +54,21 @@ export default function Home() {
         <StatsBar />
 
         {/* Why BroomBoom (6 Full-Bleed Benefit Cards) */}
-        <WhyBroomBoom onOpenApplyModal={handleNavigateToApply} />
+        <WhyBroomBoom onOpenApplyModal={handleOpenLoginModal} />
 
         {/* Begin Your Journey Now (4-Step Onboarding Roadmap) */}
-        <JourneySection onOpenApplyModal={handleNavigateToApply} />
+        <JourneySection onOpenApplyModal={handleOpenLoginModal} />
 
         {/* Words from our Partners (Success Stories) */}
-        <TestimonialsSection onOpenApplyModal={handleNavigateToApply} />
+        <TestimonialsSection onOpenApplyModal={handleOpenLoginModal} />
 
         {/* Comprehensive FAQ Accordion */}
-        <FaqSection onContactClick={() => handleNavigateToApply("gold")} />
+        <FaqSection onContactClick={() => handleOpenLoginModal("gold")} />
       </main>
 
       {/* Corporate & Legal Footer */}
       <Footer
-        onOpenApplyModal={handleNavigateToApply}
+        onOpenApplyModal={handleOpenLoginModal}
         onOpenBrochureModal={() => setIsBrochureModalOpen(true)}
       />
 
@@ -74,7 +76,14 @@ export default function Home() {
       <PwaInstallPrompt />
 
       {/* Sticky Mobile Conversion Bar */}
-      <FloatingCta onApplyClick={() => handleNavigateToApply(selectedPackage)} />
+      <FloatingCta onApplyClick={() => handleOpenLoginModal(selectedPackage)} />
+
+      {/* Fast-Track Partner Login & Lead Registration Modal */}
+      <VendorLoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        defaultPackage={selectedPackage}
+      />
 
       {/* Official Brochure Prospectus Modal */}
       <BrochureModal

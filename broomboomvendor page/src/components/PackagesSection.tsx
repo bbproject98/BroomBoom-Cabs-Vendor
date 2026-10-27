@@ -33,19 +33,7 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
     onSelectTier?.(id);
   };
 
-  // Helper to dynamically set pricing for each tier
-  const getPrices = (id: string) => {
-    switch (id) {
-      case "silver":
-        return { original: "₹20,000", discounted: "₹5,000" };
-      case "gold":
-        return { original: "₹40,000", discounted: "₹10,000" };
-      case "platinum":
-        return { original: "₹1,00,000", discounted: "₹20,000" };
-      default:
-        return { original: "₹20,000", discounted: "₹5,000" };
-    }
-  };
+
 
   // ============================================================
   // FULL TIER COLOR THEMES — the ENTIRE card is silver/gold/platinum
@@ -174,8 +162,8 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
     "1.8 crore+ Indians holidayed abroad in 2022",
     "11.05% growth in domestic tourist visits",
     "US$ 8.3 billion projected Holiday Packages revenue",
-    "Flat 75%-80% OFF on all Vendor Partner Packages",
-    "Instant verification • Zero hidden charges",
+    "Exclusive Commercial Franchise Territory Allocation",
+    "Instant verification • Dedicated territory allocation",
     "Lock your territory before it's gone",
   ];
 
@@ -231,7 +219,7 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
         <div className="text-center max-w-2xl mx-auto mb-7">
           <div className="inline-flex items-center gap-1.5 bg-amber-500/15 border border-amber-400 text-amber-950 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wide mb-2.5">
             <Sparkles className="w-3 h-3 text-amber-600 animate-pulse" />
-            <span>Limited Time Offer &bull; Flat 75%-80% OFF On All Packages</span>
+            <span>Commercial Franchise Tiers &bull; High Earning Fleet Hubs</span>
           </div>
 
           <h2 className="text-2xl sm:text-3xl lg:text-[2rem] font-black text-slate-950 tracking-tight leading-tight">
@@ -239,7 +227,7 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 mt-2 max-w-xl mx-auto">
             Attach your commercial vehicles or establish a dedicated regional booking hub.
-            Lock in your territory with our exclusive discounted onboarding deals!
+            Lock in your territory with our exclusive commercial franchise partner network.
           </p>
         </div>
 
@@ -248,7 +236,6 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
           {VENDOR_PACKAGES.map((pkg) => {
             const t = getTierStyle(pkg.id);
             const isGold = pkg.id === "gold";
-            const prices = getPrices(pkg.id); // Get our updated pricing based on ID
 
             return (
               <div
@@ -270,18 +257,44 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
                 <div
                   className={`px-4 pb-3.5 border-b ${isGold ? "pt-8" : "pt-5"} ${t.headerBg}`}
                 >
-                  {/* Badges Row */}
+                  {/* Badges Row - Tier Highlighting */}
                   <div className="flex flex-wrap items-center gap-2 mb-2.5">
-                    <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-red-600 to-rose-600 text-white text-[11px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider shadow-md shadow-red-500/30 ring-2 ring-red-400/40">
-                      <Tag className="w-3 h-3 stroke-[2.5]" />
-                      {pkg.discountTag}
+                    <span
+                      className={`inline-flex items-center gap-1.5 text-white text-[11px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider shadow-md ${
+                        pkg.id === "gold"
+                          ? "bg-gradient-to-r from-amber-600 via-yellow-600 to-amber-700 shadow-amber-600/30 ring-2 ring-amber-400/40 text-amber-950"
+                          : pkg.id === "platinum"
+                          ? "bg-gradient-to-r from-cyan-600 to-blue-700 shadow-cyan-600/30 ring-2 ring-cyan-400/40"
+                          : "bg-gradient-to-r from-slate-700 to-slate-900 shadow-slate-700/30 ring-2 ring-slate-400/40"
+                      }`}
+                    >
+                      {pkg.id === "gold" ? (
+                        <Sparkles className="w-3 h-3 text-amber-950 fill-amber-950" />
+                      ) : pkg.id === "platinum" ? (
+                        <Zap className="w-3 h-3 text-cyan-200" />
+                      ) : (
+                        <ShieldCheck className="w-3 h-3 text-slate-300" />
+                      )}
+                      <span>
+                        {pkg.id === "gold"
+                          ? "DISTRICT EXCLUSIVE"
+                          : pkg.id === "platinum"
+                          ? "REGIONAL MASTER"
+                          : "WARD KIOSK"}
+                      </span>
                     </span>
 
                     <span
                       className={`inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wide border shadow-sm ${t.badgeDeal}`}
                     >
                       <Zap className="w-2.5 h-2.5" />
-                      {pkg.dealTag}
+                      <span>
+                        {pkg.id === "gold"
+                          ? "High Volume Hub"
+                          : pkg.id === "platinum"
+                          ? "0% Commission SLA"
+                          : "Verified Partner"}
+                      </span>
                     </span>
                   </div>
 
@@ -304,29 +317,63 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
                     {pkg.subtitle}
                   </p>
 
-                  {/* Pricing (Stacked "up down" layout) */}
+                  {/* Highlighted Package Details & Territory Scope (No Price Showing) */}
                   <div className={`mt-3 pt-3 border-t ${t.divider}`}>
-                    <div className="flex flex-col items-start gap-0.5">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`text-sm font-bold line-through decoration-red-500 decoration-2 ${t.strikeColor}`}
-                        >
-                          {prices.original}
-                        </span>
-                        <span className="bg-red-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-xs uppercase tracking-wide">
-                          {pkg.discountTag}
-                        </span>
+                    {pkg.id === "gold" ? (
+                      <div className="bg-gradient-to-br from-amber-500/25 via-yellow-400/30 to-amber-600/25 rounded-xl p-3 border-2 border-amber-500/60 shadow-sm space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-amber-950 flex items-center gap-1">
+                            <Sparkles className="w-3 h-3 text-amber-700 fill-amber-600" />
+                            Territory Scope
+                          </span>
+                          <span className="bg-amber-600 text-white text-[9.5px] font-black px-2 py-0.5 rounded-full uppercase shadow-xs">
+                            District Exclusive
+                          </span>
+                        </div>
+                        <div className="text-base sm:text-lg font-black text-amber-950 tracking-tight leading-tight pt-0.5">
+                          Outstation &amp; Long Rentals Hub
+                        </div>
+                        <p className="text-[10.5px] font-bold text-amber-900/90 leading-snug">
+                          Dedicated dispatch priority for high-margin outstation &amp; district bookings.
+                        </p>
                       </div>
-                      <span
-                        className={`text-4xl font-black tracking-tight leading-none ${t.priceColor}`}
-                      >
-                        {prices.discounted}
-                      </span>
-                    </div>
-
-                    <span className="inline-block mt-2 bg-emerald-700 text-white text-[11px] font-black px-2.5 py-1 rounded-md shadow-sm">
-                      {pkg.savings} with current offer
-                    </span>
+                    ) : pkg.id === "platinum" ? (
+                      <div className="bg-gradient-to-br from-cyan-500/20 via-sky-400/25 to-blue-500/20 rounded-xl p-3 border-2 border-cyan-400/60 shadow-sm space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-900 flex items-center gap-1">
+                            <Zap className="w-3 h-3 text-cyan-600" />
+                            Territory Scope
+                          </span>
+                          <span className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-[9.5px] font-black px-2 py-0.5 rounded-full uppercase shadow-xs">
+                            Regional Master
+                          </span>
+                        </div>
+                        <div className="text-base sm:text-lg font-black text-slate-950 tracking-tight leading-tight pt-0.5">
+                          0% Commission Master Hub
+                        </div>
+                        <p className="text-[10.5px] font-bold text-cyan-950/90 leading-snug">
+                          Zero platform commission fee on premier corporate &amp; all-category rides.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="bg-slate-900/10 rounded-xl p-3 border-2 border-slate-400/50 shadow-sm space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-800 flex items-center gap-1">
+                            <ShieldCheck className="w-3 h-3 text-slate-700" />
+                            Territory Scope
+                          </span>
+                          <span className="bg-slate-800 text-white text-[9.5px] font-black px-2 py-0.5 rounded-full uppercase shadow-xs">
+                            Ward Level
+                          </span>
+                        </div>
+                        <div className="text-base sm:text-lg font-black text-slate-950 tracking-tight leading-tight pt-0.5">
+                          Airport &amp; Station Kiosk
+                        </div>
+                        <p className="text-[10.5px] font-bold text-slate-700 leading-snug">
+                          Dedicated transit booking counter with daily automated bank settlements.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -386,7 +433,7 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
                     </button>
                     <p className="text-[9px] text-center text-slate-600 mt-1.5 flex items-center justify-center gap-1">
                       <ShieldCheck className="w-2.5 h-2.5 text-emerald-600" />
-                      <span>Instant verification &bull; Zero hidden charges</span>
+                      <span>Instant verification &bull; Dedicated territory allocation</span>
                     </p>
                   </div>
                 </div>

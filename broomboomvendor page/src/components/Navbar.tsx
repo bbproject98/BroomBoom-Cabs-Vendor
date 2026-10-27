@@ -254,13 +254,20 @@ export const Navbar: React.FC<NavbarProps> = ({
             </Link>
 
             {/* Primary JOIN NOW CTA */}
-            <Link
-              href="/apply?package=gold"
+            <button
+              type="button"
+              onClick={() => {
+                if (onOpenApplyModal) {
+                  onOpenApplyModal("gold");
+                } else {
+                  router.push("/apply?package=gold");
+                }
+              }}
               className="bg-brand-yellow hover:bg-brand-yellow-hover text-black text-[11px] xl:text-xs font-black px-3 py-1.5 xl:px-4 xl:py-2 rounded-xl shadow-md hover:shadow-yellow-glow transition-all flex items-center gap-1.5 group transform active:scale-95 cursor-pointer shrink-0 whitespace-nowrap"
             >
               <span>JOIN NOW</span>
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-            </Link>
+            </button>
 
             {/* Track Application & Partner Profile with Logout Dropdown */}
             <div className="relative" ref={profileDropdownRef}>
@@ -370,13 +377,20 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Right Action Group: JOIN NOW + Profile Tracker Icon + Hamburger Menu */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* Primary JOIN NOW Button */}
-            <Link
-              href="/apply?package=gold"
+            <button
+              type="button"
+              onClick={() => {
+                if (onOpenApplyModal) {
+                  onOpenApplyModal("gold");
+                } else {
+                  router.push("/apply?package=gold");
+                }
+              }}
               className="bg-brand-yellow hover:bg-brand-yellow-hover text-slate-950 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl shadow-xs text-xs font-black tracking-wide flex items-center gap-1 transform active:scale-95 transition-transform cursor-pointer"
             >
               <span>JOIN NOW</span>
               <ArrowRight className="w-3 h-3" />
-            </Link>
+            </button>
 
             {/* Partner Profile Tracker Icon Button (Placed AFTER JOIN NOW) */}
             <button
@@ -564,14 +578,21 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* Primary Full-Width JOIN NOW Button */}
             <div className="pt-2">
-              <Link
-                href="/apply?package=gold"
-                onClick={() => setMobileMenuOpen(false)}
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  if (onOpenApplyModal) {
+                    onOpenApplyModal("gold");
+                  } else {
+                    router.push("/apply?package=gold");
+                  }
+                }}
                 className="w-full py-3 bg-brand-yellow hover:bg-brand-yellow-hover text-black rounded-xl font-black text-sm shadow-md flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>JOIN NOW AS A PARTNER</span>
                 <ArrowRight className="w-4 h-4" />
-              </Link>
+              </button>
             </div>
           </div>
         )}

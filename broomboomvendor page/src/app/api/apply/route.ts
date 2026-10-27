@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    if (!body.fullName || !body.mobile || !body.city) {
+    if (!body.fullName || !body.mobile) {
       return jsonResponse(
         {
           success: false,
@@ -97,7 +97,7 @@ export async function POST(request: Request) {
         alternatePhone: body.alternatePhone?.trim() || null,
         email: body.email?.trim() || null,
         state: body.state?.trim() || null,
-        city: body.city.trim(),
+        city: (body.city && body.city.trim()) || "Kolkata",
         pincode: body.pincode?.trim() || null,
         proposedAddress: body.proposedAddress?.trim() || null,
         spaceStatus: body.spaceStatus || null,

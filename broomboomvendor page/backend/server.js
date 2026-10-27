@@ -48,7 +48,7 @@ app.get("/health", async (req, res) => {
 const handleCreateLead = async (req, res) => {
   try {
     const body = req.body;
-    if (!body.fullName || !body.mobile || !body.city) {
+    if (!body.fullName || !body.mobile) {
       return res.status(400).json({
         success: false,
         error: "fullName, mobile, and city are required fields.",
@@ -108,7 +108,7 @@ const handleCreateLead = async (req, res) => {
         alternatePhone: body.alternatePhone?.trim() || null,
         email: body.email?.trim() || null,
         state: body.state?.trim() || null,
-        city: body.city?.trim(),
+        city: (body.city && body.city.trim()) || "Kolkata",
         pincode: body.pincode?.trim() || null,
         proposedAddress: body.proposedAddress?.trim() || null,
         spaceStatus: body.spaceStatus || null,
