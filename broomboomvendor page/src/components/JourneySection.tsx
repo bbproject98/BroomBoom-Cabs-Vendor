@@ -15,9 +15,13 @@ import {
 
 interface JourneySectionProps {
   onOpenApplyModal?: (packageId?: string) => void;
+  cityName?: string;
 }
 
-export const JourneySection: React.FC<JourneySectionProps> = ({ onOpenApplyModal }) => {
+export const JourneySection: React.FC<JourneySectionProps> = ({
+  onOpenApplyModal,
+  cityName,
+}) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -26,8 +30,9 @@ export const JourneySection: React.FC<JourneySectionProps> = ({ onOpenApplyModal
       stepNumber: "01",
       title: "Fill in the Vendor Form",
       subtitle: "Quick Online Application",
-      description:
-        "Submit your basic details and city preference online in under 2 minutes. No paperwork needed at this stage.",
+      description: cityName
+        ? `Submit your basic details and ${cityName} zone preference online in under 2 minutes. No paperwork needed at this stage.`
+        : "Submit your basic details and city preference online in under 2 minutes. No paperwork needed at this stage.",
       icon: <FileText className="w-6 h-6 text-amber-600" />,
       badge: "2 Mins",
     },
@@ -102,10 +107,21 @@ export const JourneySection: React.FC<JourneySectionProps> = ({ onOpenApplyModal
             <span>Fast-Track Onboarding</span>
           </div>
           <h2 className="text-2xl sm:text-4xl font-black text-slate-950 tracking-tight leading-tight">
-            Begin Your <span className="text-yellow-gradient">Journey Now</span>
+            {cityName ? (
+              <>
+                Begin Your{" "}
+                <span className="text-yellow-gradient">{cityName} Journey Now</span>
+              </>
+            ) : (
+              <>
+                Begin Your <span className="text-yellow-gradient">Journey Now</span>
+              </>
+            )}
           </h2>
           <p className="mt-1 text-sm sm:text-base text-slate-600 leading-relaxed">
-            Setting up your BroomBoom vendor partnership is smooth and structured. From application to launch in just 4 simple steps:
+            {cityName
+              ? `Setting up your ${cityName} BroomBoom vendor partnership is smooth and structured. From application to launch in just 4 simple steps:`
+              : "Setting up your BroomBoom vendor partnership is smooth and structured. From application to launch in just 4 simple steps:"}
           </p>
         </div>
 

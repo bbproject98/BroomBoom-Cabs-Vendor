@@ -18,12 +18,14 @@ export interface VendorLoginModalProps {
   isOpen: boolean;
   onClose: () => void;
   defaultPackage?: string;
+  defaultCity?: string;
 }
 
 export const VendorLoginModal: React.FC<VendorLoginModalProps> = ({
   isOpen,
   onClose,
   defaultPackage = "gold",
+  defaultCity = "Kolkata",
 }) => {
   const router = useRouter();
 
@@ -62,7 +64,7 @@ export const VendorLoginModal: React.FC<VendorLoginModalProps> = ({
 
     const cleanName = fullName.trim();
     const cleanMobile = mobile.replace(/\D/g, "").slice(-10);
-    const cleanCity = "Kolkata";
+    const cleanCity = defaultCity || "Kolkata";
 
     if (!cleanName || cleanName.length < 2) {
       setError("Please enter your full legal or business name.");
@@ -108,6 +110,7 @@ export const VendorLoginModal: React.FC<VendorLoginModalProps> = ({
         JSON.stringify({
           fullName: cleanName,
           mobile: cleanMobile,
+          city: cleanCity,
           preferredPackage: selectedPackage,
           applicationId: assignedAppId,
         })
@@ -121,12 +124,14 @@ export const VendorLoginModal: React.FC<VendorLoginModalProps> = ({
     router.push(
       `/apply?package=${encodeURIComponent(selectedPackage)}&name=${encodeURIComponent(
         cleanName
-      )}&mobile=${encodeURIComponent(cleanMobile)}&applicationId=${encodeURIComponent(assignedAppId)}`
+      )}&mobile=${encodeURIComponent(cleanMobile)}&city=${encodeURIComponent(
+        cleanCity
+      )}&applicationId=${encodeURIComponent(assignedAppId)}`
     );
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
       <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl relative border-2 border-amber-400 my-8 text-slate-900 animate-in zoom-in-95 duration-200">
         {/* Close Button */}
         <button
@@ -180,7 +185,7 @@ export const VendorLoginModal: React.FC<VendorLoginModalProps> = ({
                   : "bg-amber-50/60 hover:bg-amber-100/80 text-amber-900 border-amber-200"
               }`}
             >
-              <span className="absolute -top-1.5 right-1 bg-amber-600 text-white text-[8px] font-black px-1.5 py-0.2 rounded-full uppercase">
+              <span className="absolute -top-1.5 right-1 bg-amber-600 text-white text-[8px] font-black px-1.5 py-0.5 leading-none rounded-full uppercase">
                 ★ Hub
               </span>
               <div className="text-[11px] font-black">Gold</div>

@@ -1,14 +1,30 @@
+"use client";
+
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Phone, Mail, MapPin, ShieldCheck } from "lucide-react";
+import { SERVICE_CITIES } from "@/data/serviceCities";
+import { PwaInstallPrompt } from "@/components/PwaInstallPrompt";
 
 interface FooterProps {
   onOpenApplyModal?: (pkgId?: string) => void;
   onOpenBrochureModal: () => void;
+  cityName?: string;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onOpenApplyModal, onOpenBrochureModal }) => {
+export const Footer: React.FC<FooterProps> = ({
+  onOpenApplyModal,
+  onOpenBrochureModal,
+  cityName,
+}) => {
+  const pathname = usePathname();
+  const cityQuery = cityName ? `&city=${encodeURIComponent(cityName)}` : "";
+  const isLandingOrCityPage =
+    pathname === "/" || pathname?.startsWith("/services/");
+  const sectionHref = (hash: string) =>
+    isLandingOrCityPage ? hash : `/${hash}`;
   return (
     <footer className="bg-brand-black-pure text-slate-300 pt-8 sm:pt-10 pb-16 md:pb-10 border-t border-brand-black-border text-xs sm:text-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -52,7 +68,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenApplyModal, onOpenBrochure
             <ul className="space-y-2 text-xs">
               <li>
                 <Link
-                  href="/apply?package=silver"
+                  href={`/apply?package=silver${cityQuery}`}
                   className="hover:text-brand-yellow text-slate-400 transition-colors block text-left cursor-pointer"
                 >
                   Silver Partner (Express Booking Kiosk)
@@ -60,7 +76,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenApplyModal, onOpenBrochure
               </li>
               <li>
                 <Link
-                  href="/apply?package=gold"
+                  href={`/apply?package=gold${cityQuery}`}
                   className="hover:text-brand-yellow font-bold text-brand-yellow transition-colors block text-left cursor-pointer"
                 >
                   Gold Partner (District Exclusive Hub) ★
@@ -68,7 +84,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenApplyModal, onOpenBrochure
               </li>
               <li>
                 <Link
-                  href="/apply?package=platinum"
+                  href={`/apply?package=platinum${cityQuery}`}
                   className="hover:text-brand-yellow text-slate-400 transition-colors block text-left cursor-pointer"
                 >
                   Platinum Partner (Regional Master Hub)
@@ -109,34 +125,43 @@ export const Footer: React.FC<FooterProps> = ({ onOpenApplyModal, onOpenBrochure
                 </button>
               </li>
               <li>
-                <a href="/#packages" className="hover:text-brand-yellow transition-colors">
+                <a href={sectionHref("#packages")} className="hover:text-brand-yellow transition-colors">
                   Vendor Packages
                 </a>
               </li>
               <li>
-                <a href="#overview" className="hover:text-brand-yellow transition-colors">
+                <a href={sectionHref("#overview")} className="hover:text-brand-yellow transition-colors">
                   Vendor Overview
                 </a>
               </li>
               <li>
-                <a href="#why-us" className="hover:text-brand-yellow transition-colors">
-                  Why BroomBoom
-                </a>
+                <Link href="/blog" className="hover:text-brand-yellow transition-colors">
+                  Vendor Blog &amp; Playbooks
+                </Link>
               </li>
               <li>
-                <a href="#journey" className="hover:text-brand-yellow transition-colors">
-                  Begin Your Journey
-                </a>
+                <Link href="/reviews" className="hover:text-brand-yellow transition-colors">
+                  Partner Reviews
+                </Link>
               </li>
               <li>
-                <a href="#testimonials" className="hover:text-brand-yellow transition-colors">
-                  Partner Stories
-                </a>
+                <Link href="/support" className="hover:text-brand-yellow transition-colors">
+                  Vendor Support Center
+                </Link>
               </li>
               <li>
-                <a href="#faq" className="hover:text-brand-yellow transition-colors">
+                <a href={sectionHref("#faq")} className="hover:text-brand-yellow transition-colors">
                   Vendor FAQs
                 </a>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => window.dispatchEvent(new Event("trigger-pwa-install"))}
+                  className="hover:text-brand-yellow text-brand-yellow font-bold transition-colors block text-left cursor-pointer"
+                >
+                  Download Vendor App &rarr;
+                </button>
               </li>
             </ul>
           </div>
@@ -161,10 +186,34 @@ export const Footer: React.FC<FooterProps> = ({ onOpenApplyModal, onOpenBrochure
               </a>
               <div className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-brand-yellow shrink-0 mt-0.5" />
-                <span>India</span>
+                <span>{cityName ? `${cityName}, India` : "India"}</span>
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Service Cities Directory Bar */}
+        <div className="py-3.5 border-b border-brand-black-border flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
+          <span className="text-white font-bold uppercase tracking-wider text-[11px]">
+            Service Cities:
+          </span>
+          {SERVICE_CITIES.map((city) => {
+            const isActiveCity =
+              cityName?.toLowerCase() === city.name.toLowerCase();
+            return (
+              <Link
+                key={city.slug}
+                href={`/services/${city.slug}`}
+                className={`transition-colors ${
+                  isActiveCity
+                    ? "text-brand-yellow font-black underline underline-offset-4"
+                    : "text-slate-400 hover:text-brand-yellow"
+                }`}
+              >
+                {city.name}
+              </Link>
+            );
+          })}
         </div>
 
         {/* Disclaimer & Copyright */}
@@ -199,6 +248,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenApplyModal, onOpenBrochure
           *Disclaimer: Revenue projections, returns, and timelines shown on this portal are estimates calculated using standard market averages and are subject to location viability, seasonal travel demand, and local operational execution.
         </div>
       </div>
+      <PwaInstallPrompt />
     </footer>
   );
 };

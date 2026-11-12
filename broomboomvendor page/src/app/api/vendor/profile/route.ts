@@ -339,6 +339,7 @@ export async function GET(request: Request) {
         vendorEmail: subscription?.vendorEmail || user?.vendorEmail || lead?.email || "",
         city: subscription?.city || lead?.city || "",
         state: subscription?.state || lead?.state || "",
+        pincode: (subscription as any)?.pincode || lead?.pincode || "712124",
         applicationId: targetAppId || subscription?.applicationId || user?.applicationId || "",
         spaceStatus: lead?.spaceStatus || "",
         carpetArea: lead?.carpetArea || "",

@@ -6,9 +6,20 @@ import { Phone, ArrowRight } from "lucide-react";
 
 interface FloatingCtaProps {
   onApplyClick?: () => void;
+  cityName?: string;
 }
 
-export const FloatingCta: React.FC<FloatingCtaProps> = ({ onApplyClick }) => {
+export const FloatingCta: React.FC<FloatingCtaProps> = ({
+  onApplyClick,
+  cityName,
+}) => {
+  const applyHref = cityName
+    ? `/apply?package=gold&city=${encodeURIComponent(cityName)}`
+    : "/apply?package=gold";
+  const whatsappText = cityName
+    ? `Hello BroomBoom Team, I am interested in joining as a BroomBoom Vendor Partner in ${cityName}.`
+    : "Hello BroomBoom Team, I am interested in joining as a BroomBoom Vendor Partner.";
+
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-md border-t border-slate-800 p-2 pb-[calc(0.55rem+env(safe-area-inset-bottom,0px))] shadow-[0_-4px_25px_rgba(0,0,0,0.4)]">
       <div className="flex items-center gap-2 max-w-md mx-auto">
@@ -24,7 +35,7 @@ export const FloatingCta: React.FC<FloatingCtaProps> = ({ onApplyClick }) => {
 
         {/* 2. Direct WhatsApp (WP) Action Button */}
         <a
-          href="https://wa.me/916289952418?text=Hello%20BroomBoom%20Team%2C%20I%20am%20interested%20in%20joining%20as%20a%20BroomBoom%20Vendor%20Partner."
+          href={`https://wa.me/916289952418?text=${encodeURIComponent(whatsappText)}`}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center justify-center gap-1.5 py-2.5 px-3 border border-emerald-500/50 bg-emerald-950/80 hover:bg-emerald-900/90 rounded-xl text-xs font-black text-emerald-300 hover:text-white transition-all active:scale-95 shrink-0 shadow-sm"
@@ -39,7 +50,7 @@ export const FloatingCta: React.FC<FloatingCtaProps> = ({ onApplyClick }) => {
 
         {/* 3. Apply for Vendor Button */}
         <Link
-          href="/apply?package=gold"
+          href={applyHref}
           onClick={onApplyClick}
           className="flex-1 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-500 hover:to-yellow-500 text-slate-950 py-2.5 px-3 rounded-xl text-xs font-black shadow-[0_2px_12px_rgba(245,158,11,0.4)] flex items-center justify-center gap-1.5 transition-all transform active:scale-95 cursor-pointer"
         >

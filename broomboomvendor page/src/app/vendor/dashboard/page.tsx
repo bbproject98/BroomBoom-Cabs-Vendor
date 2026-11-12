@@ -55,6 +55,16 @@ import {
   Search,
   MessageCircle,
 } from "lucide-react";
+import IncomingOrderCard, {
+  type IncomingOrderCardData,
+} from "@/components/IncomingOrderCard";
+import BookingResponseModal from "@/components/BookingResponseModal";
+
+const formatSignedRupees = (val: number) => {
+  const num = Math.round(Number(val || 0));
+  if (num < 0) return `-₹${Math.abs(num).toLocaleString("en-IN")}`;
+  return `₹${num.toLocaleString("en-IN")}`;
+};
 
 interface PlanDetails {
   tier: string;
@@ -79,11 +89,52 @@ interface VendorProfile {
   vendorEmail: string;
   city: string;
   state: string;
+  pincode?: string;
   applicationId: string;
   spaceStatus: string;
   carpetArea: string;
   currentProfession: string;
   appliedAt: string;
+}
+
+interface DashboardOrder {
+  id: string;
+  dbId?: string;
+  bookingId?: string;
+  pickup: string;
+  pickupZone?: string;
+  pickupPincode?: string;
+  drop: string;
+  dropZone?: string;
+  dropPincode?: string;
+  distance?: string;
+  duration?: string;
+  vehicleCategory?: string;
+  planTier?: string;
+  bookingType?: string;
+  bookingTypeLabel?: string;
+  inclusionsMatched?: string;
+  totalFare: number;
+  vendorPayout: number;
+  commissionRate?: number;
+  passengerName: string;
+  passengerPhone: string;
+  passengerRating?: number;
+  status: string;
+  dispatchTime: string;
+  paymentMethod: string;
+  source?: string;
+  assignedVendorId?: string;
+  assignedVendorName?: string;
+  assignedVendorPincode?: string;
+  rejectedVendorIds?: string[];
+  assignedDriver?: {
+    name: string;
+    phone: string;
+    vehicleNumber: string;
+    liveStatus: string;
+    startOtp?: string;
+  };
 }
 
 interface ReviewStatus {
@@ -226,7 +277,7 @@ function VendorDashboardContent() {
   // 2. Orders & Live Dispatch state
   const [ordersTab, setOrdersTab] = useState<"incoming" | "active" | "completed">("incoming");
   const [orderActionNotice, setOrderActionNotice] = useState<{ type: "success" | "info"; message: string } | null>(null);
-  const [ordersList, setOrdersList] = useState([
+  const [ordersList, setOrdersList] = useState<DashboardOrder[]>([
     {
       id: "BB-ORD-9281",
       pickup: "Kolkata Netaji Subhash Chandra Bose Airport (Terminal 2, Gate 4)",
@@ -330,103 +381,35 @@ function VendorDashboardContent() {
     },
   ]);
 
-  // 3. Wallet (Balance & Penalty Deduction Ledger) state
-  const [walletBalance, setWalletBalance] = useState(2450);
+  // 3. Wallet (₹0 Baseline & 2-Booking Settlement Ledger) state
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [unsettledBookingsCount, setUnsettledBookingsCount] = useState(0);
+  const [maxUnsettledBookings, setMaxUnsettledBookings] = useState(2);
+  const [amountDueToZero, setAmountDueToZero] = useState(0);
+  const [mustPayToZero, setMustPayToZero] = useState(false);
   const [walletFilter, setWalletFilter] = useState<"all" | "penalty" | "earnings">("all");
   const [showAddMoneyModal, setShowAddMoneyModal] = useState(false);
-  const [addMoneyAmount, setAddMoneyAmount] = useState<number>(1000);
+  const [addMoneyAmount, setAddMoneyAmount] = useState<number>(500);
   const [isAddingMoney, setIsAddingMoney] = useState(false);
   const [walletNotice, setWalletNotice] = useState<string | null>(null);
+  const [selectedResponseOrder, setSelectedResponseOrder] = useState<IncomingOrderCardData | null>(null);
+  const [responseModalMode, setResponseModalMode] = useState<"confirm" | "price">("confirm");
 
-  const [walletTransactions, setWalletTransactions] = useState([
-    {
-      id: "TXN-WAL-9941",
-      type: "penalty",
-      title: "Driver Cancellation Penalty Deducted",
-      refBookingId: "BB-ORD-9190",
-      reason: "Driver cancelled accepted booking #BB-ORD-9190 within 15-min pickup window",
-      amount: -50,
-      date: "Today, 11:35 AM",
-      balanceAfter: 2450,
-      badge: "PENALTY DEDUCTION",
-      badgeColor: "bg-rose-100 text-rose-900 border-rose-300",
-      driverInvolved: "Anil Mondal (WB-02-B-4412)",
-    },
-    {
-      id: "TXN-WAL-9930",
-      type: "credit",
-      title: "Trip Commission Payout Credited",
-      refBookingId: "BB-ORD-9260",
-      reason: "Ballygunge to Kolkata Airport ride fare credit after platform commission",
-      amount: 590,
-      date: "Today, 10:20 AM",
-      balanceAfter: 2500,
-      badge: "TRIP SETTLEMENT",
-      badgeColor: "bg-emerald-100 text-emerald-900 border-emerald-300",
-    },
-    {
-      id: "TXN-WAL-9922",
-      type: "credit",
-      title: "Trip Commission Payout Credited",
-      refBookingId: "BB-ORD-9252",
-      reason: "Esplanade to Dum Dum ride fare credit after platform commission",
-      amount: 320,
-      date: "Today, 08:45 AM",
-      balanceAfter: 1910,
-      badge: "TRIP SETTLEMENT",
-      badgeColor: "bg-emerald-100 text-emerald-900 border-emerald-300",
-    },
-    {
-      id: "TXN-WAL-9891",
-      type: "penalty",
-      title: "Late Pickup Delay Penalty Deducted",
-      refBookingId: "BB-ORD-9124",
-      reason: "Driver reached pickup point 16 minutes after scheduled passenger ETA",
-      amount: -30,
-      date: "Yesterday, 06:15 PM",
-      balanceAfter: 1590,
-      badge: "DELAY PENALTY",
-      badgeColor: "bg-amber-100 text-amber-900 border-amber-300",
-      driverInvolved: "Sunil Das (WB-06-M-8199)",
-    },
-    {
-      id: "TXN-WAL-9870",
-      type: "penalty",
-      title: "Driver Cancellation Penalty Deducted",
-      refBookingId: "BB-ORD-9080",
-      reason: "Driver refused passenger trip due to destination preference after dispatch",
-      amount: -50,
-      date: "14 Oct 2026, 03:20 PM",
-      balanceAfter: 1620,
-      badge: "PENALTY DEDUCTION",
-      badgeColor: "bg-rose-100 text-rose-900 border-rose-300",
-      driverInvolved: "Prabir Ghosh (WB-03-P-1092)",
-    },
-    {
-      id: "TXN-WAL-9844",
-      type: "credit",
-      title: "Cashfree UPI Wallet Recharge",
-      refBookingId: "CF-WAL-84920",
-      reason: "Instant online wallet top-up via UPI NetBanking",
-      amount: 1000,
-      date: "12 Oct 2026, 04:10 PM",
-      balanceAfter: 1670,
-      badge: "WALLET TOP-UP",
-      badgeColor: "bg-blue-100 text-blue-900 border-blue-300",
-    },
-    {
-      id: "TXN-WAL-9810",
-      type: "credit",
-      title: "Penalty Dispute Waiver Refund Credited",
-      refBookingId: "BB-ORD-8940",
-      reason: "Admin HQ approved penalty refund due to passenger cancellation mismatch",
-      amount: 50,
-      date: "10 Oct 2026, 01:45 PM",
-      balanceAfter: 670,
-      badge: "DISPUTE REFUND",
-      badgeColor: "bg-teal-100 text-teal-900 border-teal-300",
-    },
-  ]);
+  const [walletTransactions, setWalletTransactions] = useState<
+    Array<{
+      id: string;
+      type: string;
+      title: string;
+      refBookingId: string;
+      reason: string;
+      amount: number;
+      date: string;
+      balanceAfter: number;
+      badge: string;
+      badgeColor: string;
+      driverInvolved?: string;
+    }>
+  >([]);
 
   // 4. Incentives state
   const [incentivesList, setIncentivesList] = useState([
@@ -648,122 +631,246 @@ function VendorDashboardContent() {
     },
   ]);
 
+  const applyWalletState = useCallback((w: any) => {
+    if (!w) return;
+    setWalletBalance(Math.round(Number(w.balance ?? 0)));
+    setUnsettledBookingsCount(Number(w.unsettledBookingsCount ?? 0));
+    setMaxUnsettledBookings(Number(w.maxUnsettledBookings ?? 2));
+    const due = Math.round(Number(w.amountDueToZero ?? (Number(w.balance ?? 0) < 0 ? Math.abs(Number(w.balance)) : 0)));
+    setAmountDueToZero(due);
+    setMustPayToZero(Boolean(w.mustPayToZero));
+    if (due > 0) {
+      setAddMoneyAmount(due);
+    }
+    if (Array.isArray(w.transactions)) {
+      setWalletTransactions(w.transactions);
+    }
+  }, []);
+
+  const fetchLiveWallet = useCallback(async () => {
+    try {
+      const vId = sessionUser?.applicationId || profile?.applicationId || "";
+      if (!vId) return;
+      const res = await fetch(`/api/vendor/wallet?vendorId=${encodeURIComponent(vId)}`);
+      const data = await res.json();
+      if (data.success && data.wallet) {
+        applyWalletState(data.wallet);
+      }
+    } catch (e) {
+      console.error("[FETCH LIVE WALLET ERROR]", e);
+    }
+  }, [sessionUser, profile, applyWalletState]);
+
+  const openPayToZeroModal = useCallback((due?: number) => {
+    const targetDue = due && due > 0 ? Math.round(due) : amountDueToZero > 0 ? amountDueToZero : 500;
+    setAddMoneyAmount(targetDue);
+    setShowAddMoneyModal(true);
+  }, [amountDueToZero]);
+
   // Orders Action Handlers
-  const handleAcceptOrder = (orderId: string) => {
-    const updated = ordersList.map((ord) => {
-      if (ord.id === orderId) {
-        return {
-          ...ord,
-          status: "active",
-          dispatchTime: "Accepted just now",
-          assignedDriver: {
+  const handleAcceptOrder = async (orderId: string, proposedPrice?: number) => {
+    try {
+      const vId = sessionUser?.applicationId || profile?.applicationId || "VENDOR";
+      const res = await fetch("/api/vendor/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "accept",
+          bookingId: orderId,
+          vendorId: vId,
+          proposedPrice,
+          driverInfo: {
             name: "Raju Karmakar",
             phone: "+91 91234 56780",
             vehicleNumber: "WB-02-AK-4921",
-            liveStatus: "Driver dispatched & en route to pickup (ETA 4 mins)",
             startOtp: "6814",
+            proposedPrice,
           },
-        };
+        }),
+      });
+      const data = await res.json();
+      if (res.status === 402 || data.code === "WALLET_CLEARANCE_REQUIRED") {
+        if (data.wallet) applyWalletState(data.wallet);
+        setSelectedResponseOrder(null);
+        openPayToZeroModal(data.wallet?.amountDueToZero || amountDueToZero);
+        setOrderActionNotice({
+          type: "info",
+          message:
+            data.error ||
+            "You have completed 2 bookings. Please clear your due balance to maintain ₹0 before taking the next booking.",
+        });
+        return;
       }
-      return ord;
-    });
-    setOrdersList(updated);
-    setOrdersTab("active");
-    setOrderActionNotice({
-      type: "success",
-      message: `Booking ${orderId} accepted successfully! Driver Raju Karmakar (WB-02-AK-4921) has been dispatched to passenger.`,
-    });
-    setTimeout(() => setOrderActionNotice(null), 6000);
-  };
 
-  const handleDeclineOrder = (orderId: string) => {
-    setOrdersList((prev) => prev.filter((ord) => ord.id !== orderId));
-    setOrderActionNotice({
-      type: "info",
-      message: `Booking ${orderId} was passed to the next available regional fleet partner.`,
-    });
-    setTimeout(() => setOrderActionNotice(null), 5000);
-  };
-
-  const handleCompleteOrder = (orderId: string) => {
-    const ord = ordersList.find((o) => o.id === orderId);
-    if (!ord) return;
-
-    const payout = ord.vendorPayout || 440;
-    setOrdersList((prev) =>
-      prev.map((o) =>
-        o.id === orderId
-          ? {
-              ...o,
-              status: "completed",
-              dispatchTime: "Just completed",
-              assignedDriver: {
-                ...o.assignedDriver!,
-                liveStatus: "Trip Completed & Net Payout Settled",
-              },
+      if (data.success) {
+        if (data.wallet) applyWalletState(data.wallet);
+        setSelectedResponseOrder(null);
+        setOrdersList((prev) =>
+          prev.map((ord) => {
+            if (ord.id === orderId || ord.bookingId === orderId) {
+              return {
+                ...ord,
+                status: "active",
+                vendorPayout: proposedPrice && proposedPrice > 0 ? proposedPrice : ord.vendorPayout,
+                dispatchTime: "Accepted just now",
+                assignedDriver: {
+                  name: "Raju Karmakar",
+                  phone: "+91 91234 56780",
+                  vehicleNumber: "WB-02-AK-4921",
+                  liveStatus: "Driver dispatched & en route to pickup (ETA 4 mins)",
+                  startOtp: "6814",
+                },
+              };
             }
-          : o
-      )
-    );
-
-    // Credit payout to wallet
-    setWalletBalance((prev) => prev + payout);
-    setWalletTransactions((prev) => [
-      {
-        id: `TXN-WAL-${Math.floor(1000 + Math.random() * 9000)}`,
-        type: "credit",
-        title: "Trip Commission Payout Credited",
-        refBookingId: orderId,
-        reason: `${ord.pickup} to ${ord.drop} fare payout credited to wallet`,
-        amount: payout,
-        date: "Just now",
-        balanceAfter: walletBalance + payout,
-        badge: "TRIP SETTLEMENT",
-        badgeColor: "bg-emerald-100 text-emerald-900 border-emerald-300",
-      },
-      ...prev,
-    ]);
-
-    setOrdersTab("completed");
-    setOrderActionNotice({
-      type: "success",
-      message: `Trip ${orderId} marked completed! Net earnings of ₹${payout} credited to your wallet balance.`,
-    });
+            return ord;
+          })
+        );
+        setOrdersTab("active");
+        setOrderActionNotice({
+          type: "success",
+          message: data.message || `Booking ${orderId} accepted successfully! Driver Raju Karmakar dispatched.`,
+        });
+        fetchLiveOrders();
+        fetchLiveWallet();
+      } else {
+        alert(data.error || "Failed to accept booking");
+      }
+    } catch (err) {
+      console.error("[ACCEPT ORDER ERROR]", err);
+    }
     setTimeout(() => setOrderActionNotice(null), 6000);
   };
 
-  // Wallet Top-up Handler
-  const handleAddMoneySubmit = (e?: React.FormEvent) => {
+  const handleDeclineOrder = async (orderId: string) => {
+    try {
+      const vId = sessionUser?.applicationId || profile?.applicationId || "VENDOR";
+      const targetTier = (plan?.tier || sessionUser?.currentPlan || "gold").toUpperCase();
+      const res = await fetch("/api/vendor/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "reject",
+          bookingId: orderId,
+          vendorId: vId,
+          reason: "Declined by vendor - cascading to next gold partner",
+        }),
+      });
+      const data = await res.json();
+      setSelectedResponseOrder(null);
+      if (data.success) {
+        if (data.cascaded && data.nextVendor) {
+          setOrderActionNotice({
+            type: "info",
+            message: `⚡ Booking ${orderId} declined and routed directly to next ${targetTier} planner partner: ${data.nextVendor.vendorName} (${data.nextVendor.vendorId}, PIN: ${data.nextVendor.pincode})!`,
+          });
+        } else {
+          setOrderActionNotice({
+            type: "info",
+            message: data.message || `Booking ${orderId} was passed to the next available regional fleet partner.`,
+          });
+        }
+        setOrdersList((prev) => prev.filter((ord) => ord.id !== orderId && ord.bookingId !== orderId));
+        fetchLiveOrders();
+      } else {
+        alert(data.error || "Failed to decline booking");
+      }
+    } catch (err) {
+      console.error("[DECLINE ORDER ERROR]", err);
+      setOrdersList((prev) => prev.filter((ord) => ord.id !== orderId && ord.bookingId !== orderId));
+    }
+    setTimeout(() => setOrderActionNotice(null), 8000);
+  };
+
+  const handleCompleteOrder = async (orderId: string) => {
+    const ord = ordersList.find((o) => o.id === orderId || o.bookingId === orderId);
+    if (!ord) return;
+    const payout = ord.vendorPayout || 440;
+
+    try {
+      const res = await fetch("/api/vendor/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "complete",
+          bookingId: orderId,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOrdersList((prev) =>
+          prev.map((o) =>
+            o.id === orderId || o.bookingId === orderId
+              ? {
+                  ...o,
+                  status: "completed",
+                  dispatchTime: "Just completed",
+                  assignedDriver: {
+                    ...(o.assignedDriver || {
+                      name: "Fleet Driver",
+                      phone: "+91 91234 56780",
+                      vehicleNumber: "WB-02-AK-4921",
+                    }),
+                    liveStatus: "Trip Completed & Net Payout Settled",
+                  },
+                }
+              : o
+          )
+        );
+
+        setOrdersTab("completed");
+        setOrderActionNotice({
+          type: "success",
+          message: `Trip ${orderId} marked completed! Collected fare payout: ₹${payout}. Wallet stays synced (${unsettledBookingsCount}/${maxUnsettledBookings} unsettled bookings; pay any negative balance to maintain ₹0).`,
+        });
+        fetchLiveOrders();
+        fetchLiveWallet();
+      }
+    } catch (err) {
+      console.error("[COMPLETE ORDER ERROR]", err);
+    }
+    setTimeout(() => setOrderActionNotice(null), 6000);
+  };
+
+  // Wallet Top-up & Pay-to-Zero Settlement Handler
+  const handleAddMoneySubmit = async (e?: React.FormEvent) => {
     if (e && e.preventDefault) e.preventDefault();
-    if (!addMoneyAmount || addMoneyAmount < 100) {
-      alert("Please enter a valid top-up amount (minimum ₹100).");
+    const minRequired = mustPayToZero && amountDueToZero > 0 ? amountDueToZero : 1;
+    if (!addMoneyAmount || addMoneyAmount < minRequired) {
+      alert(`Please enter at least ₹${minRequired} to settle your wallet.`);
       return;
     }
 
     setIsAddingMoney(true);
-    setTimeout(() => {
-      const newBal = walletBalance + Number(addMoneyAmount);
-      setWalletBalance(newBal);
-      setWalletTransactions((prev) => [
-        {
-          id: `TXN-WAL-${Math.floor(1000 + Math.random() * 9000)}`,
-          type: "credit",
-          title: "Cashfree UPI Wallet Top-up",
-          refBookingId: `CF-WAL-${Math.floor(10000 + Math.random() * 90000)}`,
-          reason: "Instant online wallet top-up via UPI NetBanking",
+    try {
+      const vId = sessionUser?.applicationId || profile?.applicationId || "VENDOR";
+      const res = await fetch("/api/vendor/wallet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "pay_due",
+          vendorId: vId,
           amount: Number(addMoneyAmount),
-          date: "Just now",
-          balanceAfter: newBal,
-          badge: "WALLET TOP-UP",
-          badgeColor: "bg-blue-100 text-blue-900 border-blue-300",
-        },
-        ...prev,
-      ]);
+          method: "UPI Payment Link",
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.wallet) {
+        applyWalletState(data.wallet);
+        setShowAddMoneyModal(false);
+        setWalletNotice(
+          data.message ||
+            `Payment of ₹${Number(addMoneyAmount).toLocaleString("en-IN")} confirmed! Wallet maintained at ${formatSignedRupees(data.wallet.balance)}.`
+        );
+        setTimeout(() => setWalletNotice(null), 6000);
+      } else {
+        alert(data.error || "Failed to complete wallet payment.");
+      }
+    } catch (err) {
+      console.error("[WALLET PAY ERROR]", err);
+      alert("Network error while settling wallet payment.");
+    } finally {
       setIsAddingMoney(false);
-      setShowAddMoneyModal(false);
-      setWalletNotice(`Wallet successfully recharged with ₹${Number(addMoneyAmount).toLocaleString("en-IN")} via Cashfree.`);
-      setTimeout(() => setWalletNotice(null), 6000);
-    }, 1200);
+    }
   };
 
   // Subscription License Recharge Handler
@@ -944,6 +1051,37 @@ function VendorDashboardContent() {
       fetchDashboardData();
     }
   }, [sessionUser, fetchDashboardData]);
+  // Fetch live orders for this vendor based on plan tier and registered pincode
+  const fetchLiveOrders = useCallback(async () => {
+    try {
+      const vId = sessionUser?.applicationId || profile?.applicationId || "";
+      const pTier = plan?.tier || sessionUser?.currentPlan || "gold";
+      const pin = profile?.pincode || "712124";
+      const city = profile?.city || "";
+
+      const res = await fetch(
+        `/api/vendor/orders?vendorId=${encodeURIComponent(vId)}&planTier=${encodeURIComponent(pTier)}&pincode=${encodeURIComponent(pin)}&city=${encodeURIComponent(city)}`
+      );
+      const data = await res.json();
+      if (data.success && Array.isArray(data.orders)) {
+        if (data.orders.length > 0) {
+          setOrdersList(data.orders);
+        }
+      }
+    } catch (e) {
+      console.error("[FETCH LIVE ORDERS ERROR]", e);
+    }
+  }, [sessionUser, profile, plan]);
+
+  useEffect(() => {
+    fetchLiveOrders();
+    fetchLiveWallet();
+    const interval = setInterval(() => {
+      fetchLiveOrders();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [fetchLiveOrders, fetchLiveWallet]);
+
 
   const handleLogout = () => {
     if (typeof window !== "undefined") {
@@ -1225,8 +1363,12 @@ function VendorDashboardContent() {
       id: "wallet",
       label: "Wallet",
       icon: <Wallet className="w-4 h-4" />,
-      badge: `₹${walletBalance.toLocaleString("en-IN")}`,
-      badgeClass: "bg-blue-100 text-blue-900 border border-blue-300",
+      badge: formatSignedRupees(walletBalance),
+      badgeClass: mustPayToZero
+        ? "bg-rose-100 text-rose-900 border border-rose-300 animate-pulse"
+        : walletBalance < 0
+        ? "bg-amber-100 text-amber-900 border border-amber-300"
+        : "bg-emerald-100 text-emerald-900 border border-emerald-300",
     },
     {
       id: "incentives",
@@ -1908,6 +2050,51 @@ function VendorDashboardContent() {
     const activeOrders = ordersList.filter((o) => o.status === "active");
     const completedOrders = ordersList.filter((o) => o.status === "completed");
 
+    function getBookingTypeBadge(bookingType: string | undefined, planTier?: string) {
+      const type = (bookingType || "").toLowerCase();
+      const tier = (planTier || "gold").toLowerCase();
+
+      if (type.includes("airport")) {
+        return {
+          label: "Airport Transfer",
+          color: "bg-emerald-100 text-emerald-900 border-emerald-300",
+        };
+      }
+
+      if (type.includes("outstation")) {
+        return {
+          label: "Outstation",
+          color: "bg-violet-100 text-violet-900 border-violet-300",
+        };
+      }
+
+      if (type.includes("package") || type.includes("corporate") || type.includes("daily")) {
+        return {
+          label: "Package Ride",
+          color: "bg-cyan-100 text-cyan-900 border-cyan-300",
+        };
+      }
+
+      if (tier === "silver") {
+        return {
+          label: "Silver Booking",
+          color: "bg-slate-100 text-slate-900 border-slate-300",
+        };
+      }
+
+      if (tier === "platinum") {
+        return {
+          label: "Platinum Ride",
+          color: "bg-fuchsia-100 text-fuchsia-900 border-fuchsia-300",
+        };
+      }
+
+      return {
+        label: "Local Ride",
+        color: "bg-amber-100 text-amber-900 border-amber-300",
+      };
+    }
+
     return (
       <div className="space-y-6 animate-in fade-in duration-300">
         {/* Notice alert */}
@@ -1936,9 +2123,15 @@ function VendorDashboardContent() {
         {/* Header */}
         <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 rounded-3xl p-6 sm:p-7 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              Live Booking Dispatch Engine Active
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                Live Dispatch Engine Active
+              </div>
+              <div className="inline-flex items-center gap-1.5 bg-amber-400/20 text-amber-300 border border-amber-400/40 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
+                <MapPin className="w-3 h-3 text-amber-400" />
+                Territory PIN: {profile?.pincode || "712124"} ({(plan?.tier || "gold").toUpperCase()} PLANNER)
+              </div>
             </div>
             <h2 className="text-2xl font-black tracking-tight text-white">
               Territory Orders &amp; Booking Dispatch
@@ -1964,6 +2157,58 @@ function VendorDashboardContent() {
               <span className="text-lg font-black text-white">{completedOrders.length}</span>
             </div>
           </div>
+        </div>
+
+        {/* Wallet ₹0 Settlement Cycle Status Bar */}
+        <div
+          className={`rounded-2xl p-4 border-2 flex flex-wrap items-center justify-between gap-3 shadow-xs ${
+            mustPayToZero
+              ? "bg-rose-50 border-rose-300 text-rose-950"
+              : walletBalance < 0
+              ? "bg-amber-50 border-amber-300 text-amber-950"
+              : "bg-emerald-50 border-emerald-300 text-emerald-950"
+          }`}
+        >
+          <div className="flex items-start sm:items-center gap-3">
+            <Wallet
+              className={`w-5 h-5 shrink-0 mt-0.5 sm:mt-0 ${
+                mustPayToZero
+                  ? "text-rose-600"
+                  : walletBalance < 0
+                  ? "text-amber-600"
+                  : "text-emerald-600"
+              }`}
+            />
+            <div className="space-y-0.5 text-xs">
+              <div className="font-black flex flex-wrap items-center gap-2">
+                <span>Wallet Balance: {formatSignedRupees(walletBalance)}</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-white border border-slate-300 text-slate-900">
+                  {unsettledBookingsCount}/{maxUnsettledBookings} Bookings Before ₹0 Settlement
+                </span>
+              </div>
+              <p className="text-[11px] font-medium">
+                {mustPayToZero
+                  ? `Limit of 2 unsettled bookings reached! Driver/vendor must pay ₹${amountDueToZero.toLocaleString("en-IN")} to maintain ₹0 wallet for the next booking.`
+                  : walletBalance < 0
+                  ? `${maxUnsettledBookings - unsettledBookingsCount} booking slot left before mandatory ₹0 settlement (current due: ₹${amountDueToZero.toLocaleString("en-IN")}).`
+                  : "₹0 wallet balance maintained! Ready to accept up to 2 upcoming bookings."}
+              </p>
+            </div>
+          </div>
+
+          {amountDueToZero > 0 && (
+            <button
+              type="button"
+              onClick={() => openPayToZeroModal(amountDueToZero)}
+              className={`px-4 py-2 rounded-xl font-black text-xs text-white shadow-xs transition-colors cursor-pointer shrink-0 ${
+                mustPayToZero
+                  ? "bg-rose-600 hover:bg-rose-700"
+                  : "bg-amber-600 hover:bg-amber-700"
+              }`}
+            >
+              Pay ₹{amountDueToZero.toLocaleString("en-IN")} to Maintain ₹0
+            </button>
+          )}
         </div>
 
         {/* Tab Switcher */}
@@ -2027,104 +2272,16 @@ function VendorDashboardContent() {
               </div>
             ) : (
               incomingOrders.map((order) => (
-                <div
+                <IncomingOrderCard
                   key={order.id}
-                  className="bg-white rounded-3xl p-6 border-2 border-amber-300 shadow-lg space-y-5 hover:border-amber-400 transition-all relative overflow-hidden"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="bg-amber-100 text-amber-950 font-mono font-black text-xs px-3 py-1 rounded-full border border-amber-300">
-                        {order.id}
-                      </span>
-                      <span className="bg-blue-50 text-blue-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-blue-200">
-                        {order.vehicleCategory}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 flex items-center gap-1 animate-pulse">
-                        <Clock className="w-3.5 h-3.5" />
-                        {order.dispatchTime}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Route & Passenger Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                    {/* Route Details (7 cols) */}
-                    <div className="md:col-span-7 space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                      <div className="flex items-start gap-3">
-                        <div className="flex flex-col items-center mt-1">
-                          <span className="w-3 h-3 rounded-full bg-emerald-500 ring-4 ring-emerald-100" />
-                          <div className="w-0.5 h-8 bg-slate-300 my-1" />
-                          <span className="w-3 h-3 rounded-full bg-amber-500 ring-4 ring-amber-100" />
-                        </div>
-                        <div className="space-y-3 text-xs w-full">
-                          <div>
-                            <span className="text-[10px] font-bold text-emerald-800 uppercase block">Pickup Location</span>
-                            <span className="font-extrabold text-slate-900 block">{order.pickup}</span>
-                          </div>
-                          <div>
-                            <span className="text-[10px] font-bold text-amber-800 uppercase block">Drop Destination</span>
-                            <span className="font-extrabold text-slate-900 block">{order.drop}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-4 text-xs font-bold text-slate-600 pt-2 border-t border-slate-200">
-                        <span className="flex items-center gap-1">
-                          <Navigation className="w-3.5 h-3.5 text-slate-400" /> Distance: {order.distance}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5 text-slate-400" /> Est. Time: {order.duration}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Financials & Customer (5 cols) */}
-                    <div className="md:col-span-5 space-y-3 flex flex-col justify-between">
-                      <div className="bg-emerald-50/80 p-4 rounded-2xl border border-emerald-200 space-y-1.5">
-                        <span className="text-[10px] font-black text-emerald-800 uppercase block">Vendor Net Payout</span>
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-3xl font-black text-emerald-950">
-                            ₹{order.vendorPayout}
-                          </span>
-                          <span className="text-xs text-slate-500 font-semibold">
-                            (Total Fare: ₹{order.totalFare})
-                          </span>
-                        </div>
-                        <span className="text-[10px] text-emerald-700 font-bold block">
-                          Payment: {order.paymentMethod}
-                        </span>
-                      </div>
-
-                      <div className="text-xs text-slate-600 px-1">
-                        <span className="font-bold text-slate-900">{order.passengerName}</span>
-                        <span className="text-slate-400 ml-2">★ {order.passengerRating} (Verified Passenger)</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Actions: Accept or Decline */}
-                  <div className="flex flex-wrap items-center justify-end gap-3 pt-2 border-t border-slate-100">
-                    <button
-                      type="button"
-                      onClick={() => handleDeclineOrder(order.id)}
-                      className="px-4 py-2.5 text-xs font-bold text-slate-600 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
-                    >
-                      Decline / Pass
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleAcceptOrder(order.id)}
-                      className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs px-6 py-3 rounded-2xl shadow-md transition-all flex items-center gap-2 cursor-pointer"
-                    >
-                      <Check className="w-4 h-4 stroke-[3]" />
-                      <span>Accept Booking &amp; Dispatch</span>
-                    </button>
-                  </div>
-                </div>
+                  order={order}
+                  vendorPincode={profile?.pincode}
+                  walletLocked={mustPayToZero}
+                  onOpenDetails={(ord, mode) => {
+                    setResponseModalMode(mode);
+                    setSelectedResponseOrder(ord);
+                  }}
+                />
               ))
             )}
           </div>
@@ -2250,19 +2407,22 @@ function VendorDashboardContent() {
   // SECTION 3: WALLET & PENALTY CANCELLATION LEDGER
   // ==========================================
   const renderWalletSection = () => {
+    const isDebitTxn = (txn: { type: string; amount: number }) =>
+      txn.amount < 0 || txn.type === "penalty" || txn.type === "booking_due";
+
     const filteredTxns = walletTransactions.filter((txn) => {
-      if (walletFilter === "penalty") return txn.type === "penalty";
-      if (walletFilter === "earnings") return txn.type === "credit";
+      if (walletFilter === "penalty") return isDebitTxn(txn);
+      if (walletFilter === "earnings") return !isDebitTxn(txn);
       return true;
     });
 
     const totalPenalties = walletTransactions
-      .filter((t) => t.type === "penalty")
+      .filter((t) => isDebitTxn(t))
       .reduce((acc, t) => acc + Math.abs(t.amount), 0);
 
     const totalCredits = walletTransactions
-      .filter((t) => t.type === "credit")
-      .reduce((acc, t) => acc + t.amount, 0);
+      .filter((t) => !isDebitTxn(t))
+      .reduce((acc, t) => acc + Math.abs(t.amount), 0);
 
     return (
       <div className="space-y-6 animate-in fade-in duration-300">
@@ -2293,11 +2453,15 @@ function VendorDashboardContent() {
 
           <button
             type="button"
-            onClick={() => setShowAddMoneyModal(true)}
+            onClick={() => openPayToZeroModal(amountDueToZero > 0 ? amountDueToZero : 500)}
             className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs px-5 py-3 rounded-2xl shadow-md transition-all flex items-center gap-2 cursor-pointer self-start md:self-auto shrink-0"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
-            <span>Add Money to Wallet</span>
+            <span>
+              {amountDueToZero > 0
+                ? `Pay ₹${amountDueToZero.toLocaleString("en-IN")} to Maintain ₹0`
+                : "Add Money to Wallet"}
+            </span>
           </button>
         </div>
 
@@ -2305,14 +2469,32 @@ function VendorDashboardContent() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-md space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500 uppercase">Available Balance</span>
+              <span className="text-xs font-bold text-slate-500 uppercase">Current Wallet Balance</span>
               <Wallet className="w-5 h-5 text-amber-600" />
             </div>
-            <div className="text-3xl font-black text-slate-950">
-              ₹{walletBalance.toLocaleString("en-IN")}
+            <div
+              className={`text-3xl font-black ${
+                mustPayToZero
+                  ? "text-rose-700"
+                  : walletBalance < 0
+                  ? "text-amber-700"
+                  : "text-slate-950"
+              }`}
+            >
+              {formatSignedRupees(walletBalance)}
             </div>
-            <span className="text-[11px] text-emerald-700 font-bold block">
-              ● Active (Dispatch threshold: min ₹500)
+            <span
+              className={`text-[11px] font-bold block ${
+                mustPayToZero
+                  ? "text-rose-700"
+                  : walletBalance < 0
+                  ? "text-amber-700"
+                  : "text-emerald-700"
+              }`}
+            >
+              {mustPayToZero
+                ? `● Locked (${unsettledBookingsCount}/${maxUnsettledBookings} bookings used) — Pay ₹${amountDueToZero} to reach ₹0`
+                : `● Target ₹0 Maintained (${unsettledBookingsCount}/${maxUnsettledBookings} unsettled bookings)`}
             </span>
           </div>
 
@@ -2414,7 +2596,7 @@ function VendorDashboardContent() {
                   walletFilter === "penalty" ? "bg-rose-50 text-rose-900 font-black shadow-xs" : "text-slate-600 hover:text-rose-700"
                 }`}
               >
-                Penalties Only (-)
+                Penalties &amp; Booking Dues (-)
               </button>
               <button
                 type="button"
@@ -2423,14 +2605,19 @@ function VendorDashboardContent() {
                   walletFilter === "earnings" ? "bg-emerald-50 text-emerald-900 font-black shadow-xs" : "text-slate-600 hover:text-emerald-700"
                 }`}
               >
-                Credits Only (+)
+                Settlements &amp; Credits (+)
               </button>
             </div>
           </div>
 
           <div className="divide-y divide-slate-100">
-            {filteredTxns.map((txn) => {
-              const isPenalty = txn.type === "penalty";
+            {filteredTxns.length === 0 ? (
+              <div className="py-8 text-center text-xs text-slate-500">
+                No wallet transactions yet. Wallet starts at ₹0 baseline — accept bookings or settle dues to see live entries here.
+              </div>
+            ) : (
+            filteredTxns.map((txn) => {
+              const isPenalty = isDebitTxn(txn);
               return (
                 <div key={txn.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-start gap-3">
@@ -2466,15 +2653,16 @@ function VendorDashboardContent() {
                         isPenalty ? "text-rose-600" : "text-emerald-700"
                       }`}
                     >
-                      {isPenalty ? `-₹${Math.abs(txn.amount)}` : `+₹${txn.amount}`}
+                      {isPenalty ? `-₹${Math.abs(txn.amount).toLocaleString("en-IN")}` : `+₹${Math.abs(txn.amount).toLocaleString("en-IN")}`}
                     </span>
                     <span className="text-[10px] text-slate-400 font-mono">
-                      Bal: ₹{txn.balanceAfter.toLocaleString("en-IN")}
+                      Bal: {formatSignedRupees(txn.balanceAfter)}
                     </span>
                   </div>
                 </div>
               );
-            })}
+            })
+            )}
           </div>
         </div>
       </div>
@@ -3958,16 +4146,32 @@ function VendorDashboardContent() {
             </div>
 
             <p className="text-xs text-slate-600 leading-relaxed">
-              Maintain minimum ₹500 balance to keep your live trip dispatch engine active and cover automated cancellation penalty deductions.
+              {amountDueToZero > 0 ? (
+                <>
+                  Maintain <strong className="text-slate-900">₹0 balance</strong> for upcoming
+                  bookings. After 2 accepted bookings, settle your{" "}
+                  <strong className="text-rose-700">
+                    ₹{amountDueToZero.toLocaleString("en-IN")} due
+                  </strong>{" "}
+                  to restore ₹0 and unlock the next booking.
+                </>
+              ) : (
+                "Maintain ₹0 baseline wallet balance to keep receiving bookings continuously. After 2 unsettled bookings, clear any negative due back to ₹0."
+              )}
             </p>
 
             <div className="space-y-3">
               <label className="text-xs font-extrabold text-slate-800 uppercase tracking-wider block">
-                Select Amount
+                Select Settlement Amount
               </label>
 
               <div className="grid grid-cols-3 gap-2">
-                {[500, 1000, 2000].map((amt) => (
+                {(amountDueToZero > 0
+                  ? [amountDueToZero, Math.max(amountDueToZero, 500), Math.max(amountDueToZero, 1000)]
+                  : [500, 1000, 2000]
+                )
+                  .filter((val, idx, arr) => arr.indexOf(val) === idx)
+                  .map((amt) => (
                   <button
                     key={amt}
                     type="button"
@@ -3979,6 +4183,7 @@ function VendorDashboardContent() {
                     }`}
                   >
                     ₹{amt.toLocaleString("en-IN")}
+                    {amountDueToZero > 0 && amt === amountDueToZero ? " (Exact ₹0)" : ""}
                   </button>
                 ))}
               </div>
@@ -3987,8 +4192,8 @@ function VendorDashboardContent() {
                 <label className="text-[11px] font-bold text-slate-500 block mb-1">Or Enter Custom Amount (₹)</label>
                 <input
                   type="number"
-                  min="100"
-                  step="50"
+                  min={mustPayToZero && amountDueToZero > 0 ? amountDueToZero : 1}
+                  step="1"
                   value={addMoneyAmount}
                   onChange={(e) => setAddMoneyAmount(Number(e.target.value))}
                   className="w-full p-3 text-sm font-black text-slate-950 bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:border-amber-400"
@@ -3997,8 +4202,10 @@ function VendorDashboardContent() {
             </div>
 
             <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-[11px] text-slate-600 flex items-center justify-between">
-              <span>Current Available Balance:</span>
-              <strong className="text-slate-900 font-black">₹{walletBalance.toLocaleString("en-IN")}</strong>
+              <span>Current Wallet ({unsettledBookingsCount}/{maxUnsettledBookings} Bookings):</span>
+              <strong className={walletBalance < 0 ? "text-rose-700 font-black" : "text-slate-900 font-black"}>
+                {formatSignedRupees(walletBalance)}
+              </strong>
             </div>
 
             <button
@@ -4131,6 +4338,26 @@ function VendorDashboardContent() {
           </div>
         </div>
       )}
+
+      {/* MODAL 5: BOOKING RESPONSE DETAILS MODAL */}
+      <BookingResponseModal
+        order={selectedResponseOrder}
+        initialMode={responseModalMode}
+        wallet={{
+          balance: walletBalance,
+          unsettledBookingsCount,
+          maxUnsettledBookings,
+          amountDueToZero,
+          mustPayToZero,
+        }}
+        onClose={() => setSelectedResponseOrder(null)}
+        onConfirmAccept={handleAcceptOrder}
+        onDecline={handleDeclineOrder}
+        onOpenPayToZero={(due) => {
+          setSelectedResponseOrder(null);
+          openPayToZeroModal(due);
+        }}
+      />
 
       {/* Footer */}
       <footer className="text-center text-xs text-slate-400 py-6 border-t border-slate-200 mt-12">

@@ -7,9 +7,13 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface WhyBroomBoomProps {
   onOpenApplyModal?: (packageId?: string) => void;
+  cityName?: string;
 }
 
-export const WhyBroomBoom: React.FC<WhyBroomBoomProps> = ({ onOpenApplyModal }) => {
+export const WhyBroomBoom: React.FC<WhyBroomBoomProps> = ({
+  onOpenApplyModal,
+  cityName,
+}) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -85,10 +89,14 @@ export const WhyBroomBoom: React.FC<WhyBroomBoomProps> = ({ onOpenApplyModal }) 
         {/* Header Section */}
         <div className="text-center max-w-3xl mx-auto mb-3 sm:mb-4">
           <h2 className="text-2xl sm:text-4xl font-black text-slate-950 tracking-tight">
-            What&apos;s in it For You?
+            {cityName
+              ? `What's in it For You in ${cityName}?`
+              : "What's in it For You?"}
           </h2>
           <p className="mt-1 text-sm sm:text-base text-slate-600 leading-relaxed">
-            As a BroomBoom Vendor Partner, you get to partner with the industry leader, run a thriving business and enjoy amazing benefits like:
+            {cityName
+              ? `As a BroomBoom Vendor Partner in ${cityName}, you get to partner with the industry leader, run a thriving business and enjoy amazing benefits like:`
+              : "As a BroomBoom Vendor Partner, you get to partner with the industry leader, run a thriving business and enjoy amazing benefits like:"}
           </p>
         </div>
 
@@ -205,8 +213,9 @@ export const WhyBroomBoom: React.FC<WhyBroomBoomProps> = ({ onOpenApplyModal }) 
         {/* Bottom Text & Flow Action */}
         <div className="mt-4 sm:mt-5 text-center max-w-4xl mx-auto">
           <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-medium">
-            With a pan-India presence, BroomBoom vendors are expanding and making a great impact across the travel & mobility industry.
-            Come, be a part of this family.
+            {cityName
+              ? `With a growing footprint in ${cityName} and pan-India presence, BroomBoom vendors are expanding and making a great impact across the travel & mobility industry. Come, be a part of this family.`
+              : "With a pan-India presence, BroomBoom vendors are expanding and making a great impact across the travel & mobility industry. Come, be a part of this family."}
           </p>
 
           <div className="mt-2.5 flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3.5">
@@ -214,7 +223,11 @@ export const WhyBroomBoom: React.FC<WhyBroomBoomProps> = ({ onOpenApplyModal }) 
               onClick={() => onOpenApplyModal?.("gold")}
               className="bg-brand-yellow hover:bg-brand-yellow-hover text-black text-sm font-black px-8 py-2.5 rounded-xl shadow-md transition-all flex items-center gap-2 transform active:scale-95 cursor-pointer"
             >
-              <span>Apply for BroomBoom Vendor Partner &rarr;</span>
+              <span>
+                {cityName
+                  ? `Apply for BroomBoom ${cityName} Vendor Partner →`
+                  : "Apply for BroomBoom Vendor Partner →"}
+              </span>
             </button>
             <a
               href="#faq"

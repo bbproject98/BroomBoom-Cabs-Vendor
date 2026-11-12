@@ -7,9 +7,13 @@ import { ChevronDown, HelpCircle, PhoneCall } from "lucide-react";
 
 interface FaqSectionProps {
   onContactClick?: () => void;
+  cityName?: string;
 }
 
-export const FaqSection: React.FC<FaqSectionProps> = ({ onContactClick }) => {
+export const FaqSection: React.FC<FaqSectionProps> = ({
+  onContactClick,
+  cityName,
+}) => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
 
@@ -100,7 +104,9 @@ export const FaqSection: React.FC<FaqSectionProps> = ({ onContactClick }) => {
         {/* Still have questions banner */}
         <div className="mt-4 sm:mt-5 bg-white rounded-2xl p-3.5 sm:p-4 border border-amber-200 text-center space-y-2 shadow-sm">
           <p className="text-xs sm:text-sm font-bold text-slate-900">
-            Still have specific questions about your city or territory exclusivity?
+            {cityName
+              ? `Still have specific questions about ${cityName} or territory exclusivity?`
+              : "Still have specific questions about your city or territory exclusivity?"}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
             <a
@@ -111,10 +117,16 @@ export const FaqSection: React.FC<FaqSectionProps> = ({ onContactClick }) => {
               Call Hotline: 6289952418
             </a>
             <Link
-              href="/apply?package=gold"
+              href={
+                cityName
+                  ? `/apply?package=gold&city=${encodeURIComponent(cityName)}`
+                  : "/apply?package=gold"
+              }
               className="inline-flex items-center gap-2 bg-brand-yellow hover:bg-brand-yellow-hover text-black text-xs font-black px-4 sm:px-5 py-2.5 rounded-xl transition-all shadow-sm"
             >
-              Apply for Vendor Partner Online &rarr;
+              {cityName
+                ? `Apply for ${cityName} Vendor Partner Online →`
+                : "Apply for Vendor Partner Online →"}
             </Link>
           </div>
         </div>

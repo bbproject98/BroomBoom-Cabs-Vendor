@@ -2,17 +2,17 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { Download, X, Share2, PlusSquare } from "lucide-react";
+import { Download, X, Share2, PlusSquare, Monitor, Smartphone } from "lucide-react";
 
 export const PwaInstallPrompt: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [showBanner, setShowBanner] = useState(true);
+  const [showBanner, setShowBanner] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [showIOSModal, setShowIOSModal] = useState(false);
+  const [showDesktopGuideModal, setShowDesktopGuideModal] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
-    // Check if already running as standalone PWA
     const isStandalone =
       window.matchMedia("(display-mode: standalone)").matches ||
       (window.navigator as any).standalone === true;
@@ -31,7 +31,6 @@ export const PwaInstallPrompt: React.FC = () => {
         window.location.hostname.endsWith(".local");
 
       if (isLocalhost || process.env.NODE_ENV !== "production") {
-        // Automatically cleanup any active or broken service workers on localhost
         navigator.serviceWorker.getRegistrations().then((registrations) => {
           for (const registration of registrations) {
             registration.unregister();
@@ -50,22 +49,24 @@ export const PwaInstallPrompt: React.FC = () => {
       }
     }
 
-    // Detect iOS
     const userAgent = window.navigator.userAgent.toLowerCase();
     const isAppleDevice = /iphone|ipad|ipod/.test(userAgent);
     setIsIOS(isAppleDevice);
 
-    // Listen for beforeinstallprompt event (Android / Chromium / Desktop Chrome / Edge)
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
       (window as any).deferredPrompt = e;
-      setShowBanner(true);
+      const dismissed =
+        sessionStorage.getItem("bb_pwa_banner_dismissed") === "1";
+      // Only surface floating prompt automatically on mobile viewports
+      if (!dismissed && window.innerWidth < 768) {
+        setShowBanner(true);
+      }
     };
 
-    // Listen for custom trigger from any button across the app
     const handleCustomTrigger = async () => {
-      const promptEvent = deferredPrompt || (window as any).deferredPrompt;
+      const promptEvent = (window as any).deferredPrompt;
       if (promptEvent) {
         promptEvent.prompt();
         const choiceResult = await promptEvent.userChoice;
@@ -78,7 +79,7 @@ export const PwaInstallPrompt: React.FC = () => {
       } else if (isAppleDevice) {
         setShowIOSModal(true);
       } else {
-        setShowBanner(true);
+        setShowDesktopGuideModal(true);
       }
     };
 
@@ -86,10 +87,20 @@ export const PwaInstallPrompt: React.FC = () => {
     window.addEventListener("trigger-pwa-install", handleCustomTrigger);
 
     return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt
+      );
       window.removeEventListener("trigger-pwa-install", handleCustomTrigger);
     };
-  }, [deferredPrompt]);
+  }, []);
+
+  const handleDismissBanner = () => {
+    setShowBanner(false);
+    try {
+      sessionStorage.setItem("bb_pwa_banner_dismissed", "1");
+    } catch {}
+  };
 
   const handleInstallClick = async () => {
     const promptEvent = deferredPrompt || (window as any).deferredPrompt;
@@ -105,7 +116,7 @@ export const PwaInstallPrompt: React.FC = () => {
     } else if (isIOS) {
       setShowIOSModal(true);
     } else {
-      alert("To install the BroomBoom Vendor App: Click the Install icon (⊕) in your browser address bar or menu (⋮) -> 'Install BroomBoom Vendor'.");
+      setShowDesktopGuideModal(true);
     }
   };
 
@@ -113,12 +124,12 @@ export const PwaInstallPrompt: React.FC = () => {
 
   return (
     <>
-      {/* Universal Install Banner for Mobile, Tablet, Laptop, and Desktop */}
+      {/* Mobile-only unobtrusive install banner shown only when installable prompt fires */}
       {showBanner && (
-        <div className="fixed top-14 sm:top-16 md:top-20 left-0 right-0 z-50 px-3 sm:px-4 py-2 flex justify-center animate-in slide-in-from-top-2 duration-300 pointer-events-none">
-          <div className="pointer-events-auto w-full max-w-lg md:max-w-xl bg-slate-950/95 backdrop-blur-md border border-amber-400/40 rounded-2xl p-2.5 sm:px-4 sm:py-3 shadow-[0_8px_30px_rgba(0,0,0,0.5)] flex items-center justify-between gap-3 sm:gap-4">
-            <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
-              <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden border border-amber-400 bg-white flex items-center justify-center p-0.5 shrink-0 shadow-sm">
+        <div className="md:hidden fixed bottom-[72px] left-3 right-3 z-30 flex justify-center pointer-events-none">
+          <div className="pointer-events-auto w-full max-w-md bg-slate-950/95 backdrop-blur-md border border-amber-400/50 rounded-2xl p-2.5 shadow-[0_10px_30px_rgba(0,0,0,0.45)] flex items-center justify-between gap-2.5">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="relative w-9 h-9 rounded-xl overflow-hidden border border-amber-400 bg-white flex items-center justify-center p-0.5 shrink-0 shadow-sm">
                 <Image
                   src="/broomboom-logo.png"
                   alt="BroomBoom Vendor App"
@@ -126,24 +137,37 @@ export const PwaInstallPrompt: React.FC = () => {
                   className="object-contain"
                 />
               </div>
-              <div className="text-left">
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <span className="text-xs sm:text-sm font-black text-white">BroomBoom Vendor</span>
-                  <span className="bg-amber-400 text-black text-[9px] sm:text-[10px] font-black px-1.5 py-0.2 sm:px-2 sm:py-0.5 rounded">APP</span>
+              <div className="text-left min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-black text-white truncate">
+                    BroomBoom Vendor
+                  </span>
+                  <span className="bg-amber-400 text-black text-[9px] font-black px-1.5 py-0.5 rounded leading-none shrink-0">
+                    APP
+                  </span>
                 </div>
-                <p className="text-[10px] sm:text-[11px] text-slate-300 font-medium leading-tight mt-0.5">
-                  Install for 1-tap orders &amp; fleet control
+                <p className="text-[10px] text-slate-300 font-medium leading-tight mt-0.5 truncate">
+                  Install for 1-tap orders &amp; alerts
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex items-center gap-1 shrink-0">
               <button
+                type="button"
                 onClick={handleInstallClick}
-                className="bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-500 hover:to-yellow-500 text-slate-950 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-xl font-black text-xs sm:text-sm flex items-center gap-1.5 shadow-sm hover:shadow-yellow-glow active:scale-95 transition-all cursor-pointer"
+                className="bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 px-3 py-1.5 rounded-xl font-black text-xs flex items-center gap-1 shadow-sm cursor-pointer"
               >
-                <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
+                <Download className="w-3.5 h-3.5 stroke-[2.5]" />
                 <span>Install</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleDismissBanner}
+                aria-label="Dismiss install app banner"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -152,21 +176,35 @@ export const PwaInstallPrompt: React.FC = () => {
 
       {/* iOS Instructions Modal */}
       {showIOSModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 max-w-sm w-full text-white shadow-2xl space-y-4">
+        <div
+          className="fixed inset-0 z-[80] bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-4"
+          onClick={() => setShowIOSModal(false)}
+        >
+          <div
+            className="bg-slate-900 border border-slate-700 rounded-3xl p-6 max-w-sm w-full text-white shadow-2xl space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-amber-400 bg-white flex items-center justify-center p-0.5">
-                  <Image src="/broomboom-logo.png" alt="BroomBoom" fill className="object-contain" />
+                  <Image
+                    src="/broomboom-logo.png"
+                    alt="BroomBoom"
+                    fill
+                    className="object-contain"
+                  />
                 </div>
                 <div>
                   <h3 className="text-sm font-black">Install BroomBoom App</h3>
-                  <p className="text-xs text-slate-400">Install on your iPhone / iPad</p>
+                  <p className="text-xs text-slate-400">
+                    Install on your iPhone / iPad
+                  </p>
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => setShowIOSModal(false)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -176,7 +214,7 @@ export const PwaInstallPrompt: React.FC = () => {
               <div className="flex items-start gap-3 p-3 bg-slate-800/80 rounded-2xl border border-slate-700/60">
                 <Share2 className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
                 <span>
-                  1. Tap the <strong>Share</strong> button at the bottom of Safari.
+                  1. Tap the <strong>Share</strong> button in Safari.
                 </span>
               </div>
               <div className="flex items-start gap-3 p-3 bg-slate-800/80 rounded-2xl border border-slate-700/60">
@@ -188,7 +226,76 @@ export const PwaInstallPrompt: React.FC = () => {
             </div>
 
             <button
+              type="button"
               onClick={() => setShowIOSModal(false)}
+              className="w-full py-2.5 bg-brand-yellow hover:bg-brand-yellow-hover text-black font-black text-xs rounded-xl shadow-md cursor-pointer"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Desktop / Browser Install Guide Modal */}
+      {showDesktopGuideModal && (
+        <div
+          className="fixed inset-0 z-[80] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setShowDesktopGuideModal(false)}
+        >
+          <div
+            className="bg-slate-900 border border-amber-400/50 rounded-3xl p-6 max-w-md w-full text-white shadow-2xl space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="relative w-10 h-10 rounded-xl overflow-hidden border border-amber-400 bg-white flex items-center justify-center p-0.5">
+                  <Image
+                    src="/broomboom-logo.png"
+                    alt="BroomBoom Vendor"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black">
+                    Install BroomBoom Vendor App
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    1-Tap Chrome, Edge &amp; Android App
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowDesktopGuideModal(false)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs text-slate-300">
+              <div className="flex items-start gap-3 p-3 bg-slate-800/80 rounded-2xl border border-slate-700/60">
+                <Monitor className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                <span>
+                  <strong>Chrome / Edge (Desktop):</strong> Click the{" "}
+                  <strong>Install</strong> icon in the address bar or open browser
+                  menu (&vellip;) &rarr; <strong>Install BroomBoom Vendor</strong>.
+                </span>
+              </div>
+              <div className="flex items-start gap-3 p-3 bg-slate-800/80 rounded-2xl border border-slate-700/60">
+                <Smartphone className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                <span>
+                  <strong>Android Chrome:</strong> Open menu (&vellip;) &rarr;{" "}
+                  <strong>Add to Home screen / Install app</strong> for instant
+                  booking dispatch access.
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowDesktopGuideModal(false)}
               className="w-full py-2.5 bg-brand-yellow hover:bg-brand-yellow-hover text-black font-black text-xs rounded-xl shadow-md cursor-pointer"
             >
               Got it

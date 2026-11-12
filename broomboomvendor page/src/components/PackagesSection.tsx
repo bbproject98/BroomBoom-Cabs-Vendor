@@ -19,11 +19,13 @@ import { VENDOR_PACKAGES } from "@/data/vendorData";
 interface PackagesSectionProps {
   onSelectPackage?: (pkgId: string) => void;
   onSelectTier?: (tierId: string) => void;
+  cityName?: string;
 }
 
 export const PackagesSection: React.FC<PackagesSectionProps> = ({
   onSelectPackage,
   onSelectTier,
+  cityName,
 }) => {
   const [trendsActiveIndex, setTrendsActiveIndex] = useState(0);
   const trendsScrollRef = useRef<HTMLDivElement>(null);
@@ -219,15 +221,32 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
         <div className="text-center max-w-2xl mx-auto mb-7">
           <div className="inline-flex items-center gap-1.5 bg-amber-500/15 border border-amber-400 text-amber-950 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wide mb-2.5">
             <Sparkles className="w-3 h-3 text-amber-600 animate-pulse" />
-            <span>Commercial Franchise Tiers &bull; High Earning Fleet Hubs</span>
+            <span>
+              {cityName
+                ? `${cityName} Commercial Franchise Tiers • High Earning Fleet Hubs`
+                : "Commercial Franchise Tiers • High Earning Fleet Hubs"}
+            </span>
           </div>
 
           <h2 className="text-2xl sm:text-3xl lg:text-[2rem] font-black text-slate-950 tracking-tight leading-tight">
-            Choose Your <span className="text-amber-600">Vendor Partner Package</span>
+            {cityName ? (
+              <>
+                Choose Your{" "}
+                <span className="text-amber-600">
+                  {cityName} Vendor Partner Package
+                </span>
+              </>
+            ) : (
+              <>
+                Choose Your{" "}
+                <span className="text-amber-600">Vendor Partner Package</span>
+              </>
+            )}
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 mt-2 max-w-xl mx-auto">
-            Attach your commercial vehicles or establish a dedicated regional booking hub.
-            Lock in your territory with our exclusive commercial franchise partner network.
+            {cityName
+              ? `Attach your commercial vehicles or establish a dedicated ${cityName} booking hub. Lock in your ${cityName} territory with our exclusive commercial franchise partner network.`
+              : "Attach your commercial vehicles or establish a dedicated regional booking hub. Lock in your territory with our exclusive commercial franchise partner network."}
           </p>
         </div>
 
@@ -562,7 +581,11 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
               onClick={() => handleSelect("gold")}
               className="inline-flex items-center gap-2 bg-brand-yellow hover:bg-brand-yellow-hover text-black font-black text-xs sm:text-sm px-6 py-2.5 rounded-lg shadow-sm hover:shadow-yellow-glow transition-all transform active:scale-95 cursor-pointer"
             >
-              <span>Apply for Vendor Partner Hub</span>
+              <span>
+                {cityName
+                  ? `Apply for ${cityName} Vendor Partner Hub`
+                  : "Apply for Vendor Partner Hub"}
+              </span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>

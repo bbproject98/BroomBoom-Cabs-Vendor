@@ -9,7 +9,11 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-export const VendorOverview: React.FC = () => {
+interface VendorOverviewProps {
+  cityName?: string;
+}
+
+export const VendorOverview: React.FC<VendorOverviewProps> = ({ cityName }) => {
   const [activeFeatureIndex, setActiveFeatureIndex] = useState(0);
   const featureScrollRef = useRef<HTMLDivElement>(null);
 
@@ -72,13 +76,19 @@ export const VendorOverview: React.FC = () => {
         {/* === TOP SECTION: What a Vendor Does === */}
         <div className="text-center mb-3 sm:mb-4">
           <span className="text-xs font-bold text-amber-400 uppercase tracking-widest bg-amber-950/60 border border-amber-800 px-3.5 py-0.5 rounded-full inline-block mb-1">
-            Partnership Ecosystem
+            {cityName ? `${cityName} Partnership Ecosystem` : "Partnership Ecosystem"}
           </span>
           <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
-            Wondering What a <span className="text-brand-yellow">BroomBoom Vendor</span> Does?
+            Wondering What a{" "}
+            <span className="text-brand-yellow">
+              {cityName ? `BroomBoom ${cityName} Vendor` : "BroomBoom Vendor"}
+            </span>{" "}
+            Does?
           </h2>
           <p className="mt-1 text-sm sm:text-base text-slate-300 max-w-2xl mx-auto">
-            As our authorized vendor partner, you power mobility and earn daily recurring revenues from customer rides, driver onboarding, and corporate bookings.
+            {cityName
+              ? `As our authorized vendor partner in ${cityName}, you power mobility across ${cityName} and earn daily recurring revenues from customer rides, driver onboarding, and corporate bookings.`
+              : "As our authorized vendor partner, you power mobility and earn daily recurring revenues from customer rides, driver onboarding, and corporate bookings."}
           </p>
         </div>
 
@@ -184,7 +194,9 @@ export const VendorOverview: React.FC = () => {
         {/* Vision Narrative */}
         <div className="max-w-4xl mx-auto text-center mb-3.5 sm:mb-4">
           <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-medium">
-            BroomBoom stands for trust, transparency, and assurance. In an era of booming on-demand travel, you bring a localized human touch to passenger bookings, fleet management, and driver empowerment across India!
+            {cityName
+              ? `BroomBoom stands for trust, transparency, and assurance. In an era of booming on-demand travel, you bring a localized human touch to passenger bookings, fleet management, and driver empowerment across ${cityName} and India!`
+              : "BroomBoom stands for trust, transparency, and assurance. In an era of booming on-demand travel, you bring a localized human touch to passenger bookings, fleet management, and driver empowerment across India!"}
           </p>
         </div>
 
@@ -194,13 +206,24 @@ export const VendorOverview: React.FC = () => {
         {/* === Products & Services Heading leading directly into the white card below === */}
         <div className="text-center pt-0 pb-1 sm:pb-2">
           <span className="text-xs font-bold text-amber-400 uppercase tracking-widest bg-amber-950/60 border border-amber-800 px-3 py-0.5 rounded-full inline-block mb-1">
-            Ecosystem Verticals
+            {cityName ? `${cityName} Ecosystem Verticals` : "Ecosystem Verticals"}
           </span>
           <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
-            Our Products &amp; <span className="text-brand-yellow">Services</span>
+            {cityName ? (
+              <>
+                Our Products &amp;{" "}
+                <span className="text-brand-yellow">Services in {cityName}</span>
+              </>
+            ) : (
+              <>
+                Our Products &amp; <span className="text-brand-yellow">Services</span>
+              </>
+            )}
           </h2>
           <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl mx-auto">
-            Comprehensive travel &amp; mobility verticals powering every vendor partner
+            {cityName
+              ? `Comprehensive travel & mobility verticals powering every ${cityName} vendor partner`
+              : "Comprehensive travel & mobility verticals powering every vendor partner"}
           </p>
         </div>
       </div>

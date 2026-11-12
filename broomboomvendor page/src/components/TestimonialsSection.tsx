@@ -15,9 +15,13 @@ import {
 
 interface TestimonialsSectionProps {
   onOpenApplyModal?: (packageId?: string) => void;
+  cityName?: string;
 }
 
-export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ onOpenApplyModal }) => {
+export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
+  onOpenApplyModal,
+  cityName,
+}) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -61,7 +65,7 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ onOpen
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-3 sm:mb-4">
-          <div className="inline-flex items-center gap-1.5 bg-amber-100/70 border border-amber-300 text-amber-900 font-bold text-xs px-3 py-0.5 rounded-full uppercase tracking-wider mb-1 shadow-xs">
+          <div className="inline-flex items-center gap-1.5 bg-amber-100/70 border border-amber-300 text-amber-900 font-bold text-xs px-3 py-0.5 rounded-full uppercase tracking-wider mb-1 shadow-sm">
             <Award className="w-3.5 h-3.5 text-amber-600" />
             <span>Real Partner Stories</span>
           </div>
@@ -69,7 +73,9 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ onOpen
             Words from our <span className="text-yellow-gradient">Vendor Partners</span>
           </h2>
           <p className="mt-1 text-sm sm:text-base text-slate-600 leading-relaxed">
-            Discover how entrepreneurs across India achieved financial freedom, built thriving local businesses, and expanded with BroomBoom.
+            {cityName
+              ? `Discover how entrepreneurs in ${cityName} and across India achieved financial freedom, built thriving local businesses, and expanded with BroomBoom.`
+              : "Discover how entrepreneurs across India achieved financial freedom, built thriving local businesses, and expanded with BroomBoom."}
           </p>
         </div>
 
@@ -83,7 +89,7 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ onOpen
               <div>
                 {/* Header: Avatar, Name, Location & Verified Badge */}
                 <div className="flex items-center gap-3.5 mb-3.5">
-                  <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-amber-300 shrink-0 shadow-2xs">
+                  <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-amber-300 shrink-0 shadow-sm">
                     <Image
                       src={item.avatar}
                       alt={item.name}
@@ -182,7 +188,7 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ onOpen
                       <p className="text-[11px] text-slate-500 truncate">
                         {item.city}, {item.state}
                       </p>
-                      <span className="inline-block text-[9px] font-bold text-amber-800 bg-amber-100/70 px-1.5 py-0.2 rounded mt-0.5">
+                      <span className="inline-block text-[9px] font-bold text-amber-800 bg-amber-100/70 px-1.5 py-0.5 leading-none rounded mt-0.5">
                         {item.tier}
                       </span>
                     </div>
@@ -194,7 +200,7 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ onOpen
                         <Star key={i} className="w-3 h-3 fill-amber-400 text-amber-400" />
                       ))}
                     </div>
-                    <span className="text-[10px] font-black text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2 py-0.2 rounded">
+                    <span className="text-[10px] font-black text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 leading-none rounded">
                       {item.monthlyRevenue}
                     </span>
                   </div>
