@@ -38,7 +38,7 @@ export const LandingPageContent: React.FC<LandingPageContentProps> = ({
       <Navbar
         onOpenApplyModal={handleOpenLoginModal}
         onOpenBrochureModal={() => setIsBrochureModalOpen(true)}
-        cityName={cityName}
+
       />
 
       {/* Main Content Sections in Exact Same Sequence */}
