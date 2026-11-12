@@ -2,16 +2,12 @@
 
 import React, { useState, useRef } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import {
   ArrowRight,
-  ChevronLeft,
-  ChevronRight,
   Compass,
   Check,
   Sparkles,
   Zap,
-  Tag,
   ShieldCheck,
 } from "lucide-react";
 import { VENDOR_PACKAGES } from "@/data/vendorData";
@@ -30,12 +26,25 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
   const [trendsActiveIndex, setTrendsActiveIndex] = useState(0);
   const trendsScrollRef = useRef<HTMLDivElement>(null);
 
+  // Fires one callback only, to avoid double-invoking when both props point
+  // to the same handler. Swap to `onSelectTier?.(id)` first if that is the
+  // primary callback in your app.
   const handleSelect = (id: string) => {
-    onSelectPackage?.(id);
-    onSelectTier?.(id);
+    if (onSelectPackage) {
+      onSelectPackage(id);
+    } else {
+      onSelectTier?.(id);
+    }
   };
 
-
+  // Keyboard activation for clickable divs
+  const handleKeyActivate =
+    (id: string) => (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        handleSelect(id);
+      }
+    };
 
   // ============================================================
   // FULL TIER COLOR THEMES — the ENTIRE card is silver/gold/platinum
@@ -49,7 +58,8 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
             "border-[2.5px] border-amber-500 " +
             "shadow-[0_18px_50px_rgba(245,158,11,0.45)] " +
             "ring-4 ring-amber-400/25 lg:-translate-y-2.5",
-          accentBar: "bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500",
+          accentBar:
+            "bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500",
           headerBg:
             "bg-gradient-to-br from-amber-300/70 via-amber-200/60 to-yellow-200/70 border-amber-400/60",
           bodyBg: "bg-amber-50/50",
@@ -68,7 +78,6 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
             "bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-500 " +
             "hover:from-amber-600 hover:via-yellow-600 hover:to-amber-600 " +
             "text-amber-950 shadow-[0_6px_20px_rgba(245,158,11,0.5)]",
-          glow: "before:bg-amber-400/30",
         };
       case "platinum":
         return {
@@ -77,7 +86,8 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
             "border-[2.5px] border-cyan-400 " +
             "shadow-[0_18px_50px_rgba(6,182,212,0.35)] " +
             "ring-4 ring-cyan-300/25 hover:-translate-y-1.5",
-          accentBar: "bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-500",
+          accentBar:
+            "bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-500",
           headerBg:
             "bg-gradient-to-br from-cyan-200/70 via-sky-100/60 to-blue-100/70 border-cyan-300/60",
           bodyBg: "bg-slate-50/60",
@@ -96,7 +106,6 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
             "bg-gradient-to-r from-cyan-600 via-sky-600 to-blue-700 " +
             "hover:from-cyan-700 hover:via-sky-700 hover:to-blue-800 " +
             "text-white shadow-[0_6px_20px_rgba(6,182,212,0.45)]",
-          glow: "before:bg-cyan-400/25",
         };
       case "silver":
       default:
@@ -106,7 +115,8 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
             "border-[2.5px] border-slate-400 " +
             "shadow-[0_18px_50px_rgba(100,116,139,0.35)] " +
             "ring-4 ring-slate-300/25 hover:-translate-y-1.5",
-          accentBar: "bg-gradient-to-r from-slate-400 via-slate-200 to-slate-500",
+          accentBar:
+            "bg-gradient-to-r from-slate-400 via-slate-200 to-slate-500",
           headerBg:
             "bg-gradient-to-br from-slate-300/60 via-slate-100/60 to-slate-200/60 border-slate-300/70",
           bodyBg: "bg-white/50",
@@ -125,7 +135,6 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
             "bg-gradient-to-r from-slate-600 via-slate-700 to-slate-800 " +
             "hover:from-slate-700 hover:via-slate-800 hover:to-slate-900 " +
             "text-white shadow-[0_6px_20px_rgba(71,85,105,0.45)]",
-          glow: "before:bg-slate-400/25",
         };
     }
   };
@@ -133,26 +142,23 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
   const trendCards = [
     {
       id: "silver",
-      tag: "DOMESTIC TRAVEL BOOM",
       image: "/images/travel-tajmahal.jpg",
       alt: "Taj Mahal - Indian Tourism & Travel Sector",
-      headline: "21% Year-on-Year Growth of the Indian Tourism & Travel Sector",
+      headline: "Expand Your Business Beyond Your Local City",
     },
     {
       id: "gold",
-      tag: "OUTBOUND VACATIONS",
       image: "/images/travel-roadtrip.jpg",
       alt: "Road trip travel - Domestic tourist growth",
       headline:
-        "1.8 crore+ Indians holidayed abroad during 2022. 11.05% growth in domestic tourist visits",
+        "ABP Live — Turn Your Available Cars into Revenue-Generating Assets",
     },
     {
       id: "platinum",
-      tag: "HOLIDAY PACKAGES SURGE",
       image: "/images/travel-airport.jpg",
       alt: "Airport traveler - Holiday packages revenue",
       headline:
-        "US$ 8.3 billion revenue projected for Holiday Packages business",
+        "Outlook India — Every Completed Trip Brings Earning Potential",
     },
   ];
 
@@ -172,8 +178,11 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
   const handleTrendsScroll = () => {
     if (!trendsScrollRef.current) return;
     const { scrollLeft, clientWidth } = trendsScrollRef.current;
-    const firstChild = trendsScrollRef.current.children[0] as HTMLElement | undefined;
-    const cardWidth = firstChild ? firstChild.offsetWidth + 14 : clientWidth * 0.72;
+    const firstChild = trendsScrollRef.current
+      .children[0] as HTMLElement | undefined;
+    const cardWidth = firstChild
+      ? firstChild.offsetWidth + 14
+      : clientWidth * 0.72;
     const index = Math.round(scrollLeft / cardWidth);
     setTrendsActiveIndex(Math.min(Math.max(index, 0), trendCards.length - 1));
   };
@@ -274,17 +283,19 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
 
                 {/* Card Header */}
                 <div
-                  className={`px-4 pb-3.5 border-b ${isGold ? "pt-8" : "pt-5"} ${t.headerBg}`}
+                  className={`px-4 pb-3.5 border-b ${
+                    isGold ? "pt-8" : "pt-5"
+                  } ${t.headerBg}`}
                 >
                   {/* Badges Row - Tier Highlighting */}
                   <div className="flex flex-wrap items-center gap-2 mb-2.5">
                     <span
-                      className={`inline-flex items-center gap-1.5 text-white text-[11px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider shadow-md ${
+                      className={`inline-flex items-center gap-1.5 text-[11px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider shadow-md ${
                         pkg.id === "gold"
                           ? "bg-gradient-to-r from-amber-600 via-yellow-600 to-amber-700 shadow-amber-600/30 ring-2 ring-amber-400/40 text-amber-950"
                           : pkg.id === "platinum"
-                          ? "bg-gradient-to-r from-cyan-600 to-blue-700 shadow-cyan-600/30 ring-2 ring-cyan-400/40"
-                          : "bg-gradient-to-r from-slate-700 to-slate-900 shadow-slate-700/30 ring-2 ring-slate-400/40"
+                          ? "bg-gradient-to-r from-cyan-600 to-blue-700 shadow-cyan-600/30 ring-2 ring-cyan-400/40 text-white"
+                          : "bg-gradient-to-r from-slate-700 to-slate-900 shadow-slate-700/30 ring-2 ring-slate-400/40 text-white"
                       }`}
                     >
                       {pkg.id === "gold" ? (
@@ -336,7 +347,7 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
                     {pkg.subtitle}
                   </p>
 
-                  {/* Highlighted Package Details & Territory Scope (No Price Showing) */}
+                  {/* Highlighted Package Details & Territory Scope */}
                   <div className={`mt-3 pt-3 border-t ${t.divider}`}>
                     {pkg.id === "gold" ? (
                       <div className="bg-gradient-to-br from-amber-500/25 via-yellow-400/30 to-amber-600/25 rounded-xl p-3 border-2 border-amber-500/60 shadow-sm space-y-1">
@@ -353,7 +364,8 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
                           Outstation &amp; Long Rentals Hub
                         </div>
                         <p className="text-[10.5px] font-bold text-amber-900/90 leading-snug">
-                          Dedicated dispatch priority for high-margin outstation &amp; district bookings.
+                          Dedicated dispatch priority for high-margin outstation
+                          &amp; district bookings.
                         </p>
                       </div>
                     ) : pkg.id === "platinum" ? (
@@ -371,7 +383,8 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
                           0% Commission Master Hub
                         </div>
                         <p className="text-[10.5px] font-bold text-cyan-950/90 leading-snug">
-                          Zero platform commission fee on premier corporate &amp; all-category rides.
+                          Zero platform commission fee on premier corporate
+                          &amp; all-category rides.
                         </p>
                       </div>
                     ) : (
@@ -389,7 +402,8 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
                           Airport &amp; Station Kiosk
                         </div>
                         <p className="text-[10.5px] font-bold text-slate-700 leading-snug">
-                          Dedicated transit booking counter with daily automated bank settlements.
+                          Dedicated transit booking counter with daily automated
+                          bank settlements.
                         </p>
                       </div>
                     )}
@@ -452,7 +466,10 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
                     </button>
                     <p className="text-[9px] text-center text-slate-600 mt-1.5 flex items-center justify-center gap-1">
                       <ShieldCheck className="w-2.5 h-2.5 text-emerald-600" />
-                      <span>Instant verification &bull; Dedicated territory allocation</span>
+                      <span>
+                        Instant verification &bull; Dedicated territory
+                        allocation
+                      </span>
                     </p>
                   </div>
                 </div>
@@ -470,7 +487,8 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
               Indians are travelling the world like never before!
             </h3>
             <p className="text-[11px] sm:text-xs text-slate-600 mt-1">
-              Capitalize on the massive boom in Indian domestic tourism and outstation cab travel.
+              Capitalize on the massive boom in Indian domestic tourism and
+              outstation cab travel.
             </p>
           </div>
 
@@ -479,8 +497,11 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
             {trendCards.map((card) => (
               <div
                 key={card.id}
+                role="button"
+                tabIndex={0}
                 onClick={() => handleSelect(card.id)}
-                className="flex flex-col group h-full cursor-pointer"
+                onKeyDown={handleKeyActivate(card.id)}
+                className="flex flex-col group h-full cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-xl"
               >
                 <div className="bg-white rounded-xl border border-amber-200/80 shadow-[0_3px_16px_rgba(0,0,0,0.06)] hover:shadow-xl hover:border-amber-400 p-3.5 flex flex-col h-full transition-all duration-300 hover:-translate-y-1">
                   <div className="relative w-full h-36 sm:h-40 overflow-hidden rounded-lg mb-2.5 bg-slate-100 shrink-0">
@@ -526,8 +547,11 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
               {trendCards.map((card, idx) => (
                 <div
                   key={card.id}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleSelect(card.id)}
-                  className="flex flex-col group h-full shrink-0 snap-center cursor-pointer"
+                  onKeyDown={handleKeyActivate(card.id)}
+                  className="flex flex-col group h-full shrink-0 snap-center cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-xl"
                 >
                   <div
                     className={`bg-white rounded-xl border ${

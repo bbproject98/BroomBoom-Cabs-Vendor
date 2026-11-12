@@ -1,9 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
-import { FAQ_ITEMS } from "@/data/vendorData";
-import { ChevronDown, HelpCircle, PhoneCall } from "lucide-react";
+import { Phone, Plus, Minus } from "lucide-react";
 
 interface FaqSectionProps {
   onContactClick?: () => void;
@@ -12,123 +10,278 @@ interface FaqSectionProps {
 
 export const FaqSection: React.FC<FaqSectionProps> = ({
   onContactClick,
-  cityName,
 }) => {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
-  const [selectedCategory, setSelectedCategory] = useState<string>("All");
-
-  const categories = ["All", "General", "Attachment", "Operations", "Earnings"];
-
-  const filteredFaqs =
-    selectedCategory === "All"
-      ? FAQ_ITEMS
-      : FAQ_ITEMS.filter((item) => {
-          if (selectedCategory === "Attachment") return item.category === "Attachment" || item.category === "Documents";
-          if (selectedCategory === "Operations") return item.category === "Fleet Ops" || item.category === "Operations";
-          if (selectedCategory === "Earnings") return item.category === "Payouts" || item.category === "Earnings";
-          return item.category === selectedCategory;
-        });
-
-  const toggleFaq = (idx: number) => {
-    setOpenIndex(openIndex === idx ? null : idx);
-  };
+  // ReviewsPage FAQ accordion state
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   return (
-    <section id="faq" className="py-5 sm:py-6 bg-puja-cream text-slate-900 relative border-t border-amber-200/80">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6">
-        {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-3 sm:mb-4">
-          <div className="inline-flex items-center gap-2 bg-white border border-amber-300 text-amber-900 font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider mb-1.5 shadow-sm">
-            <HelpCircle className="w-3.5 h-3.5 text-amber-600" />
-            Clear Answers
-          </div>
-          <h2 className="text-2xl sm:text-4xl font-black text-slate-950 tracking-tight">
-            Frequently Asked <span className="text-yellow-gradient">Questions</span>
+    <section
+      id="faqs"
+      className="bg-[#F8FAFC] py-16 border-t border-slate-200"
+    >
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-3 gap-12">
+        {/* Left Sticky Column */}
+        <div className="md:sticky md:top-28 md:self-start">
+          <h2 className="text-3xl font-bold text-slate-900 mb-4">
+            FAQs for BroomBoom Cab Vendors &amp; Drivers
           </h2>
-          <p className="mt-1.5 text-sm sm:text-base text-slate-600">
-            Have questions before applying? Here are answers to common questions about our 3 packages, investments, and daily operations.
+          <p className="text-slate-600 text-sm mb-8">
+            Find answers to common questions about onboarding, earnings, and
+            operational policies.
           </p>
-        </div>
 
-        {/* Category Pills */}
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-3">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => {
-                setSelectedCategory(cat);
-                setOpenIndex(0);
-              }}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
-                selectedCategory === cat
-                  ? "bg-brand-yellow text-black shadow-sm"
-                  : "bg-white text-slate-700 border border-amber-200 hover:border-amber-400"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        {/* Accordion List */}
-        <div className="space-y-2">
-          {filteredFaqs.map((faq, idx) => {
-            const isOpen = openIndex === idx;
-            return (
-              <div
-                key={idx}
-                className="bg-white rounded-2xl border border-amber-200 overflow-hidden shadow-sm transition-all duration-200"
+          <div className="bg-white rounded-2xl p-4 border border-slate-200 flex items-center gap-4 hover:shadow-md transition-shadow mb-6">
+            <div className="w-10 h-10 rounded-full bg-[#FBBF24]/20 text-[#D97706] flex items-center justify-center shrink-0">
+              <Phone className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xs text-slate-500">
+                Still have a question? Call
+              </p>
+              <a
+                href="tel:+916289952418"
+                className="text-sm font-bold text-slate-900 hover:underline"
               >
-                <button
-                  onClick={() => toggleFaq(idx)}
-                  className="w-full text-left px-4 sm:px-6 py-3 sm:py-3.5 flex items-center justify-between gap-3 sm:gap-4 font-bold text-slate-900 text-sm sm:text-base hover:text-amber-800 transition-colors"
-                >
-                  <span>{faq.question}</span>
-                  <ChevronDown
-                    className={`w-5 h-5 text-slate-400 shrink-0 transition-transform duration-200 ${
-                      isOpen ? "rotate-180 text-amber-600" : ""
-                    }`}
-                  />
-                </button>
+                +91 6289952418, any time.
+              </a>
+            </div>
+          </div>
 
-                {isOpen && (
-                  <div className="px-4 sm:px-6 pb-3 sm:pb-4 pt-1 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-amber-100 bg-amber-50/20">
-                    {faq.answer}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+          <div className="bg-[#111111] text-white rounded-2xl p-6 relative overflow-hidden">
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#FBBF24] opacity-10 blur-2xl rounded-full" />
+            <h3 className="font-bold text-lg mb-2 relative z-10">
+              Join BroomBoom and grow your cab business with more booking
+              opportunities across India.
+            </h3>
+            <button
+              onClick={() => onContactClick?.()}
+              className="mt-4 bb-btn-shine bg-[#FBBF24] text-black px-4 py-2 rounded-xl text-sm font-bold w-full hover:bg-yellow-500 transition-colors relative z-10"
+            >
+              Register as a Vendor
+            </button>
+          </div>
         </div>
 
-        {/* Still have questions banner */}
-        <div className="mt-4 sm:mt-5 bg-white rounded-2xl p-3.5 sm:p-4 border border-amber-200 text-center space-y-2 shadow-sm">
-          <p className="text-xs sm:text-sm font-bold text-slate-900">
-            {cityName
-              ? `Still have specific questions about ${cityName} or territory exclusivity?`
-              : "Still have specific questions about your city or territory exclusivity?"}
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-            <a
-              href="tel:62899524182706600"
-              className="inline-flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-amber-900 border border-slate-300 px-3.5 sm:px-4 py-2 rounded-xl"
+        {/* Right Scrollable Column — 24-item accordion */}
+        <div className="md:col-span-2 space-y-2">
+          {[
+            {
+              q: "How can I attach my car or taxi with BroomBoom?",
+              a: (
+                <div className="space-y-2">
+                  <p>
+                    You can register your travel agency, fleet or individual
+                    vehicle through the BroomBoom Vendor Portal. Visit{" "}
+                    <a
+                      href="https://vendor.broomboomcabs.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      vendor.broomboomcabs.com
+                    </a>{" "}
+                    and complete the vendor registration process with your
+                    business, vehicle and contact details.
+                  </p>
+                  <p>
+                    Individual cab owners and drivers can also register
+                    without owning a travel agency.
+                  </p>
+                </div>
+              ),
+            },
+            {
+              q: "What documents are required to register as a BroomBoom vendor?",
+              a: (
+                <div className="space-y-2">
+                  <p>
+                    You may be required to submit the following documents for
+                    verification:
+                  </p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Aadhaar Card or valid identity proof</li>
+                    <li>PAN Card</li>
+                    <li>Agency or business details (if applicable)</li>
+                    <li>Vehicle Registration Certificate (RC)</li>
+                    <li>Valid vehicle insurance</li>
+                    <li>Fitness Certificate and Permit, as applicable</li>
+                    <li>Pollution Under Control (PUC) Certificate</li>
+                    <li>Driving Licence of the assigned driver</li>
+                    <li>Bank account details for payment settlements</li>
+                    <li>Vehicle photographs, if requested</li>
+                  </ul>
+                  <p>All documents must be valid and legible for verification.</p>
+                </div>
+              ),
+            },
+            {
+              q: "Can an individual car owner or driver join BroomBoom?",
+              a: "Yes. BroomBoom welcomes individual vehicle owners, independent drivers, travel agencies and fleet operators. You do not necessarily need to own a large fleet or operate a registered travel agency to explore vendor opportunities.",
+            },
+            {
+              q: "How long does it take to approve my vendor account?",
+              a: "Approval time depends on document verification and the completeness of the submitted information. Our team may contact you if any additional documents or clarification are required.",
+            },
+            {
+              q: "Can I receive bookings immediately after registration?",
+              a: "You can access booking opportunities once your vendor account and relevant vehicle/driver details have been verified and approved. Booking acceptance is subject to vehicle category, availability, service location and applicable platform requirements.",
+            },
+            {
+              q: "What types of bookings can I receive from BroomBoom Vendor?",
+              a: (
+                <div className="space-y-2">
+                  <p>
+                    BroomBoom Vendor provides business opportunities across
+                    multiple travel categories, including:
+                  </p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Outstation one-way trips</li>
+                    <li>Outstation round trips</li>
+                    <li>Local hourly rentals</li>
+                    <li>Airport pickup and drop</li>
+                    <li>Corporate transportation</li>
+                    <li>Sightseeing and tour packages</li>
+                    <li>
+                      Special travel requirements, including pet-friendly
+                      bookings where applicable
+                    </li>
+                  </ul>
+                </div>
+              ),
+            },
+            {
+              q: "How will I know about new bookings?",
+              a: "Eligible vendors can access booking opportunities through the BroomBoom Vendor Portal. Booking details, including pickup location, destination, travel date, vehicle category and applicable vendor fare, are provided for evaluation before accepting a trip.",
+            },
+            {
+              q: "How much can I earn through BroomBoom Vendor?",
+              a: "Your earnings depend on the number of bookings completed, vehicle category, route, distance, trip type and applicable vendor fare. You can increase your earning potential by keeping your vehicle available and accepting suitable booking opportunities.",
+            },
+            {
+              q: "What is the payment structure for vendor bookings?",
+              a: "The applicable vendor payment and settlement terms are communicated for the respective booking. Vendors should review the trip fare and payment instructions before accepting a booking.",
+            },
+            {
+              q: "Can I charge night charges separately from the customer?",
+              a: "Yes. Night charges are payable separately wherever applicable, as per the booking terms and agreed rate. Vendors and drivers should verify the applicable night-charge conditions before accepting the booking and collect the eligible amount accordingly.",
+            },
+            {
+              q: "Are toll charges included in the vendor booking price?",
+              a: "Toll charges are payable separately by the customer/vendor arrangement, as applicable to the booking. Drivers can collect applicable toll charges separately based on actual toll expenses and valid receipts. Always check the individual booking instructions before starting the trip.",
+            },
+            {
+              q: "Are state taxes and permits included in the booking fare?",
+              a: "State taxes, permit charges, border taxes and other applicable government fees may be additional depending on the route and booking terms. These should be handled as specified in the booking details and supported by valid receipts wherever applicable.",
+            },
+            {
+              q: "Can I collect parking charges from customers?",
+              a: "Yes. Actual parking charges, airport parking fees and other applicable parking expenses can be collected separately wherever they are excluded from the agreed booking fare. Valid receipts should be provided whenever available.",
+            },
+            {
+              q: "What happens if a customer requests extra kilometres?",
+              a: "If a customer travels beyond the included kilometre limit, applicable extra-kilometre charges can be collected as per the rate specified in the booking. Drivers should maintain accurate trip kilometre records and report the additional distance through the prescribed process.",
+            },
+            {
+              q: "Can I refuse a booking after accepting it?",
+              a: "Once a booking is accepted, vendors are expected to fulfil the commitment. Unjustified cancellations, driver unavailability or failure to report at the pickup location may result in penalties or other action as per BroomBoom's vendor agreement and policies.",
+            },
+            {
+              q: "What happens if my vehicle breaks down before the trip?",
+              a: "Immediately inform the BroomBoom operations team. Vendors are expected to arrange a suitable replacement vehicle of the same or an approved higher category, subject to customer approval and BroomBoom's confirmation. Failure to arrange an alternative may attract applicable penalties.",
+            },
+            {
+              q: "Can I send a different driver for an accepted booking?",
+              a: "Only an approved and eligible driver should operate the assigned vehicle. Any driver replacement must be communicated to and approved by BroomBoom before the trip. Sending an unauthorised driver may result in booking cancellation or vendor account action.",
+            },
+            {
+              q: "Can I send a different vehicle instead of the assigned vehicle?",
+              a: "Vehicle substitution is subject to prior approval from BroomBoom and, wherever required, customer consent. The replacement vehicle must meet or exceed the agreed vehicle category and service standards.",
+            },
+            {
+              q: "What if the customer changes the pickup location or destination?",
+              a: "Any change in pickup location, destination, route or trip duration should be communicated to the BroomBoom operations team. Additional distance or expenses will be handled according to the applicable booking terms.",
+            },
+            {
+              q: "When will I receive customer and trip details?",
+              a: "Eligible trip and customer details are shared through the prescribed booking communication process. Drivers should verify the pickup location, contact information and trip instructions before reporting for duty.",
+            },
+            {
+              q: "Does BroomBoom Vendor panel provide regular booking opportunities?",
+              a: "BroomBoom vendor is India's largest online vendor and driver network web portal that operates across multiple travel categories and locations in India. Booking opportunities depend on customer demand, vendor availability, vehicle category, location and operational requirements. We do not guarantee a fixed number of bookings or daily earnings.",
+            },
+            {
+              q: "Can I work with other cab companies while attached to BroomBoom Vendor?",
+              a: "Yes, unless a separate written agreement specifies exclusivity. However, once you accept a BroomBoom booking, you must honour that commitment and must not divert the customer or booking to another platform.",
+            },
+            {
+              q: "What are the responsibilities of a BroomBoom vendor?",
+              a: (
+                <div className="space-y-2">
+                  <p>Every vendor is responsible for:</p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Maintaining vehicles in good and hygienic condition.</li>
+                    <li>Providing valid vehicle and driver documents.</li>
+                    <li>Ensuring drivers hold valid driving licences.</li>
+                    <li>Reporting on time for every accepted booking.</li>
+                    <li>Maintaining professional behaviour with customers.</li>
+                    <li>
+                      Following traffic rules and applicable transport
+                      regulations.
+                    </li>
+                    <li>Not demanding unauthorised additional payments.</li>
+                    <li>
+                      Completing accepted trips without unauthorised
+                      cancellations.
+                    </li>
+                    <li>
+                      Reporting complaints, accidents or trip-related issues
+                      immediately.
+                    </li>
+                  </ul>
+                </div>
+              ),
+            },
+            {
+              q: "How can I contact BroomBoom for vendor support?",
+              a: "For vendor registration, booking assistance, payment-related queries or operational support, please contact the BroomBoom vendor support team through the Vendor Portal or the official communication channels shared during registration.",
+            },
+          ].map((faq, idx) => (
+            <div
+              key={idx}
+              className="bg-transparent border-b border-slate-200 py-2"
             >
-              <PhoneCall className="w-3.5 h-3.5 text-amber-600" />
-              Call Hotline: 6289952418
-            </a>
-            <Link
-              href={
-                cityName
-                  ? `/apply?package=gold&city=${encodeURIComponent(cityName)}`
-                  : "/apply?package=gold"
-              }
-              className="inline-flex items-center gap-2 bg-brand-yellow hover:bg-brand-yellow-hover text-black text-xs font-black px-4 sm:px-5 py-2.5 rounded-xl transition-all shadow-sm"
-            >
-              {cityName
-                ? `Apply for ${cityName} Vendor Partner Online →`
-                : "Apply for Vendor Partner Online →"}
-            </Link>
-          </div>
+              <button
+                onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                className="w-full flex items-center justify-between py-4 text-left font-bold text-slate-900 hover:text-blue-600 transition-colors"
+              >
+                <span>{faq.q}</span>
+                <div
+                  className={`w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center shrink-0 transition-all duration-300 ${
+                    openFaq === idx ? "rotate-180 bg-[#FBBF24]/30" : ""
+                  }`}
+                >
+                  {openFaq === idx ? (
+                    <Minus className="w-4 h-4" />
+                  ) : (
+                    <Plus className="w-4 h-4" />
+                  )}
+                </div>
+              </button>
+              <div
+                className={`grid transition-all duration-300 ease-out ${
+                  openFaq === idx
+                    ? "grid-rows-[1fr] opacity-100"
+                    : "grid-rows-[0fr] opacity-0"
+                }`}
+              >
+                <div className="overflow-hidden">
+                  <div className="pb-4 text-sm text-slate-600 leading-relaxed pr-8">
+                    {faq.a}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>

@@ -1350,14 +1350,15 @@ export default function ReviewsPage() {
           </div>
         </section>
 
-        {/* FAQ SECTION */}
+        {/* FAQ SECTION - VENDOR FOCUSED */}
         <section id="faqs" className="bg-[#F8FAFC] py-16 border-t border-slate-200">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-3 gap-12">
-            <div>
-              <h2 className="text-3xl font-bold text-slate-900 mb-4">Frequently Asked Questions</h2>
-              <p className="text-slate-600 text-sm mb-8">Booking, fares and support, answered from BroomBoom Cabs&apos; own policies.</p>
+            {/* Left Sticky Column */}
+            <div className="md:sticky md:top-28 md:self-start">
+              <h2 className="text-3xl font-bold text-slate-900 mb-4">FAQs for BroomBoom Cab Vendors & Drivers</h2>
+              <p className="text-slate-600 text-sm mb-8">Find answers to common questions about onboarding, earnings, and operational policies.</p>
               
-              <div className="bg-white rounded-2xl p-4 border border-slate-200 flex items-center gap-4 hover:shadow-md transition-shadow">
+              <div className="bg-white rounded-2xl p-4 border border-slate-200 flex items-center gap-4 hover:shadow-md transition-shadow mb-6">
                 <div className="w-10 h-10 rounded-full bg-[#FBBF24]/20 text-[#D97706] flex items-center justify-center shrink-0">
                   <Phone className="w-5 h-5" />
                 </div>
@@ -1366,16 +1367,165 @@ export default function ReviewsPage() {
                   <a href="tel:+916289952418" className="text-sm font-bold text-slate-900 hover:underline">+91 6289952418, any time.</a>
                 </div>
               </div>
+
+              <div className="bg-[#111111] text-white rounded-2xl p-6 relative overflow-hidden">
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#FBBF24] opacity-10 blur-2xl rounded-full" />
+                <h3 className="font-bold text-lg mb-2 relative z-10">Join BroomBoom and grow your cab business with more booking opportunities across India.</h3>
+                <button onClick={() => handleOpenLoginModal("gold")} className="mt-4 bb-btn-shine bg-[#FBBF24] text-black px-4 py-2 rounded-xl text-sm font-bold w-full hover:bg-yellow-500 transition-colors relative z-10">
+                  Register as a Vendor
+                </button>
+              </div>
             </div>
             
+            {/* Right Scrollable Column */}
             <div className="md:col-span-2 space-y-2">
               {[
-                { q: "Where can I read BroomBoom Cabs reviews?", a: "This page shows customer reviews posted on BroomBoom Cabs' Google Business Profiles, copied word for word, and each card links to the original review on Google Maps. You can read every review, including the most recent ones, directly on Google." },
-                { q: "How do I book a BroomBoom Cabs taxi?", a: "You can book online through our website or mobile app by entering your pickup, drop, date, and time. Choose your cab type, review the fare breakdown, and confirm." },
-                { q: "Which taxi services does BroomBoom Cabs offer?", a: "We offer outstation round trips, one-way drops, local hourly rentals, and airport transfers across India." },
-                { q: "When will I get car and driver details?", a: "Driver and vehicle details are typically shared 2-4 hours prior to your scheduled pickup time via SMS and the app." },
-                { q: "What is included in the fare?", a: "Fares generally include fuel, driver allowance, and GST. Tolls and state permits may vary depending on the route and the specific fare type chosen." },
-                { q: "Can I book a cab at the last minute?", a: "Yes, you can book a cab up to 1 hour before your departure time, subject to availability." }
+                { 
+                  q: "How can I attach my car or taxi with BroomBoom?", 
+                  a: (
+                    <div className="space-y-2">
+                      <p>You can register your travel agency, fleet or individual vehicle through the BroomBoom Vendor Portal. Visit <a href="https://vendor.broomboomcabs.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">vendor.broomboomcabs.com</a> and complete the vendor registration process with your business, vehicle and contact details.</p>
+                      <p>Individual cab owners and drivers can also register without owning a travel agency.</p>
+                    </div>
+                  )
+                },
+                { 
+                  q: "What documents are required to register as a BroomBoom vendor?", 
+                  a: (
+                    <div className="space-y-2">
+                      <p>You may be required to submit the following documents for verification:</p>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>Aadhaar Card or valid identity proof</li>
+                        <li>PAN Card</li>
+                        <li>Agency or business details (if applicable)</li>
+                        <li>Vehicle Registration Certificate (RC)</li>
+                        <li>Valid vehicle insurance</li>
+                        <li>Fitness Certificate and Permit, as applicable</li>
+                        <li>Pollution Under Control (PUC) Certificate</li>
+                        <li>Driving Licence of the assigned driver</li>
+                        <li>Bank account details for payment settlements</li>
+                        <li>Vehicle photographs, if requested</li>
+                      </ul>
+                      <p>All documents must be valid and legible for verification.</p>
+                    </div>
+                  )
+                },
+                { 
+                  q: "Can an individual car owner or driver join BroomBoom?", 
+                  a: "Yes. BroomBoom welcomes individual vehicle owners, independent drivers, travel agencies and fleet operators. You do not necessarily need to own a large fleet or operate a registered travel agency to explore vendor opportunities."
+                },
+                { 
+                  q: "How long does it take to approve my vendor account?", 
+                  a: "Approval time depends on document verification and the completeness of the submitted information. Our team may contact you if any additional documents or clarification are required."
+                },
+                { 
+                  q: "Can I receive bookings immediately after registration?", 
+                  a: "You can access booking opportunities once your vendor account and relevant vehicle/driver details have been verified and approved. Booking acceptance is subject to vehicle category, availability, service location and applicable platform requirements."
+                },
+                { 
+                  q: "What types of bookings can I receive from BroomBoom Vendor?", 
+                  a: (
+                    <div className="space-y-2">
+                      <p>BroomBoom Vendor provides business opportunities across multiple travel categories, including:</p>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>Outstation one-way trips</li>
+                        <li>Outstation round trips</li>
+                        <li>Local hourly rentals</li>
+                        <li>Airport pickup and drop</li>
+                        <li>Corporate transportation</li>
+                        <li>Sightseeing and tour packages</li>
+                        <li>Special travel requirements, including pet-friendly bookings where applicable</li>
+                      </ul>
+                    </div>
+                  )
+                },
+                { 
+                  q: "How will I know about new bookings?", 
+                  a: "Eligible vendors can access booking opportunities through the BroomBoom Vendor Portal. Booking details, including pickup location, destination, travel date, vehicle category and applicable vendor fare, are provided for evaluation before accepting a trip."
+                },
+                { 
+                  q: "How much can I earn through BroomBoom Vendor?", 
+                  a: "Your earnings depend on the number of bookings completed, vehicle category, route, distance, trip type and applicable vendor fare. You can increase your earning potential by keeping your vehicle available and accepting suitable booking opportunities."
+                },
+                { 
+                  q: "What is the payment structure for vendor bookings?", 
+                  a: "The applicable vendor payment and settlement terms are communicated for the respective booking. Vendors should review the trip fare and payment instructions before accepting a booking."
+                },
+                { 
+                  q: "Can I charge night charges separately from the customer?", 
+                  a: "Yes. Night charges are payable separately wherever applicable, as per the booking terms and agreed rate. Vendors and drivers should verify the applicable night-charge conditions before accepting the booking and collect the eligible amount accordingly."
+                },
+                { 
+                  q: "Are toll charges included in the vendor booking price?", 
+                  a: "Toll charges are payable separately by the customer/vendor arrangement, as applicable to the booking. Drivers can collect applicable toll charges separately based on actual toll expenses and valid receipts. Always check the individual booking instructions before starting the trip."
+                },
+                { 
+                  q: "Are state taxes and permits included in the booking fare?", 
+                  a: "State taxes, permit charges, border taxes and other applicable government fees may be additional depending on the route and booking terms. These should be handled as specified in the booking details and supported by valid receipts wherever applicable."
+                },
+                { 
+                  q: "Can I collect parking charges from customers?", 
+                  a: "Yes. Actual parking charges, airport parking fees and other applicable parking expenses can be collected separately wherever they are excluded from the agreed booking fare. Valid receipts should be provided whenever available."
+                },
+                { 
+                  q: "What happens if a customer requests extra kilometres?", 
+                  a: "If a customer travels beyond the included kilometre limit, applicable extra-kilometre charges can be collected as per the rate specified in the booking. Drivers should maintain accurate trip kilometre records and report the additional distance through the prescribed process."
+                },
+                { 
+                  q: "Can I refuse a booking after accepting it?", 
+                  a: "Once a booking is accepted, vendors are expected to fulfil the commitment. Unjustified cancellations, driver unavailability or failure to report at the pickup location may result in penalties or other action as per BroomBoom's vendor agreement and policies."
+                },
+                { 
+                  q: "What happens if my vehicle breaks down before the trip?", 
+                  a: "Immediately inform the BroomBoom operations team. Vendors are expected to arrange a suitable replacement vehicle of the same or an approved higher category, subject to customer approval and BroomBoom's confirmation. Failure to arrange an alternative may attract applicable penalties."
+                },
+                { 
+                  q: "Can I send a different driver for an accepted booking?", 
+                  a: "Only an approved and eligible driver should operate the assigned vehicle. Any driver replacement must be communicated to and approved by BroomBoom before the trip. Sending an unauthorised driver may result in booking cancellation or vendor account action."
+                },
+                { 
+                  q: "Can I send a different vehicle instead of the assigned vehicle?", 
+                  a: "Vehicle substitution is subject to prior approval from BroomBoom and, wherever required, customer consent. The replacement vehicle must meet or exceed the agreed vehicle category and service standards."
+                },
+                { 
+                  q: "What if the customer changes the pickup location or destination?", 
+                  a: "Any change in pickup location, destination, route or trip duration should be communicated to the BroomBoom operations team. Additional distance or expenses will be handled according to the applicable booking terms."
+                },
+                { 
+                  q: "When will I receive customer and trip details?", 
+                  a: "Eligible trip and customer details are shared through the prescribed booking communication process. Drivers should verify the pickup location, contact information and trip instructions before reporting for duty."
+                },
+                { 
+                  q: "Does BroomBoom Vendor panel provide regular booking opportunities?", 
+                  a: "BroomBoom vendor is India's largest online vendor and driver network web portal that operates across multiple travel categories and locations in India. Booking opportunities depend on customer demand, vendor availability, vehicle category, location and operational requirements. We do not guarantee a fixed number of bookings or daily earnings."
+                },
+                { 
+                  q: "Can I work with other cab companies while attached to BroomBoom Vendor?", 
+                  a: "Yes, unless a separate written agreement specifies exclusivity. However, once you accept a BroomBoom booking, you must honour that commitment and must not divert the customer or booking to another platform."
+                },
+                { 
+                  q: "What are the responsibilities of a BroomBoom vendor?", 
+                  a: (
+                    <div className="space-y-2">
+                      <p>Every vendor is responsible for:</p>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>Maintaining vehicles in good and hygienic condition.</li>
+                        <li>Providing valid vehicle and driver documents.</li>
+                        <li>Ensuring drivers hold valid driving licences.</li>
+                        <li>Reporting on time for every accepted booking.</li>
+                        <li>Maintaining professional behaviour with customers.</li>
+                        <li>Following traffic rules and applicable transport regulations.</li>
+                        <li>Not demanding unauthorised additional payments.</li>
+                        <li>Completing accepted trips without unauthorised cancellations.</li>
+                        <li>Reporting complaints, accidents or trip-related issues immediately.</li>
+                      </ul>
+                    </div>
+                  )
+                },
+                { 
+                  q: "How can I contact BroomBoom for vendor support?", 
+                  a: "For vendor registration, booking assistance, payment-related queries or operational support, please contact the BroomBoom vendor support team through the Vendor Portal or the official communication channels shared during registration."
+                }
               ].map((faq, idx) => (
                 <div key={idx} className="bg-transparent border-b border-slate-200 py-2">
                   <button 
