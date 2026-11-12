@@ -2212,11 +2212,11 @@ function VendorDashboardContent() {
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex items-center gap-2 border-b border-slate-200 pb-1">
+        <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto">
           <button
             type="button"
             onClick={() => setOrdersTab("incoming")}
-            className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
+            className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap shrink-0 ${
               ordersTab === "incoming"
                 ? "bg-amber-500 text-slate-950 shadow-xs"
                 : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
@@ -2231,7 +2231,7 @@ function VendorDashboardContent() {
           <button
             type="button"
             onClick={() => setOrdersTab("active")}
-            className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
+            className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap shrink-0 ${
               ordersTab === "active"
                 ? "bg-amber-500 text-slate-950 shadow-xs"
                 : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
@@ -2246,7 +2246,7 @@ function VendorDashboardContent() {
           <button
             type="button"
             onClick={() => setOrdersTab("completed")}
-            className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
+            className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap shrink-0 ${
               ordersTab === "completed"
                 ? "bg-amber-500 text-slate-950 shadow-xs"
                 : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"

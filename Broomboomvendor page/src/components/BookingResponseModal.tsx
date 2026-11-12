@@ -139,11 +139,11 @@ export default function BookingResponseModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-xl max-w-lg w-full shadow-2xl border border-slate-400 overflow-hidden my-6 animate-in fade-in zoom-in-95 duration-150"
+        className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-400 overflow-hidden my-4 animate-in fade-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Solid Blue Title Header matching Screenshot 2 */}
-        <div className="bg-[#105796] text-white px-4 py-3 flex items-center justify-between">
+        <div className="bg-[#105796] text-white px-4 py-2.5 flex items-center justify-between shrink-0">
           <span className="w-6" aria-hidden="true" />
           <h3 className="text-sm sm:text-base font-bold tracking-tight text-center">
             Booking Response Details #{displayId}
@@ -158,7 +158,7 @@ export default function BookingResponseModal({
           </button>
         </div>
 
-        <div className="p-3 sm:p-4 space-y-3 text-xs sm:text-[13px] max-h-[84vh] overflow-y-auto">
+        <div className="p-3 sm:p-4 space-y-2.5 text-xs sm:text-[13px] flex-1 overflow-y-auto">
           {/* Wallet ₹0 / 2-Booking Settlement Lock Banner */}
           {wallet.mustPayToZero ? (
             <div className="bg-rose-50 border-2 border-rose-400 rounded-lg p-3 space-y-2 text-rose-950">
@@ -351,12 +351,15 @@ export default function BookingResponseModal({
               </span>
             </label>
           </div>
+        </div>
 
+        {/* Sticky Quote & Action Footer always visible */}
+        <div className="shrink-0 border-t border-slate-300 bg-slate-50 px-3 sm:px-4 py-3 space-y-2.5 text-xs">
           {/* Give Your Price Optional Bid Box */}
-          <div className="border border-blue-200 bg-blue-50/70 rounded-lg p-3 space-y-2">
+          <div className="border border-blue-200 bg-blue-50/80 rounded-lg p-2.5 space-y-2">
             <div className="flex items-center justify-between gap-2">
               <span className="font-bold text-blue-950">
-                Quote / Trip Fare Confirmation ({showCustomPrice ? "Your Custom Price" : "Listed Cost"})
+                Quote / Trip Fare ({showCustomPrice ? "Your Custom Price" : "Listed Cost"})
               </span>
               <button
                 type="button"
@@ -389,7 +392,7 @@ export default function BookingResponseModal({
           )}
 
           {/* Action Footer */}
-          <div className="pt-1 flex flex-col sm:flex-row items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-center gap-2">
             <button
               type="button"
               onClick={handleDeclineClick}

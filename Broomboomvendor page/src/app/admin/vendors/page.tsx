@@ -47,6 +47,7 @@ interface AdminBookingOrder {
   duration: string;
   vehicleCategory: string;
   planTier: string;
+  bookingType?: string;
   totalFare: number;
   vendorPayout: number;
   passengerName: string;
