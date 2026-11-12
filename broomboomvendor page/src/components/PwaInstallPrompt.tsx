@@ -131,7 +131,7 @@ export const PwaInstallPrompt: React.FC = () => {
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="relative w-9 h-9 rounded-xl overflow-hidden border border-amber-400 bg-white flex items-center justify-center p-0.5 shrink-0 shadow-sm">
                 <Image
-                  src="/broomboom-logo.png"
+                  src="/broomboom-vendor-logo.png"
                   alt="BroomBoom Vendor App"
                   fill
                   className="object-contain"
@@ -188,7 +188,7 @@ export const PwaInstallPrompt: React.FC = () => {
               <div className="flex items-center gap-3">
                 <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-amber-400 bg-white flex items-center justify-center p-0.5">
                   <Image
-                    src="/broomboom-logo.png"
+                    src="/broomboom-vendor-logo.png"
                     alt="BroomBoom"
                     fill
                     className="object-contain"
@@ -250,7 +250,7 @@ export const PwaInstallPrompt: React.FC = () => {
               <div className="flex items-center gap-3">
                 <div className="relative w-10 h-10 rounded-xl overflow-hidden border border-amber-400 bg-white flex items-center justify-center p-0.5">
                   <Image
-                    src="/broomboom-logo.png"
+                    src="/broomboom-vendor-logo.png"
                     alt="BroomBoom Vendor"
                     fill
                     className="object-contain"

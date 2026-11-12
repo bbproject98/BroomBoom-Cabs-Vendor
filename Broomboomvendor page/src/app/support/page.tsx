@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import {
   ArrowRight,
   Building2,
@@ -182,28 +183,25 @@ export default function SupportPage() {
                 </span>
               </a>
 
-              <button
-                type="button"
-                onClick={() =>
-                  window.dispatchEvent(new Event("trigger-open-profile-otp"))
-                }
-                className="bg-slate-950 text-white rounded-2xl border border-amber-400/50 hover:border-amber-400 p-5 shadow-card hover:shadow-card-hover transition-all flex flex-col justify-between text-left cursor-pointer"
+              <Link
+                href="/vendor/login"
+                className="bg-slate-950 text-white rounded-2xl border border-amber-400/50 hover:border-amber-400 p-5 shadow-card hover:shadow-card-hover transition-all flex flex-col justify-between text-left"
               >
                 <div>
                   <div className="w-10 h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center mb-3">
                     <ShieldCheck className="w-5 h-5" />
                   </div>
                   <h2 className="text-sm font-black text-white">
-                    Track Application &amp; Plan
+                    Vendor Partner Portal
                   </h2>
                   <p className="text-xs text-slate-300 mt-0.5">
-                    Verify via SMS OTP to view status &amp; plan tier
+                    Sign in to view dashboard, plan tier &amp; status
                   </p>
                 </div>
                 <span className="mt-4 text-sm font-black text-amber-400 inline-flex items-center gap-1">
-                  Verify Mobile OTP <ArrowRight className="w-3.5 h-3.5" />
+                  Open Vendor Login <ArrowRight className="w-3.5 h-3.5" />
                 </span>
-              </button>
+              </Link>
             </div>
           </div>
         </section>

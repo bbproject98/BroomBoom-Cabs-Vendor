@@ -3191,7 +3191,7 @@ function VendorDashboardContent() {
 
             <Link href="/vendor/dashboard" className="flex items-center gap-3">
               <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-amber-400 shadow-sm bg-white flex items-center justify-center p-0.5">
-                <Image src="/broomboom-logo.png" alt="BroomBoom Logo" fill className="object-contain" priority />
+                <Image src="/broomboom-vendor-logo.png" alt="BroomBoom Logo" fill className="object-contain" priority />
               </div>
               <div>
                 <div className="flex items-center gap-2">

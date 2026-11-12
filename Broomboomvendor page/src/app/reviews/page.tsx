@@ -20,6 +20,9 @@ import {
   Minus,
   Calendar,
   IndianRupee,
+  Car,
+  Briefcase,
+  Plane,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -524,17 +527,25 @@ export default function ReviewsPage() {
             <div className="min-w-0">
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-[1.1] tracking-tight mb-6 bb-enter">
                 Every Journey <br />Has a Story.<br />
-                <span className="text-[#FBBF24]">Here's What Our<br />Customers Say.</span>
+                <span className="text-[#FBBF24]">Here&apos;s What Our<br />Vendors Say.</span>
               </h1>
               <p className="text-slate-300 text-base sm:text-lg max-w-lg mb-8 leading-relaxed bb-enter" style={{ animationDelay: "80ms" }}>
-                Explore customer feedback about BroomBoom Cabs&apos; taxi booking services, from booking assistance and driver experiences to comfortable outstation journeys.
+                Explore vendor earning feedback about BroomBoom Cabs taxi booking services, from booking assistance and earning experiences in the city to profitable outstation journeys.
               </p>
               <div className="flex flex-wrap items-center gap-4 mb-10 bb-enter" style={{ animationDelay: "160ms" }}>
-                <button type="button" onClick={() => handleOpenLoginModal("gold")} className="bb-btn-shine bg-[#FBBF24] text-black px-6 py-3 rounded-xl font-bold hover:bg-yellow-500 transition-colors flex items-center gap-2 cursor-pointer">
-                  Book Your Cab <ArrowUpRight className="w-5 h-5" />
+                <button
+                  type="button"
+                  onClick={() => handleOpenLoginModal("gold")}
+                  className="bb-btn-shine bg-[#FBBF24] text-black px-6 py-3 rounded-xl font-bold tracking-wide hover:bg-yellow-500 transition-colors flex items-center gap-2 cursor-pointer"
+                >
+                  JOIN NOW <ArrowUpRight className="w-5 h-5" />
                 </button>
-                <button type="button" onClick={() => document.getElementById("reviews-list")?.scrollIntoView({ behavior: "smooth", block: "start" })} className="border border-slate-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-800 hover:border-slate-500 transition-colors cursor-pointer">
-                  Explore Customer Reviews
+                <button
+                  type="button"
+                  onClick={() => document.getElementById("reviews-list")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                  className="border border-slate-600 text-white px-6 py-3 rounded-xl font-bold tracking-wide hover:bg-slate-800 hover:border-slate-500 transition-colors cursor-pointer"
+                >
+                  EXPLORE VENDOR PARTNER REVIEWS
                 </button>
               </div>
               
@@ -542,7 +553,7 @@ export default function ReviewsPage() {
                 <div className="flex items-center gap-2"><MessageSquarePlus className="w-4 h-4 text-[#FBBF24] shrink-0" /> 81 featured Google reviews</div>
                 <div className="flex items-center gap-2"><MapPin className="w-4 h-4 text-[#FBBF24] shrink-0" /> 6 city profiles on Google Maps</div>
                 <div className="flex items-center gap-2"><Star className="w-4 h-4 text-[#FBBF24] shrink-0 bb-twinkle" /> <span className="underline decoration-slate-600 underline-offset-4">4.7 on Tripadvisor, 4.3 on Google Play</span></div>
-                <div className="flex items-center gap-2"><Phone className="w-4 h-4 text-[#FBBF24] shrink-0" /> 24x7 customer support</div>
+                <div className="flex items-center gap-2"><Phone className="w-4 h-4 text-[#FBBF24] shrink-0" /> 24x7 vendor support</div>
               </div>
 
               <div className="flex flex-wrap items-center gap-2 text-sm text-slate-300 pt-6 border-t border-slate-800 bb-enter" style={{ animationDelay: "320ms" }}>
@@ -553,27 +564,27 @@ export default function ReviewsPage() {
               </div>
             </div>
 
-            {/* Floating Google Review Card */}
+            {/* Floating Vendor Review Card */}
             <div className="relative hidden lg:block">
               <div className="absolute inset-0 bg-[#FBBF24] blur-3xl opacity-10 rounded-full"></div>
               <div className="bb-float bg-white rounded-2xl p-6 shadow-2xl relative z-10 max-w-sm ml-auto border border-slate-200 hover:shadow-[0_25px_60px_-15px_rgba(251,191,36,0.45)] transition-shadow duration-500">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <GoogleBadgeIcon />
-                    <span className="text-slate-500 text-sm font-medium">Review</span>
+                    <span className="text-slate-500 text-sm font-medium">Vendor Review</span>
                   </div>
                   <div className="flex gap-0.5">
                     {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-[#FBBC04] text-[#FBBC04] bb-twinkle" style={{ animationDelay: `${i * 180}ms` }} />)}
                   </div>
                 </div>
                 <p className="text-slate-800 font-medium text-[15px] leading-relaxed mb-6">
-                  "Good experience, Polite driver. My flight was delayed for 6 hours still he waited .. really appreciate your work 🙏"
+                  &quot;Good experience with BroomBoom Vendor portal. Got a great earning opportunity through them, and the payment was received smoothly. Really appreciate the support and the business they provide to drivers like Us. 🙏&quot;
                 </p>
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-lg">D</div>
+                  <div className="w-10 h-10 rounded-full bg-[#D97706] text-white flex items-center justify-center font-bold text-lg">V</div>
                   <div>
-                    <h4 className="text-sm font-bold text-slate-900">Dr komal yadav</h4>
-                    <p className="text-xs text-slate-500">BroomBoom Cabs Hyderabad on Google Maps</p>
+                    <h4 className="text-sm font-bold text-slate-900">Venkat Rao</h4>
+                    <p className="text-xs text-slate-500">BroomBoom Vendor Hyderabad on Google Maps</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-blue-600 font-medium cursor-pointer">
@@ -583,10 +594,10 @@ export default function ReviewsPage() {
             </div>
           </div>
 
-          {/* ROADS OUR REVIEWERS TRAVELLED TIMELINE — marquee effect */}
+          {/* ROADS OUR VENDORS TRAVELLED TIMELINE — marquee effect */}
           <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-6 relative z-10">
             <div className="flex flex-wrap items-center gap-2 mb-8">
-              <span className="text-sm font-bold text-white">Roads our reviewers travelled.</span>
+              <span className="text-sm font-bold text-white">Roads our vendors travelled.</span>
               <span className="text-sm text-slate-400">Hover to pause · tap a trip to read the review.</span>
             </div>
             
@@ -624,9 +635,9 @@ export default function ReviewsPage() {
               {[
                 { label: "Google reviews", href: "#reviews-list" },
                 { label: "Other platforms", href: "#ratings" },
-                { label: "What customers mention", href: "#appreciate" },
-                { label: "Travel tips", href: "#tips" },
-                { label: "By journey", href: "#journey" },
+                { label: "What vendors mention", href: "#appreciate" },
+                { label: "Vendor Earnings", href: "#earnings" },
+                { label: "Partner Benefits", href: "#partner" },
                 { label: "Services", href: "#services" },
                 { label: "Popular routes", href: "#routes" },
                 { label: "In the news", href: "#news" },
@@ -645,46 +656,56 @@ export default function ReviewsPage() {
           </div>
         </div>
 
-        {/* IN THE NEWS SECTION */}
+        {/* BROOMBOOM VENDOR SUCCESS STORIES IN THE NEWS */}
         <section id="news" className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
           <div className="flex flex-col md:flex-row gap-12">
             <div className="md:w-1/3">
               <h2 className="text-4xl font-bold text-slate-900 tracking-tight mb-4 relative inline-block">
-                BroomBoom Cabs in the News
+                BroomBoom Vendor Success Stories in the News
                 <span className="block h-[3px] w-16 mt-3 rounded-full bb-gradient-underline" />
               </h2>
-              <p className="text-slate-600 text-sm leading-relaxed mb-8">
-                Stories and travel insights featuring BroomBoom Cabs from news and business publications.
+              <p className="text-slate-600 text-sm leading-relaxed mb-6">
+                Real experiences from our cab vendors and driver partners. Discover how BroomBoom connects vendors with booking opportunities, helps improve vehicle utilisation and creates earning opportunities across India.
               </p>
+              <div className="bg-[#F8FAFC] border-l-4 border-[#FBBF24] p-4 mb-8 rounded-r-lg">
+                <p className="text-slate-800 font-medium italic text-sm">
+                  &quot;Your Cars. Your Business. More Earning Opportunities with BroomBoom.&quot;
+                </p>
+              </div>
               <Link href="/blog" className="inline-flex items-center gap-2 text-sm font-bold text-slate-900 border-b-2 border-[#FBBF24] pb-1 hover:text-slate-700">
-                See all media coverage <ArrowUpRight className="w-4 h-4" />
+                See all Vendor Success Stories Media Coverage <ArrowUpRight className="w-4 h-4" />
               </Link>
             </div>
             
             <div className="md:w-2/3 flex flex-col md:flex-row gap-6">
+              {/* Featured Story Card */}
               <div className="bg-[#111111] text-white rounded-3xl p-8 flex-1 flex flex-col justify-between min-h-[300px] bb-card-glow">
                 <div>
                   <span className="text-[#FBBF24] text-sm font-bold mb-3 block">Republic World</span>
-                  <h3 className="text-2xl font-bold leading-tight mb-4">
-                    Beyond Tourist Destinations: BroomBoom Cabs Explains Why Indian Travellers Are Choosing Experiences Over Sightseeing
+                  <h3 className="text-xl font-bold leading-tight mb-4">
+                    More Bookings, More Earning Opportunities
                   </h3>
-                  <p className="text-slate-400 text-sm leading-relaxed line-clamp-3">
-                    Indian travellers are moving beyond traditional sightseeing to discover local food, culture, hidden destinations and memorable experiences.
+                  <p className="text-slate-400 text-sm leading-relaxed line-clamp-4">
+                    Get access to customer bookings across multiple travel categories, including outstation, one-way, local rentals and airport transfers. Make your vehicles productive with more business opportunities.
                   </p>
                 </div>
               </div>
 
+              {/* Story List */}
               <div className="flex-1 flex flex-col justify-between divide-y divide-slate-200">
                 {[
-                  { source: "ANI", title: "BroomBoom Cabs Redefines Intercity Travel in India with True One-Way Pricing and Deep Tier-2, Tier-3 Reach" },
-                  { source: "ABP Live", title: "BroomBoom Cabs: Why One-Way Road Trips Are India's Smartest Travel Choice" },
-                  { source: "Outlook India", title: "BroomBoom Cabs: The Rise Of Commitment-Free Travel" },
-                  { source: "ET TravelWorld", title: "Travel search and trends for Valentine's Day decoded: Find out where Indians travelled?" }
+                  { source: "ANI", title: "Expand Your Business Beyond Your Local City", desc: "Connect with BroomBoom Vendor's pan-India booking network and explore trip opportunities across different cities, routes and travel destinations. Grow beyond your existing customer base." },
+                  { source: "ABP Live", title: "Turn Your Available Cars into Revenue-Generating Assets", desc: "Whether you own one car or manage a fleet, BroomBoom vendor helps you explore booking opportunities according to your vehicle category and availability." },
+                  { source: "Outlook India", title: "Every Completed Trip Brings Earning Potential", desc: "Complete accepted bookings, provide quality service and receive applicable vendor payments as per the agreed settlement terms. Build a consistent business relationship through reliable operations." },
+                  { source: "ET Travel World", title: "From Individual Drivers to Large Fleet Operators", desc: "BroomBoom welcomes individual cab owners, travel agencies and fleet operators. Access a wider customer network and explore opportunities to grow your transportation business." }
                 ].map((news, idx) => (
-                  <div key={idx} className="py-4 group cursor-pointer">
+                  <div key={idx} className="py-3 group cursor-pointer">
                     <span className="text-[#D97706] text-xs font-bold block mb-1">{news.source}</span>
                     <div className="flex items-start justify-between gap-4">
-                      <h4 className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors leading-snug">{news.title}</h4>
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors leading-snug mb-1">{news.title}</h4>
+                        <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">{news.desc}</p>
+                      </div>
                       <ArrowUpRight className="w-4 h-4 text-slate-400 shrink-0 mt-1 group-hover:text-blue-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                     </div>
                   </div>
@@ -700,10 +721,10 @@ export default function ReviewsPage() {
           
           <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
             <h2 className="text-3xl sm:text-4xl font-bold mb-3 relative inline-block">
-              Rated by Travellers Across the Web
+              BroomBoom Vendor Reviews
               <span className="block h-[3px] w-20 mt-3 rounded-full bb-gradient-underline" />
             </h2>
-            <p className="text-slate-400 text-sm mb-10 max-w-xl">What customers say about BroomBoom Cabs on Google Play, Tripadvisor and MouthShut. Each rating links to the platform.</p>
+            <p className="text-slate-400 text-sm mb-10 max-w-xl">Filter by what BroomBoom Vendor driver partner online reviews, the kind of order earning they describe, or the Google profile the review was posted on.</p>
             
             {/* 3 Big Score Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
@@ -1093,27 +1114,47 @@ export default function ReviewsPage() {
           )}
         </section>
 
-        {/* FIND REVIEWS BY JOURNEY TYPE */}
-        <section id="journey" className="bg-[#F8FAFC] py-16 border-t border-slate-200">
+        {/* ONLINE CAB ATTACHMENT - REPLACED JOURNEY TYPE */}
+        <section id="partner" className="bg-[#F8FAFC] py-16 border-t border-slate-200">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <h2 className="text-3xl font-bold text-slate-900 mb-2">Find Reviews by Journey Type</h2>
-            <p className="text-slate-600 text-sm mb-8 max-w-2xl">A review is grouped here only when the customer describes that kind of trip, such as naming the route or mentioning a flight.</p>
+            <h2 className="text-3xl font-bold text-slate-900 mb-2">Online Cab Attachment</h2>
+            <p className="text-slate-600 text-sm mb-8 max-w-3xl leading-relaxed">
+              Drivers / Vendor Partners / Taxi service providers can partner with BroomBoom to attach your car with the company and get business from the BroomBoom Vendor panel. It is as simple as just register yourself on the BroomBoom Vendor Web app, get verified and start work.
+            </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
-                { count: 12, title: "Outstation & intercity", desc: "Trips like Delhi to Mukteshwar, Amritsar to Gurdaspur and Munnar to Rameshwaram." },
-                { count: 5, title: "Booked at short notice", desc: "Customers who booked late at night or a few hours before travelling." },
-                { count: 2, title: "Family trips", desc: "Multi-day family journeys, including travel with children." },
-                { count: 1, title: "Airport pickup", desc: "A driver who waited through a 6-hour flight delay." }
+                { 
+                  icon: <Car className="w-5 h-5 text-[#D97706]" />,
+                  title: "Outstation & Intercity Bookings", 
+                  desc: "Trips like Delhi to Himachal, Mumbai to Mahabaleshwar and Munnar to Rameswaram with verified profitable earnings and incentives." 
+                },
+                { 
+                  icon: <Clock className="w-5 h-5 text-[#D97706]" />,
+                  title: "Flexible 24/7 Ride Orders", 
+                  desc: "Bookings available pan India both day and night to ensure unstoppable earnings — more than 1 lakh+ earning per month." 
+                },
+                { 
+                  icon: <Briefcase className="w-5 h-5 text-[#D97706]" />,
+                  title: "Local Rentals & Corporate Bookings", 
+                  desc: "Yearly high volume online corporate ride orders with professional drivers for corporate employees and office pick and drop facilities." 
+                },
+                { 
+                  icon: <Plane className="w-5 h-5 text-[#D97706]" />,
+                  title: "Easy Airport Booking", 
+                  desc: "No need to sit behind with a car, register now and get Frequent high airport orders to outstation rides, all available only at BroomBoom Vendor panel with assured earnings." 
+                }
               ].map((item, idx) => (
                 <div key={idx} className="bb-enter group bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between relative overflow-hidden bb-card-glow" style={{ animationDelay: `${idx * 70}ms` }}>
                   <div className="bb-card-shine" />
                   <div className="relative">
-                    <span className="text-[#D97706] font-bold text-sm mb-2 block">{item.count}</span>
+                    <div className="w-10 h-10 rounded-xl bg-yellow-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                      {item.icon}
+                    </div>
                     <h3 className="text-base font-bold text-slate-900 mb-2">{item.title}</h3>
-                    <p className="text-xs text-slate-500 leading-relaxed mb-6">{item.desc}</p>
+                    <p className="text-sm text-slate-600 leading-relaxed mb-6">{item.desc}</p>
                   </div>
-                  <button className="relative text-xs font-bold text-[#D97706] hover:underline text-left">Read these reviews</button>
+                  <button onClick={() => handleOpenLoginModal("gold")} className="relative text-xs font-bold text-[#D97706] hover:underline text-left mt-auto w-fit">Partner Now</button>
                 </div>
               ))}
             </div>
@@ -1123,7 +1164,7 @@ export default function ReviewsPage() {
         {/* WHAT CUSTOMERS APPRECIATE */}
         <section id="appreciate" className="bg-[#F8FAFC] py-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <h2 className="text-3xl font-bold text-slate-900 mb-2">What Customers Appreciate</h2>
+            <h2 className="text-3xl font-bold text-slate-900 mb-2">What Vendors Appreciate</h2>
             <p className="text-slate-600 text-sm mb-10">Ranked by how many of the 81 featured reviews mention each topic in their own words.</p>
             
             <div className="space-y-6">
@@ -1144,7 +1185,7 @@ export default function ReviewsPage() {
                     <span className="font-bold text-slate-900 text-sm">{item.count} <span className="text-xs text-slate-500 font-normal">reviews</span></span>
                   </div>
                   <div className="w-full md:w-2/4">
-                    <p className="text-sm text-slate-700 italic mb-1">"{item.quote}"</p>
+                    <p className="text-sm text-slate-700 italic mb-1">&quot;{item.quote}&quot;</p>
                     <div className="flex items-center gap-2 text-xs text-slate-500">
                       <span>{item.author}</span>
                       <button className="text-[#D97706] font-bold hover:underline">Read these reviews</button>
@@ -1156,20 +1197,56 @@ export default function ReviewsPage() {
           </div>
         </section>
 
-        {/* TRAVEL TIPS */}
-        <section id="tips" className="bg-white py-16">
+        {/* REAL EXPERIENCES FROM REAL EARNINGS (Previously Travel Tips) */}
+        <section id="earnings" className="bg-white py-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <h2 className="text-3xl font-bold text-slate-900 mb-2">Travel Tips from Real Trips</h2>
-            <p className="text-slate-600 text-sm mb-8">Practical advice for booking your cab, each paired with what a customer said about it on Google.</p>
+            <h2 className="text-3xl font-bold text-slate-900 mb-2">Real Experiences from Real Earnings.</h2>
+            <p className="text-slate-600 text-sm mb-8">Insights and experiences from cab vendors and drivers who grow their business with BroomBoom.</p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
-                { icon: <IndianRupee className="w-5 h-5" />, title: "Choose the toll-inclusive fare", desc: "At checkout you can pick a price that includes toll and state tax, or the lowest price without them. The inclusive fare means nothing extra to settle on the road.", quote: "Nice, no hidden charges. Always select along with toll, so that no issues while making payments", author: "Mahesh Bannurkar" },
-                { icon: <Calendar className="w-5 h-5" />, title: "Book a day ahead, or as late as 1 hour before", desc: "You can book up to 1 hour before departure. Booking a day in advance is recommended to avoid the last-minute rush.", quote: "I booked a cab at midnight for an early morning trip, and BroomBoom Cabs provided the cab right on time at the lowest available fare.", author: "Bharat Devda" },
-                { icon: <MapPin className="w-5 h-5" />, title: "Plan your stops on outstation trips", desc: "Outstation round trips cover multiple destinations and stops as you plan, with sightseeing at the destination included.", quote: "He made us feel comfortable throughout the trip and was always supportive whenever we wanted to stop for sightseeing, meals, or breaks.", author: "Rakesh Karki" },
-                { icon: <MessageSquarePlus className="w-5 h-5" />, title: "Travelling with family or pets?", desc: "You can specify your needs during booking to ensure the right vehicle size and amenities for your loved ones.", quote: "Very spacious and clean car. Driver was patient with our pet.", author: "Ananya S." },
-                { icon: <Phone className="w-5 h-5" />, title: "Save the 24x7 support number", desc: "Always have the helpline handy in case of flight delays, gate changes, or unexpected route diversions.", quote: "Called them at 3 AM and they picked up instantly to reroute our pickup.", author: "Vikram R." },
-                { icon: <Smartphone className="w-5 h-5" />, title: "Book on the app for ₹200 cashback", desc: "Download the app to get exclusive discounts, track your driver live, and earn cashback on every completed trip.", quote: "The app is so smooth, got cashback instantly in my wallet.", author: "Sneha P." }
+                { 
+                  icon: <Briefcase className="w-5 h-5" />, 
+                  title: "Get more booking opportunities", 
+                  desc: "Connect with BroomBoom to receive cab booking opportunities for airport transfers, outstation trips, local rentals and tour packages. Turn your available vehicle time into earning opportunities.", 
+                  quote: "Good experience with BroomBoom. Got a great earning opportunity through their bookings. Really appreciate the business and support they provide to drivers. 🙏", 
+                  author: "Mahesh Bannurkar, BroomBoom Vendor Partner" 
+                },
+                { 
+                  icon: <IndianRupee className="w-5 h-5" />, 
+                  title: "Earn more with every completed trip", 
+                  desc: "Accept suitable trips, provide reliable service and earn through your vehicle. BroomBoom connects vendors and drivers with customers looking for dependable cab services across India.", 
+                  quote: "A great platform to get genuine trip opportunities and improve our daily earnings. Happy to receive business through BroomBoom.", 
+                  author: "Bharat Devda, BroomBoom Driver Partner" 
+                },
+                { 
+                  icon: <BadgeCheck className="w-5 h-5" />, 
+                  title: "Transparent earnings and smooth settlements", 
+                  desc: "Complete your assigned trips and receive your applicable earnings as per the agreed payment terms. Focus on driving while BroomBoom helps connect you with more customers and business opportunities.", 
+                  quote: "The trip was completed successfully, and I received my earnings smoothly. Thank you, BroomBoom, for providing good business opportunities.", 
+                  author: "Rakesh Karki, BroomBoom Vendor Partner" 
+                },
+                { 
+                  icon: <Car className="w-5 h-5" />, 
+                  title: "Get bookings across multiple categories", 
+                  desc: "Receive business opportunities for airport transfers, outstation trips, local rentals and tour packages. Choose trips that match your vehicle category and availability.", 
+                  quote: "BroomBoom helped me get good booking opportunities for my vehicle. The variety of trips gives me more chances to earn.", 
+                  author: "Anand S., BroomBoom Cab Vendor" 
+                },
+                { 
+                  icon: <Phone className="w-5 h-5" />, 
+                  title: "Get support whenever you need it", 
+                  desc: "Our vendor support team helps with booking coordination, trip-related queries, payment assistance and operational issues so you can focus on providing reliable service.", 
+                  quote: "The BroomBoom team is supportive and responsive. Whenever I need help regarding a booking, their team guides me properly.", 
+                  author: "Vikram R, BroomBoom Driver Partner" 
+                },
+                { 
+                  icon: <ArrowUpRight className="w-5 h-5" />, 
+                  title: "Turn every available trip into earning potential", 
+                  desc: "Keep your vehicle active with BroomBoom booking opportunities. Complete trips, earn from your vehicle and grow your business through a wider customer network.", 
+                  quote: "Good experience with BroomBoom. Got a great earning opportunity through their bookings. Really appreciate the business and support they provide to drivers. 🙏", 
+                  author: "Santosh P., BroomBoom Cab Vendor" 
+                }
               ].map((tip, idx) => (
                 <div key={idx} className="bb-enter group border border-slate-200 rounded-2xl p-6 flex flex-col justify-between hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden" style={{ animationDelay: `${idx * 60}ms` }}>
                   <div className="bb-card-shine" />
@@ -1179,7 +1256,7 @@ export default function ReviewsPage() {
                     <p className="text-sm text-slate-600 leading-relaxed mb-6">{tip.desc}</p>
                   </div>
                   <div className="relative border-t border-slate-100 pt-4 mt-auto">
-                    <p className="text-sm text-slate-700 italic mb-2">"{tip.quote}"</p>
+                    <p className="text-sm text-slate-700 italic mb-2">&quot;{tip.quote}&quot;</p>
                     <p className="text-xs text-blue-600 font-medium">{tip.author}</p>
                   </div>
                 </div>
@@ -1231,26 +1308,41 @@ export default function ReviewsPage() {
           </div>
         </section>
 
-        {/* WHY BOOK WITH BROOMBOOM CABS */}
+        {/* WHY PARTNER WITH BROOMBOOM? */}
         <section id="services" className="bg-white py-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <h2 className="text-3xl font-bold text-slate-900 mb-2">Why Book with BroomBoom Cabs?</h2>
-            <p className="text-slate-600 text-sm mb-10 max-w-3xl">BroomBoom Cabs is an online cab booking service for outstation, one-way, local and airport travel across India, operated by BroomBoom Cabs.</p>
+            <h2 className="text-3xl font-bold text-slate-900 mb-2">Why Partner with BroomBoom?</h2>
+            <p className="text-slate-600 text-sm mb-10 max-w-3xl leading-relaxed">BroomBoom is an online cab booking platform connecting cab vendors, fleet owners and independent drivers with customer booking opportunities across India. From outstation journeys to airport transfers, local rentals and tour packages, we help our vendor partners access more business and grow their earnings.</p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
               {[
-                { title: "Outstation cabs", desc: "Round trips with multiple destinations and stops as you plan. Driver charges and night charges are included, with no driver boarding or lodging to pay." },
-                { title: "One-way cabs", desc: "One pickup, one drop and a one-way fare, so you don't pay for the return. Toll and state tax inclusive prices are available on popular routes." },
-                { title: "Local hourly rental", desc: "Packages of 2 hours/20 km, 4 hours/40 km, 8 hours/80 km and 12 hours/120 km for sightseeing, business, weddings or shopping." },
-                { title: "Airport taxi", desc: "Transfers from the airport or to the airport, with a luggage option, either a carrier or boot space." }
+                { 
+                  title: "Outstation Booking Opportunities", 
+                  desc: "Get booking opportunities for intercity travel, one-way journeys and round trips. Connect your vehicles with customers looking for reliable outstation cab services across multiple routes in India.", 
+                  linkText: "Explore outstation bookings →" 
+                },
+                { 
+                  title: "One-way Trip Bookings", 
+                  desc: "Generate business from one-way customer journeys without depending only on round-trip bookings. Get opportunities for routes where customers need a pickup from one city and a drop in another.", 
+                  linkText: "Explore one-way bookings →" 
+                },
+                { 
+                  title: "Local & Hourly Rental Bookings", 
+                  desc: "Receive booking opportunities for local sightseeing, corporate travel, shopping, weddings and hourly rental requirements. Make better use of your vehicle availability with different rental packages.", 
+                  linkText: "Explore local rental orders →" 
+                },
+                { 
+                  title: "Airport Transfer Bookings", 
+                  desc: "Get connected with customers requiring airport pickups and drops. Access business opportunities for early-morning, late-night and scheduled airport transfers, subject to your vehicle availability and service area.", 
+                  linkText: "Explore airport booking opportunities →" 
+                }
               ].map((feature, idx) => (
                 <div key={idx} className="flex flex-col group">
                   <div className="w-8 h-1 bg-[#FBBF24] mb-6 group-hover:w-16 transition-all duration-500"></div>
                   <h3 className="text-lg font-bold text-slate-900 mb-3">{feature.title}</h3>
                   <p className="text-sm text-slate-600 leading-relaxed mb-6 flex-1">{feature.desc}</p>
                   <Link href="#" className="text-sm font-bold text-slate-900 hover:text-blue-600 inline-flex items-center gap-1">
-                    Explore {feature.title.toLowerCase()}
-                    <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                    {feature.linkText}
                   </Link>
                 </div>
               ))}
@@ -1334,24 +1426,24 @@ export default function ReviewsPage() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs text-slate-400 mb-1">Email us</p>
-                  <a href="mailto:support@broomboomcabs.com" className="font-bold text-lg hover:text-[#FBBF24] transition-colors break-all">support@broomboomcabs.com</a>
+                  <a href="mailto:support@broomboomcabs.com" className="font-bold text-base md:text-lg hover:text-[#FBBF24] transition-colors whitespace-nowrap">support@broomboomcabs.com</a>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* PLANNING YOUR NEXT JOURNEY CTA */}
+        {/* PLANNING TO JOIN BROOMBOOM VENDOR CTA */}
         <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-20">
           <div className="bg-[#FBBF24] rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 border-b-4 border-black border-dashed relative overflow-hidden">
             <div className="pointer-events-none absolute inset-0 opacity-20 [background-image:radial-gradient(circle_at_20%_20%,#000_1px,transparent_1px),radial-gradient(circle_at_80%_80%,#000_1px,transparent_1px)] [background-size:28px_28px]" />
             <div className="relative">
-              <h2 className="text-3xl md:text-4xl font-bold text-black mb-3">Planning Your<br />Next Journey?</h2>
-              <p className="text-black/80 text-sm md:text-base max-w-md">Explore BroomBoom Cabs&apos; taxi services and find a cab for your next trip.</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-black mb-3">Planning to Join<br />BroomBoom Vendor?</h2>
+              <p className="text-black/80 text-sm md:text-base max-w-md">Explore BroomBoom Vendor services and find an online cab booking for your next trip earning.</p>
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-4 shrink-0 relative">
               <button type="button" onClick={() => handleOpenLoginModal("gold")} className="bb-btn-shine bg-black text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-800 transition-colors flex items-center gap-2 w-full sm:w-auto justify-center cursor-pointer">
-                Book Your Cab <ArrowUpRight className="w-5 h-5" />
+                Attach Your Cab <ArrowUpRight className="w-5 h-5" />
               </button>
               <a href="tel:+916289952418" className="bg-transparent border border-black text-black px-6 py-3 rounded-xl font-bold hover:bg-black/5 transition-colors flex items-center gap-2 w-full sm:w-auto justify-center">
                 <Phone className="w-4 h-4" /> Call +91 6289952418

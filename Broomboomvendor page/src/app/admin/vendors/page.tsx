@@ -676,7 +676,7 @@ export default function AdminVendorsPage() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-amber-400 bg-white flex items-center justify-center p-0.5">
-              <Image src="/broomboom-logo.png" alt="BroomBoom" fill className="object-contain" />
+              <Image src="/broomboom-vendor-logo.png" alt="BroomBoom" fill className="object-contain" />
             </div>
             <div>
               <div className="flex items-center gap-2">

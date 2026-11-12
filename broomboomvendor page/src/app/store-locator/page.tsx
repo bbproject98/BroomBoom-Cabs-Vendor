@@ -112,7 +112,7 @@ export default function StoreLocatorPage() {
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
             <div className="relative w-11 h-11 rounded-full overflow-hidden border-2 border-amber-400 shadow-sm bg-white flex items-center justify-center p-0.5">
-              <Image src="/broomboom-logo.png" alt="BroomBoom Logo" fill className="object-contain" priority />
+              <Image src="/broomboom-vendor-logo.png" alt="BroomBoom Logo" fill className="object-contain" priority />
             </div>
             <div>
               <div className="flex items-center gap-2">

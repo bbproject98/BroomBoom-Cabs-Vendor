@@ -8,7 +8,7 @@
   "theme_color": "#F59E0B",
   "icons": [
     {
-      "src": "/broomboom-logo.png",
+      "src": "/broomboom-vendor-logo.png",
       "sizes": "192x192 512x512",
       "type": "image/png",
       "purpose": "any maskable"

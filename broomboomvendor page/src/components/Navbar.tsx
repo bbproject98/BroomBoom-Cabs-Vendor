@@ -15,7 +15,6 @@ import {
   ShieldCheck,
   Building2,
 } from "lucide-react";
-import { PartnerOtpModal } from "@/components/PartnerOtpModal";
 import { SERVICE_CITIES } from "@/data/serviceCities";
 
 interface NavbarProps {
@@ -37,7 +36,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     Boolean(pathname?.startsWith("/services"))
   );
   const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
-  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [isPartnerVerified, setIsPartnerVerified] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [partnerProfile, setPartnerProfile] = useState<{
@@ -115,15 +113,12 @@ export const Navbar: React.FC<NavbarProps> = ({
       setPartnerProfile(null);
       setProfileDropdownOpen(false);
     };
-    const handleTriggerOtp = () => setIsOtpModalOpen(true);
 
     window.addEventListener("partner-profile-verified", handleVerified);
     window.addEventListener("partner-profile-logout", handleLogoutEvent);
-    window.addEventListener("trigger-open-profile-otp", handleTriggerOtp);
     return () => {
       window.removeEventListener("partner-profile-verified", handleVerified);
       window.removeEventListener("partner-profile-logout", handleLogoutEvent);
-      window.removeEventListener("trigger-open-profile-otp", handleTriggerOtp);
     };
   }, []);
 
@@ -166,7 +161,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const handleProfileClick = () => {
     if (isPartnerVerified) setProfileDropdownOpen((p) => !p);
-    else setIsOtpModalOpen(true);
   };
 
   const handleLogout = () => {
@@ -218,7 +212,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="relative w-10 h-10 rounded-full p-[2px] bg-gradient-to-br from-brand-yellow via-amber-300 to-brand-yellow-dark shadow-md group-hover:shadow-lg group-hover:shadow-amber-300/40 transition-all duration-300 group-hover:scale-105">
               <div className="relative w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center p-0.5">
                 <Image
-                  src="/broomboom-logo.png"
+                  src="/broomboom-vendor-logo.png"
                   alt="BroomBoom Vendor Logo"
                   fill
                   className="object-contain"
@@ -398,30 +392,21 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
             </button>
 
-            {/* Profile */}
-            <div className="relative" ref={profileDropdownRef}>
-              <button
-                type="button"
-                onClick={handleProfileClick}
-                className="relative flex items-center justify-center w-10 h-10 bg-gradient-to-br from-slate-950 to-slate-800 hover:from-slate-900 hover:to-slate-700 text-amber-400 border border-amber-400/60 hover:border-amber-400 rounded-xl shadow-sm hover:shadow-md hover:shadow-amber-400/20 transition-all transform active:scale-95 cursor-pointer group"
-                title={
-                  isPartnerVerified
-                    ? "My Profile & Account Options"
-                    : "Validate Mobile to Track Application"
-                }
-                aria-label="Track Application & Partner Profile"
-              >
-                <User className="w-4 h-4 xl:w-5 xl:h-5 text-amber-400 group-hover:scale-110 transition-transform" />
-                <span
-                  className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-white ${
-                    isPartnerVerified
-                      ? "bg-emerald-400 animate-pulse"
-                      : "bg-amber-400"
-                  }`}
-                />
-              </button>
+            {/* Verified Partner Profile */}
+            {isPartnerVerified && (
+              <div className="relative" ref={profileDropdownRef}>
+                <button
+                  type="button"
+                  onClick={handleProfileClick}
+                  className="relative flex items-center justify-center w-10 h-10 bg-gradient-to-br from-slate-950 to-slate-800 hover:from-slate-900 hover:to-slate-700 text-amber-400 border border-amber-400/60 hover:border-amber-400 rounded-xl shadow-sm hover:shadow-md hover:shadow-amber-400/20 transition-all transform active:scale-95 cursor-pointer group"
+                  title="My Profile & Account Options"
+                  aria-label="Partner Profile"
+                >
+                  <User className="w-4 h-4 xl:w-5 xl:h-5 text-amber-400 group-hover:scale-110 transition-transform" />
+                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-white bg-emerald-400 animate-pulse" />
+                </button>
 
-              {isPartnerVerified && profileDropdownOpen && (
+                {profileDropdownOpen && (
                 <div className="absolute right-0 top-full mt-2.5 w-72 z-[70] animate-in fade-in slide-in-from-top-2 duration-150">
                   <div className="bg-white rounded-2xl border border-amber-200 shadow-[0_20px_60px_-15px_rgba(15,23,42,0.25)] overflow-hidden">
                     <div className="bg-gradient-to-br from-amber-50 via-yellow-50/60 to-amber-50/40 p-3.5 border-b border-amber-100">
@@ -471,8 +456,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -488,7 +474,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full p-[2px] bg-gradient-to-br from-brand-yellow via-amber-300 to-brand-yellow-dark shadow-sm shrink-0">
               <div className="relative w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center p-0.5">
                 <Image
-                  src="/broomboom-logo.png"
+                  src="/broomboom-vendor-logo.png"
                   alt="BroomBoom Vendor Logo"
                   fill
                   className="object-contain"
@@ -517,29 +503,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               <ArrowRight className="w-3 h-3" />
             </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                if (isPartnerVerified) setMobileMenuOpen((p) => !p);
-                else setIsOtpModalOpen(true);
-              }}
-              className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-950 to-slate-800 border border-amber-400/70 text-amber-400 flex items-center justify-center shadow-sm cursor-pointer active:scale-95 transition-all relative shrink-0"
-              title={
-                isPartnerVerified
-                  ? "My Profile & Account Options"
-                  : "Validate Mobile to Track Application"
-              }
-              aria-label="Track Application & Partner Profile"
-            >
-              <User className="w-4 h-4 text-amber-400" />
-              <span
-                className={`absolute top-1 right-1 w-2 h-2 rounded-full ring-2 ring-white ${
-                  isPartnerVerified
-                    ? "bg-emerald-400 animate-pulse"
-                    : "bg-amber-400"
-                }`}
-              />
-            </button>
+            {isPartnerVerified && (
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen((p) => !p)}
+                className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-950 to-slate-800 border border-amber-400/70 text-amber-400 flex items-center justify-center shadow-sm cursor-pointer active:scale-95 transition-all relative shrink-0"
+                title="My Profile & Account Options"
+                aria-label="Partner Profile"
+              >
+                <User className="w-4 h-4 text-amber-400" />
+                <span className="absolute top-1 right-1 w-2 h-2 rounded-full ring-2 ring-white bg-emerald-400 animate-pulse" />
+              </button>
+            )}
 
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -560,7 +535,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* ========================================================================= */}
         {mobileMenuOpen && (
           <div className="lg:hidden bg-white/98 backdrop-blur-lg border-t border-slate-200 px-4 py-4 space-y-3 shadow-2xl animate-in slide-in-from-top duration-200 max-h-[calc(100vh-64px)] overflow-y-auto">
-            {isPartnerVerified ? (
+            {isPartnerVerified && (
               <div className="bg-gradient-to-br from-amber-100/90 via-amber-50 to-yellow-100/70 rounded-2xl border border-amber-300 p-3.5 space-y-2.5 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
@@ -607,30 +582,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </button>
                 </div>
               </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  setIsOtpModalOpen(true);
-                }}
-                className="w-full flex items-center justify-between text-amber-950 bg-gradient-to-br from-amber-100/90 via-amber-50 to-yellow-100/70 hover:from-amber-100 hover:to-yellow-100 px-4 py-3 rounded-2xl border border-amber-300 shadow-sm transition-colors cursor-pointer text-left"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-950 to-slate-800 text-amber-400 flex items-center justify-center border border-amber-400/50 shadow-sm shrink-0">
-                    <User className="w-4 h-4 stroke-[2.5]" />
-                  </div>
-                  <div>
-                    <span className="text-xs font-black block text-slate-950">
-                      Track Application &amp; Partner Profile
-                    </span>
-                    <span className="text-[10.5px] text-amber-800 font-semibold block mt-0.5">
-                      Check territory status &amp; OTP validation
-                    </span>
-                  </div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-amber-800" />
-              </button>
             )}
 
             {/* Nav links */}
@@ -748,11 +699,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         )}
       </nav>
-
-      <PartnerOtpModal
-        isOpen={isOtpModalOpen}
-        onClose={() => setIsOtpModalOpen(false)}
-      />
     </header>
   );
 };

@@ -34,7 +34,7 @@ export const Footer: React.FC<FooterProps> = ({
             <Link href="/" className="flex items-center gap-3">
               <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-brand-yellow shadow-yellow-glow shrink-0 bg-white flex items-center justify-center p-0.5">
                 <Image
-                  src="/broomboom-logo.png"
+                  src="/broomboom-vendor-logo.png"
                   alt="BroomBoom Logo"
                   fill
                   className="object-contain"
@@ -114,15 +114,12 @@ export const Footer: React.FC<FooterProps> = ({
                 </button>
               </li>
               <li>
-                <button
-                  type="button"
-                  onClick={() => {
-                    window.dispatchEvent(new Event("trigger-open-profile-otp"));
-                  }}
-                  className="hover:text-brand-yellow text-amber-400 font-bold transition-colors block text-left cursor-pointer"
+                <Link
+                  href="/vendor/login"
+                  className="hover:text-brand-yellow text-amber-400 font-bold transition-colors block text-left"
                 >
-                  My Profile &amp; Plan Status &rarr;
-                </button>
+                  Vendor Partner Login &rarr;
+                </Link>
               </li>
               <li>
                 <a href={sectionHref("#packages")} className="hover:text-brand-yellow transition-colors">

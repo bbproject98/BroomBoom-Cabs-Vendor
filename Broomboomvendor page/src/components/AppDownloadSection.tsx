@@ -105,7 +105,7 @@ export const AppDownloadSection: React.FC<AppDownloadSectionProps> = ({
                   <div className="flex items-center gap-2.5">
                     <div className="relative w-10 h-10 rounded-xl overflow-hidden border border-amber-400 bg-white p-0.5 shrink-0">
                       <Image
-                        src="/broomboom-logo.png"
+                        src="/broomboom-vendor-logo.png"
                         alt="BroomBoom Vendor App Icon"
                         fill
                         className="object-contain"
