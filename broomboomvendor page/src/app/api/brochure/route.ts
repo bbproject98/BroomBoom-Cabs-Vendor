@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { handleOptions, jsonResponse } from "@/lib/cors";
+import { ensureBaseCatalogTables } from "@/lib/ensureSchemaTables";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +10,7 @@ export async function OPTIONS() {
 
 export async function GET(_request: Request) {
   try {
+    await ensureBaseCatalogTables();
     const brochures = await prisma.brochureDownload.findMany({
       orderBy: {
         downloadedAt: "desc",
@@ -39,6 +41,7 @@ export async function GET(_request: Request) {
 
 export async function POST(request: Request) {
   try {
+    await ensureBaseCatalogTables();
     const body = await request.json();
 
     if (!body.name || !body.mobile) {

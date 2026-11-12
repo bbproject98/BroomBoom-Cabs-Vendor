@@ -1300,7 +1300,7 @@ function ApplyFormContent() {
 
             {/* Form Container */}
             <form
-              action="javascript:void(0)"
+              data-apply-form="true"
               method="POST"
               onSubmit={handleSubmit}
               className="bg-white border border-amber-200 rounded-3xl p-6 sm:p-10 shadow-xl space-y-8"

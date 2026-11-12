@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { handleOptions, jsonResponse } from "@/lib/cors";
+import { ensureBaseCatalogTables } from "@/lib/ensureSchemaTables";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +10,7 @@ export async function OPTIONS() {
 
 export async function GET(request: Request) {
   try {
+    await ensureBaseCatalogTables();
     const { searchParams } = new URL(request.url);
     const activeOnly = searchParams.get("active") === "true";
 
@@ -39,6 +41,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    await ensureBaseCatalogTables();
     const body = await request.json();
 
     if (!body.city || !body.state || !body.address) {

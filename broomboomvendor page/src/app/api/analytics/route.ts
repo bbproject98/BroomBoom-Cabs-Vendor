@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { handleOptions, jsonResponse } from "@/lib/cors";
+import { ensureBaseCatalogTables } from "@/lib/ensureSchemaTables";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +10,7 @@ export async function OPTIONS() {
 
 export async function GET(_request: Request) {
   try {
+    await ensureBaseCatalogTables();
     const [
       totalLeads,
       silverCount,
