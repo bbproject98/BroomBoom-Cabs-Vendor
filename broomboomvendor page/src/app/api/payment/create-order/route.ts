@@ -75,18 +75,42 @@ export async function POST(request: Request) {
     const totalAmount = baseAmount + gatewayFee + gstFee;
 
     // Resolve base application URL for return redirect
-    const origin = request.headers.get("origin") || (request.headers.get("referer") ? new URL(request.headers.get("referer")!).origin : null);
-    const host = request.headers.get("host") || "localhost:3000";
-    const protocol = host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https";
-    const appUrl = origin || `${protocol}://${host}` || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const origin =
+      request.headers.get("origin") ||
+      (request.headers.get("referer")
+        ? new URL(request.headers.get("referer")!).origin
+        : null);
+    const fwdHost = request.headers.get("x-forwarded-host");
+    const fwdProto = request.headers.get("x-forwarded-proto");
+    const host = fwdHost || request.headers.get("host") || "localhost:3000";
+    const protocol =
+      fwdProto ||
+      (host.includes("localhost") || host.includes("127.0.0.1")
+        ? "http"
+        : "https");
+    const appUrl =
+      origin ||
+      `${protocol}://${host}` ||
+      process.env.NEXT_PUBLIC_APP_URL ||
+      "http://localhost:3000";
 
     const returnUrl = isUpgrade
-      ? `${appUrl}/api/payment/callback?order_id={order_id}&applicationId=${encodeURIComponent(
+      ? `${appUrl}/api/payment/callback?order_id=${encodeURIComponent(
+          orderId
+        )}&applicationId=${encodeURIComponent(
           applicationId || ""
-        )}&pkg=${encodeURIComponent(pkgKey)}&type=upgrade&ticketId=${encodeURIComponent(ticketId)}`
-      : `${appUrl}/api/payment/callback?order_id={order_id}&applicationId=${encodeURIComponent(
+        )}&pkg=${encodeURIComponent(pkgKey)}&type=upgrade&ticketId=${encodeURIComponent(
+          ticketId
+        )}`
+      : `${appUrl}/api/payment/callback?order_id=${encodeURIComponent(
+          orderId
+        )}&applicationId=${encodeURIComponent(
           applicationId || ""
-        )}&pkg=${encodeURIComponent(pkgKey)}`;
+        )}&pkg=${encodeURIComponent(pkgKey)}&name=${encodeURIComponent(
+          fullName || ""
+        )}&mobile=${encodeURIComponent(mobile || "")}&city=${encodeURIComponent(
+          city || ""
+        )}`;
 
     // If upgrade, pre-register the PlanChangeTicket in AWAITING_PAYMENT state
     if (isUpgrade) {

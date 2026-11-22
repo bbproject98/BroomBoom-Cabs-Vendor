@@ -22,7 +22,9 @@ export const Footer: React.FC<FooterProps> = ({
   const pathname = usePathname();
   const cityQuery = cityName ? `&city=${encodeURIComponent(cityName)}` : "";
   const isLandingOrCityPage =
-    pathname === "/" || pathname?.startsWith("/services/");
+    pathname === "/" ||
+    pathname?.startsWith("/services/") ||
+    SERVICE_CITIES.some((c) => pathname === `/${c.slug}`);
   const sectionHref = (hash: string) =>
     isLandingOrCityPage ? hash : `/${hash}`;
   return (
@@ -200,7 +202,7 @@ export const Footer: React.FC<FooterProps> = ({
             return (
               <Link
                 key={city.slug}
-                href={`/services/${city.slug}`}
+                href={`/${city.slug}`}
                 className={`transition-colors ${
                   isActiveCity
                     ? "text-brand-yellow font-black underline underline-offset-4"

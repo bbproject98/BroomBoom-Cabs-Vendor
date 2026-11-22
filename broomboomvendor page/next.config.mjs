@@ -20,6 +20,15 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: "/services/:city(kolkata|delhi|mumbai|bangalore|pune|hyderabad)",
+        destination: "/:city",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

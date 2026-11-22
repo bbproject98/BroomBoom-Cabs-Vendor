@@ -1,6 +1,6 @@
 import React from "react";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { LandingPageContent } from "@/components/LandingPageContent";
 import { SERVICE_CITIES, getServiceCityBySlug } from "@/data/serviceCities";
 
@@ -38,5 +38,6 @@ export default function CityServicePage({ params }: CityServicePageProps) {
     notFound();
   }
 
-  return <LandingPageContent cityName={cityData.name} />;
+  // Redirect /services/kolkata -> /kolkata
+  redirect(`/${cityData.slug}`);
 }

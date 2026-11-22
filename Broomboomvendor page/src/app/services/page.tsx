@@ -90,7 +90,7 @@ export default function ServicesDirectoryPage() {
               {SERVICE_CITIES.map((city) => (
                 <Link
                   key={city.slug}
-                  href={`/services/${city.slug}`}
+                  href={`/${city.slug}`}
                   className="group flex flex-col justify-between rounded-2xl bg-white border border-slate-200 hover:border-brand-yellow p-6 shadow-card hover:shadow-card-hover transition-all duration-200"
                 >
                   <div>

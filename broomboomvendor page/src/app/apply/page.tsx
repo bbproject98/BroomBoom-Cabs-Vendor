@@ -29,6 +29,7 @@ import {
   Zap,
   Pencil,
   RotateCcw,
+  Clock,
 } from "lucide-react";
 import { FRANCHISE_PACKAGES } from "@/data/franchiseData";
 import { fireConfetti } from "@/lib/confetti";
@@ -107,25 +108,49 @@ function ApplyFormContent() {
   const fromParam = searchParams.get("from");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const isFailedOrPending = Boolean(
+  const isPaymentReturn = Boolean(
     paymentStatusParam &&
-      ["pending", "failed", "cancelled", "user_dropped", "error"].includes(paymentStatusParam.toLowerCase())
+      [
+        "returned",
+        "active",
+        "user_dropped",
+        "cancelled",
+        "pending",
+        "failed",
+        "error",
+      ].includes(paymentStatusParam.toLowerCase())
+  );
+  const isFailedOrPending = isPaymentReturn;
+  const isFailedPayment = Boolean(
+    paymentStatusParam &&
+      ["failed", "error"].includes(paymentStatusParam.toLowerCase())
+  );
+  const isGentleReturn = Boolean(
+    paymentStatusParam &&
+      ["returned", "active", "user_dropped", "cancelled"].includes(
+        paymentStatusParam.toLowerCase()
+      )
   );
   const isConfirmStep = Boolean(stepParam === "confirm" || fromParam === "profile");
-  const [isSuccess, setIsSuccess] = useState(isFailedOrPending || isConfirmStep);
+  const [isSuccess, setIsSuccess] = useState(isPaymentReturn || isConfirmStep);
   const [isPaying, setIsPaying] = useState(false);
+  const [paymentNotice, setPaymentNotice] = useState<string | null>(
+    isGentleReturn
+      ? "You returned from the payment gateway. Your application details are saved — click \"Pay Now\" below whenever you are ready to complete your reservation."
+      : paymentStatusParam === "pending"
+      ? "Payment Pending: Your transaction is being processed. Click \"Pay Now\" below to confirm your territory."
+      : null
+  );
   const [paymentError, setPaymentError] = useState<string | null>(
-    paymentStatusParam === "pending"
-      ? "Payment Pending: Your transaction was not completed or is still pending. Please click 'Pay Now' below to complete your payment and confirm your territory."
-      : isFailedOrPending
-      ? "Payment Incomplete / Failed: Your payment could not be completed. Please click 'Pay Now' below to retry and secure your territory."
+    isFailedPayment
+      ? "Payment could not be completed by the bank. Please click \"Pay Now\" below to retry or choose another payment method."
       : null
   );
   const [applicationId, setApplicationId] = useState(appIdParam || "");
   const [formError, setFormError] = useState<string | null>(null);
   // Flag to know whether the currently shown "success/pay view" came from a saved account
   const [hasSavedAccount, setHasSavedAccount] = useState(false);
-  const [isHydrating, setIsHydrating] = useState(true);
+  const [isHydrating, setIsHydrating] = useState(false);
 
   // Synchronize prefilled applicant details from URL searchParams or storage
   useEffect(() => {
@@ -384,15 +409,12 @@ function ApplyFormContent() {
         let attempts = 0;
         const interval = setInterval(() => {
           attempts++;
-          if (launchCashfreeCheckout() || attempts >= 8) {
+          if (launchCashfreeCheckout()) {
             clearInterval(interval);
-            if (attempts >= 8) {
-              window.location.href = `/thank-you?order_id=${encodeURIComponent(
-                orderData.orderId
-              )}&applicationId=${encodeURIComponent(
-                applicationId || orderData.orderId
-              )}`;
-            }
+          } else if (attempts >= 20) {
+            clearInterval(interval);
+            setPaymentError("Could not connect to Cashfree payment gateway. Please click 'Pay Now' to retry.");
+            setIsPaying(false);
           }
         }, 250);
       }
@@ -723,6 +745,13 @@ function ApplyFormContent() {
                         })}
                       </div>
                     </div>
+
+                    {paymentNotice && !paymentError && (
+                      <div className="mb-4 p-3 bg-amber-50/90 backdrop-blur-sm border border-amber-300 rounded-xl text-amber-950 text-xs font-bold flex items-center gap-3 animate-in fade-in slide-in-from-top-2 shadow-xs">
+                        <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+                        <div>{paymentNotice}</div>
+                      </div>
+                    )}
 
                     {paymentError && (
                       <div className="mb-4 p-3 bg-rose-50/90 backdrop-blur-sm border border-rose-200 rounded-xl text-rose-900 text-[11px] font-bold flex items-center gap-3 animate-in fade-in slide-in-from-top-2 shadow-sm">

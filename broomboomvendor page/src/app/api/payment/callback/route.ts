@@ -8,24 +8,64 @@ export const runtime = "nodejs";
 export async function GET(request: Request) {
   try {
     const { searchParams, origin } = new URL(request.url);
-    const orderId = searchParams.get("order_id");
+    let orderId =
+      searchParams.get("order_id") ||
+      searchParams.get("orderId") ||
+      searchParams.get("cf_order_id");
+    if (orderId === "{order_id}") {
+      orderId = null;
+    }
+
     const applicationId = searchParams.get("applicationId");
     const pkg = (searchParams.get("pkg") || "gold").toLowerCase();
+    const queryName = searchParams.get("name") || "";
+    const queryMobile = searchParams.get("mobile") || "";
+    const queryCity = searchParams.get("city") || "";
 
     const type = searchParams.get("type");
     const ticketId = searchParams.get("ticketId");
-    const isUpgrade = type === "upgrade" || (orderId ? orderId.startsWith("UPG_") : false);
+    const isUpgrade =
+      type === "upgrade" || (orderId ? orderId.startsWith("UPG_") : false);
 
-    const host = request.headers.get("host") || "localhost:3000";
-    const protocol = host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https";
+    const fwdHost = request.headers.get("x-forwarded-host");
+    const fwdProto = request.headers.get("x-forwarded-proto");
+    const host = fwdHost || request.headers.get("host") || "localhost:3000";
+    const protocol =
+      fwdProto ||
+      (host.includes("localhost") || host.includes("127.0.0.1")
+        ? "http"
+        : "https");
     const baseUrl = origin || `${protocol}://${host}`;
+
+    // If orderId is missing, attempt to recover it from recent DB records
+    if (!orderId && applicationId) {
+      try {
+        const recentSub = await prisma.vendorSubscription.findFirst({
+          where: { applicationId },
+          orderBy: { createdAt: "desc" },
+        });
+        if (recentSub?.orderId) {
+          orderId = recentSub.orderId;
+        }
+      } catch {}
+    }
 
     if (!orderId) {
       if (isUpgrade) {
-        return NextResponse.redirect(new URL("/vendor/dashboard", baseUrl));
+        return NextResponse.redirect(
+          new URL("/vendor/dashboard?upgrade=returned", baseUrl)
+        );
       }
-      // No order ID -> redirect back to apply page
-      return NextResponse.redirect(new URL(`/apply?package=${pkg}`, baseUrl));
+      return NextResponse.redirect(
+        new URL(
+          `/apply?package=${pkg}&applicationId=${encodeURIComponent(
+            applicationId || ""
+          )}&name=${encodeURIComponent(queryName)}&mobile=${encodeURIComponent(
+            queryMobile
+          )}&city=${encodeURIComponent(queryCity)}&payment_status=returned`,
+          baseUrl
+        )
+      );
     }
 
     // Check order status directly with Cashfree
@@ -36,9 +76,9 @@ export async function GET(request: Request) {
       if (isUpgrade) {
         return NextResponse.redirect(
           new URL(
-            `/vendor/dashboard?upgrade=failed&order_id=${encodeURIComponent(orderId)}&ticketId=${encodeURIComponent(
-              ticketId || ""
-            )}`,
+            `/vendor/dashboard?upgrade=returned&order_id=${encodeURIComponent(
+              orderId
+            )}&ticketId=${encodeURIComponent(ticketId || "")}`,
             baseUrl
           )
         );
@@ -47,26 +87,39 @@ export async function GET(request: Request) {
         new URL(
           `/apply?package=${pkg}&applicationId=${encodeURIComponent(
             applicationId || ""
-          )}&payment_status=failed&order_id=${encodeURIComponent(orderId)}`,
+          )}&name=${encodeURIComponent(queryName)}&mobile=${encodeURIComponent(
+            queryMobile
+          )}&city=${encodeURIComponent(queryCity)}&payment_status=returned&order_id=${encodeURIComponent(
+            orderId
+          )}`,
           baseUrl
         )
       );
     }
 
     const cfOrder = result.data;
-    const isPaid = ["PAID", "paid", "SUCCESS", "success"].includes(
-      (cfOrder.order_status || "").trim()
-    );
+    const rawStatus = (cfOrder.order_status || "").trim().toUpperCase();
+    const isPaid = ["PAID", "SUCCESS"].includes(rawStatus);
 
     // Fetch existing subscription for this order to retrieve authoritative applicant data
-    const existingSub = await prisma.vendorSubscription.findFirst({
-      where: { orderId: cfOrder.order_id },
-    });
+    let existingSub = null;
+    try {
+      existingSub = await prisma.vendorSubscription.findFirst({
+        where: { orderId: cfOrder.order_id },
+      });
+    } catch {}
 
     const targetAppId =
       applicationId ||
       existingSub?.applicationId ||
-      (orderId.includes("_") ? orderId.split("_").slice(0, -1).join("-").replace(/_/g, "-") : null);
+      (orderId.includes("_")
+        ? orderId.split("_").slice(0, -1).join("-").replace(/_/g, "-")
+        : null);
+
+    const resolvedName =
+      queryName || existingSub?.vendorName || "Valued Partner";
+    const resolvedMobile = queryMobile || existingSub?.vendorMobile || "";
+    const resolvedCity = queryCity || existingSub?.city || "";
 
     if (isPaid) {
       // -----------------------------------------------------------------
@@ -94,7 +147,6 @@ export async function GET(request: Request) {
           console.warn("[CALLBACK UPGRADE TICKET UPDATE WARN]", ticketErr);
         }
 
-        // REDIRECT BACK TO VENDOR DASHBOARD WITH SUCCESS & AWAITING APPROVAL STATUS
         return NextResponse.redirect(
           new URL(
             `/vendor/dashboard?upgrade=success&order_id=${encodeURIComponent(
@@ -126,8 +178,9 @@ export async function GET(request: Request) {
       }
 
       // Update database lead record to payment_completed
-      if (targetAppId || existingSub?.vendorMobile) {
+      if (targetAppId || existingSub?.vendorMobile || resolvedMobile) {
         try {
+          const cleanMobile = (resolvedMobile || existingSub?.vendorMobile || "").replace(/\D/g, "").slice(-10);
           const leadOrFilters: any[] = [];
           if (targetAppId) {
             leadOrFilters.push(
@@ -135,8 +188,7 @@ export async function GET(request: Request) {
               { applicationId: { contains: targetAppId, mode: "insensitive" as const } }
             );
           }
-          if (existingSub?.vendorMobile) {
-            const cleanMobile = existingSub.vendorMobile.replace(/\D/g, "").slice(-10);
+          if (cleanMobile) {
             leadOrFilters.push(
               { mobile: cleanMobile },
               { mobile: `0${cleanMobile}` },
@@ -172,20 +224,17 @@ export async function GET(request: Request) {
         )
       );
     } else {
-      // PAYMENT PENDING / FAILED / USER_DROPPED:
-      console.log(
-        `[PAYMENT NOT SUCCESSFUL] Order: ${orderId}, Status: ${cfOrder.order_status}.`
-      );
-      const failureStatus = (cfOrder.order_status || "failed").toLowerCase();
+      // USER RETURNED OR CANCELLED / DROPPED:
+      // If order is ACTIVE, USER_DROPPED, or CANCELLED, this is a normal return from gateway
+      const isReturn = ["ACTIVE", "USER_DROPPED", "CANCELLED", "PENDING"].includes(rawStatus);
+      const returnStatus = isReturn ? "returned" : "failed";
 
       if (isUpgrade) {
         return NextResponse.redirect(
           new URL(
-            `/vendor/dashboard?upgrade=failed&status=${encodeURIComponent(
-              failureStatus
-            )}&order_id=${encodeURIComponent(orderId)}&ticketId=${encodeURIComponent(
-              ticketId || ""
-            )}`,
+            `/vendor/dashboard?upgrade=${returnStatus}&order_id=${encodeURIComponent(
+              orderId
+            )}&ticketId=${encodeURIComponent(ticketId || "")}`,
             baseUrl
           )
         );
@@ -195,7 +244,11 @@ export async function GET(request: Request) {
         new URL(
           `/apply?package=${pkg}&applicationId=${encodeURIComponent(
             targetAppId || applicationId || ""
-          )}&payment_status=${failureStatus}&order_id=${encodeURIComponent(orderId)}`,
+          )}&name=${encodeURIComponent(resolvedName)}&mobile=${encodeURIComponent(
+            resolvedMobile
+          )}&city=${encodeURIComponent(resolvedCity)}&payment_status=${returnStatus}&order_id=${encodeURIComponent(
+            orderId
+          )}`,
           baseUrl
         )
       );
@@ -203,8 +256,12 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("[CALLBACK EXCEPTION]", error);
     if (request.url.includes("type=upgrade")) {
-      return NextResponse.redirect(new URL("/vendor/dashboard?upgrade=error", request.url));
+      return NextResponse.redirect(new URL("/vendor/dashboard?upgrade=returned", request.url));
     }
-    return NextResponse.redirect(new URL("/apply?payment_status=error", request.url));
+    return NextResponse.redirect(new URL("/apply?payment_status=returned", request.url));
   }
+}
+
+export async function POST(request: Request) {
+  return GET(request);
 }

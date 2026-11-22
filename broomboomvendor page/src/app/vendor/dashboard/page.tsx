@@ -3443,6 +3443,27 @@ function VendorDashboardContent() {
               </div>
             )}
 
+            {searchParams.get("upgrade") === "returned" && !dismissUpgradeBanner && (
+              <div className="bg-amber-50 border-2 border-amber-300 rounded-3xl p-5 mb-6 text-amber-950 flex items-start justify-between gap-4 animate-in fade-in">
+                <div className="flex items-start gap-3">
+                  <Clock className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="text-sm font-black">Upgrade Session Saved</h4>
+                    <p className="text-xs text-amber-900 mt-0.5">
+                      You returned from Cashfree checkout. You can complete your plan upgrade anytime from the Upgrade tab.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setDismissUpgradeBanner(true)}
+                  className="text-amber-700 hover:text-amber-950 text-sm font-bold cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
             {searchParams.get("upgrade") === "failed" && !dismissUpgradeBanner && (
               <div className="bg-rose-50 border-2 border-rose-300 rounded-3xl p-5 mb-6 text-rose-950 flex items-start justify-between gap-4 animate-in fade-in">
                 <div className="flex items-start gap-3">

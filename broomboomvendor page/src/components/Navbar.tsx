@@ -292,12 +292,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <div className="p-1.5 space-y-0.5">
                       {SERVICE_CITIES.map((city) => {
                         const isActiveCity =
+                          pathname === `/${city.slug}` ||
                           pathname === `/services/${city.slug}` ||
                           cityName?.toLowerCase() === city.name.toLowerCase();
                         return (
                           <Link
                             key={city.slug}
-                            href={`/services/${city.slug}`}
+                            href={`/${city.slug}`}
                             onClick={() => setServicesDropdownOpen(false)}
                             className={`group/item flex items-center justify-between px-2.5 py-2 rounded-xl transition-all duration-150 ${
                               isActiveCity
@@ -625,12 +626,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <div className="mt-1.5 mb-2 px-1 grid grid-cols-2 gap-1.5">
                     {SERVICE_CITIES.map((city) => {
                       const isActiveCity =
+                        pathname === `/${city.slug}` ||
                         pathname === `/services/${city.slug}` ||
                         cityName?.toLowerCase() === city.name.toLowerCase();
                       return (
                         <Link
                           key={city.slug}
-                          href={`/services/${city.slug}`}
+                          href={`/${city.slug}`}
                           onClick={() => setMobileMenuOpen(false)}
                           className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl border text-xs font-bold transition-colors ${
                             isActiveCity
