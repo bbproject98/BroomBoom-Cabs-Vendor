@@ -59,6 +59,8 @@ import IncomingOrderCard, {
   type IncomingOrderCardData,
 } from "@/components/IncomingOrderCard";
 import BookingResponseModal from "@/components/BookingResponseModal";
+import CarAttachmentSection from "@/components/CarAttachmentSection";
+import DriverSection from "@/components/DriverSection";
 
 const formatSignedRupees = (val: number) => {
   const num = Math.round(Number(val || 0));
@@ -171,6 +173,8 @@ type MenuTab =
   | "profile"
   | "subscription"
   | "orders"
+  | "car_attachment"
+  | "drivers"
   | "wallet"
   | "incentives"
   | "rides"
@@ -277,109 +281,7 @@ function VendorDashboardContent() {
   // 2. Orders & Live Dispatch state
   const [ordersTab, setOrdersTab] = useState<"incoming" | "active" | "completed">("incoming");
   const [orderActionNotice, setOrderActionNotice] = useState<{ type: "success" | "info"; message: string } | null>(null);
-  const [ordersList, setOrdersList] = useState<DashboardOrder[]>([
-    {
-      id: "BB-ORD-9281",
-      pickup: "Kolkata Netaji Subhash Chandra Bose Airport (Terminal 2, Gate 4)",
-      drop: "Salt Lake Sector V, Godrej Waterside Tower",
-      distance: "14.8 km",
-      duration: "28 mins",
-      vehicleCategory: "Sedan (Swift Dzire / Etios)",
-      totalFare: 560,
-      vendorPayout: 480,
-      passengerName: "Souvik Mukherjee",
-      passengerPhone: "+91 98301 44210",
-      passengerRating: 4.9,
-      status: "incoming",
-      dispatchTime: "Just now (45s left to accept)",
-      paymentMethod: "Online Paid (Cashfree UPI)",
-    },
-    {
-      id: "BB-ORD-9284",
-      pickup: "Howrah Railway Station (Cab Drop Point A)",
-      drop: "Park Street Commercial Hub, Kolkata",
-      distance: "6.2 km",
-      duration: "18 mins",
-      vehicleCategory: "SUV (Innova Crysta)",
-      totalFare: 740,
-      vendorPayout: 650,
-      passengerName: "Priyanka Sengupta",
-      passengerPhone: "+91 98740 11984",
-      passengerRating: 4.8,
-      status: "incoming",
-      dispatchTime: "1 min ago (30s left to accept)",
-      paymentMethod: "Cash on Trip Completion",
-    },
-    {
-      id: "BB-ORD-9275",
-      pickup: "New Town AA-II Eco Space Tech Park",
-      drop: "Sealdah Railway Station Main Concourse",
-      distance: "16.4 km",
-      duration: "34 mins",
-      vehicleCategory: "Sedan (Hyundai Aura)",
-      totalFare: 520,
-      vendorPayout: 440,
-      passengerName: "Debashis Banerjee",
-      passengerPhone: "+91 94331 87620",
-      passengerRating: 4.9,
-      status: "active",
-      dispatchTime: "Accepted 8 mins ago",
-      paymentMethod: "Online Paid (Cashfree UPI)",
-      assignedDriver: {
-        name: "Raju Karmakar",
-        phone: "+91 91234 56780",
-        vehicleNumber: "WB-02-AK-4921",
-        liveStatus: "Passenger onboard, trip in transit (ETA 14 mins)",
-        startOtp: "4921",
-      },
-    },
-    {
-      id: "BB-ORD-9260",
-      pickup: "Ballygunge Circular Road",
-      drop: "Kolkata Airport Terminal 1",
-      distance: "21.5 km",
-      duration: "42 mins",
-      vehicleCategory: "Sedan (Toyota Etios)",
-      totalFare: 680,
-      vendorPayout: 590,
-      passengerName: "Rohit Roy",
-      passengerPhone: "+91 98310 99401",
-      passengerRating: 5.0,
-      status: "completed",
-      dispatchTime: "Today, 10:15 AM",
-      paymentMethod: "Cashfree UPI Settled",
-      assignedDriver: {
-        name: "Bikash Paul",
-        phone: "+91 98305 11203",
-        vehicleNumber: "WB-04-E-8832",
-        liveStatus: "Trip Completed & Settled",
-        startOtp: "8832",
-      },
-    },
-    {
-      id: "BB-ORD-9252",
-      pickup: "Esplanade Metro Station Gate 2",
-      drop: "Dum Dum Cantonment",
-      distance: "13.1 km",
-      duration: "31 mins",
-      vehicleCategory: "Hatchback (WagonR)",
-      totalFare: 380,
-      vendorPayout: 320,
-      passengerName: "Ananya Roy",
-      passengerPhone: "+91 98744 22001",
-      passengerRating: 4.7,
-      status: "completed",
-      dispatchTime: "Today, 08:40 AM",
-      paymentMethod: "Cashfree UPI Settled",
-      assignedDriver: {
-        name: "Amitabh Sen",
-        phone: "+91 94320 88710",
-        vehicleNumber: "WB-01-B-3109",
-        liveStatus: "Trip Completed & Settled",
-        startOtp: "3109",
-      },
-    },
-  ]);
+  const [ordersList, setOrdersList] = useState<DashboardOrder[]>([]);
 
   // 3. Wallet (₹0 Baseline & 2-Booking Settlement Ledger) state
   const [walletBalance, setWalletBalance] = useState(0);
@@ -966,6 +868,8 @@ function VendorDashboardContent() {
         "profile",
         "subscription",
         "orders",
+        "car_attachment",
+        "drivers",
         "wallet",
         "incentives",
         "rides",
@@ -1056,17 +960,15 @@ function VendorDashboardContent() {
     try {
       const vId = sessionUser?.applicationId || profile?.applicationId || "";
       const pTier = plan?.tier || sessionUser?.currentPlan || "gold";
-      const pin = profile?.pincode || "712124";
-      const city = profile?.city || "";
+      const pin = profile?.pincode || sessionUser?.pincode || "712124";
+      const city = profile?.city || sessionUser?.city || "";
 
       const res = await fetch(
         `/api/vendor/orders?vendorId=${encodeURIComponent(vId)}&planTier=${encodeURIComponent(pTier)}&pincode=${encodeURIComponent(pin)}&city=${encodeURIComponent(city)}`
       );
       const data = await res.json();
       if (data.success && Array.isArray(data.orders)) {
-        if (data.orders.length > 0) {
-          setOrdersList(data.orders);
-        }
+        setOrdersList(data.orders);
       }
     } catch (e) {
       console.error("[FETCH LIVE ORDERS ERROR]", e);
@@ -1358,6 +1260,20 @@ function VendorDashboardContent() {
       icon: <Car className="w-4 h-4" />,
       badge: `${ordersList.filter((o) => o.status === "incoming").length} LIVE`,
       badgeClass: "bg-amber-100 text-amber-900 border border-amber-300 animate-pulse",
+    },
+    {
+      id: "car_attachment",
+      label: "Car Attachment",
+      icon: <Car className="w-4 h-4 text-amber-500" />,
+      badge: currentTier === "platinum" ? "Max 10 Cabs" : "Max 5 Cabs",
+      badgeClass: "bg-amber-50 text-amber-800 border border-amber-300 font-bold",
+    },
+    {
+      id: "drivers",
+      label: "Drivers",
+      icon: <User className="w-4 h-4 text-blue-500" />,
+      badge: "FLEET",
+      badgeClass: "bg-blue-50 text-blue-800 border border-blue-200 font-bold",
     },
     {
       id: "wallet",
@@ -2130,7 +2046,7 @@ function VendorDashboardContent() {
               </div>
               <div className="inline-flex items-center gap-1.5 bg-amber-400/20 text-amber-300 border border-amber-400/40 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
                 <MapPin className="w-3 h-3 text-amber-400" />
-                Territory PIN: {profile?.pincode || "712124"} ({(plan?.tier || "gold").toUpperCase()} PLANNER)
+                Territory PIN: {profile?.pincode || sessionUser?.pincode || "712124"} ({(plan?.tier || sessionUser?.currentPlan || "gold").toUpperCase()} PLANNER)
               </div>
             </div>
             <h2 className="text-2xl font-black tracking-tight text-white">
@@ -2267,7 +2183,7 @@ function VendorDashboardContent() {
                 <Car className="w-12 h-12 text-slate-300 mx-auto" />
                 <h4 className="text-base font-black text-slate-900">No Pending Booking Requests</h4>
                 <p className="text-xs text-slate-500 max-w-md mx-auto">
-                  New passenger trip dispatches in your territory will ring here in real-time. Keep this screen open to accept bookings.
+                  Live passenger trip dispatches matching your territory (PIN: {profile?.pincode || sessionUser?.pincode || "712124"}) and franchise plan ({(plan?.tier || sessionUser?.currentPlan || "gold").toUpperCase()}) will ring here in real-time. Keep this screen open to accept bookings.
                 </p>
               </div>
             ) : (
@@ -3699,6 +3615,29 @@ function VendorDashboardContent() {
             {/* ADDITIONAL VENDOR OPERATIONAL SECTIONS */}
             {activeTab === "subscription" && renderSubscriptionSection()}
             {activeTab === "orders" && renderOrdersSection()}
+            {activeTab === "car_attachment" && (
+              <CarAttachmentSection
+                planTier={currentTier}
+                pincode={profile?.pincode || sessionUser?.pincode || "712124"}
+                vendorId={sessionUser?.applicationId || profile?.applicationId || "BB-VENDOR-2026-5058"}
+                vendorName={profile?.vendorName || sessionUser?.vendorName || "Valued Partner"}
+                onUpgradePlan={() => {
+                  setPaidTicketResult(null);
+                  setTicketError(null);
+                  setTicketSuccess(null);
+                  setRequestedPlan(activeCurTier === "silver" ? "gold" : "platinum");
+                  setShowTicketModal(true);
+                }}
+              />
+            )}
+            {activeTab === "drivers" && (
+              <DriverSection
+                planTier={currentTier}
+                pincode={profile?.pincode || sessionUser?.pincode || "712124"}
+                vendorId={sessionUser?.applicationId || profile?.applicationId || "BB-VENDOR-2026-5058"}
+                vendorName={profile?.vendorName || sessionUser?.vendorName || "Valued Partner"}
+              />
+            )}
             {activeTab === "wallet" && renderWalletSection()}
             {activeTab === "incentives" && renderIncentivesSection()}
             {activeTab === "rides" && renderRideHistorySection()}

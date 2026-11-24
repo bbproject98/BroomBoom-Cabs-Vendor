@@ -7,7 +7,7 @@ export const FRANCHISE_PACKAGES: FranchisePackage[] = [
     tagline: "Booking Kiosk & Express Travel Outlet",
     subtitle: "Quick-start booking kiosk and express travel outlet",
     description: "Operate a compact booking outlet and earn commissions from cab, airport transfer, outstation, and rental bookings.",
-    fleetSize: "1-5 cars",
+    fleetSize: "1-2 cars",
     badge: "Quick Start Entry",
     originalPrice: "₹20,000",
     price: "₹5,000",

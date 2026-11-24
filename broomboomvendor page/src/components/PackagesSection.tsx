@@ -322,7 +322,7 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
                         {pkg.id === "gold"
                           ? "High Volume Hub"
                           : pkg.id === "platinum"
-                          ? "0% Commission SLA"
+                          ? "5-10% Commission"
                           : "Verified Partner"}
                       </span>
                     </span>
@@ -380,7 +380,7 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
                           </span>
                         </div>
                         <div className="text-base sm:text-lg font-black text-slate-950 tracking-tight leading-tight pt-0.5">
-                          0% Commission Master Hub
+                          5-10% Commission Master Hub
                         </div>
                         <p className="text-[10.5px] font-bold text-cyan-950/90 leading-snug">
                           Zero platform commission fee on premier corporate
@@ -399,7 +399,7 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
                           </span>
                         </div>
                         <div className="text-base sm:text-lg font-black text-slate-950 tracking-tight leading-tight pt-0.5">
-                          Airport &amp; Station Kiosk
+                          Airport &amp; Station Bookings
                         </div>
                         <p className="text-[10.5px] font-bold text-slate-700 leading-snug">
                           Dedicated transit booking counter with daily automated
@@ -444,7 +444,7 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
                             </div>
                             {isZeroComm ? (
                               <span className="bg-emerald-600 text-white font-black px-2 py-0.5 rounded text-[10.5px] uppercase tracking-wide shadow-xs inline-flex items-center gap-1">
-                                ★ 0% Commission (Zero Platform Fee)
+                                ★ 5-10% Commission (Zero Platform Fee)
                               </span>
                             ) : (
                               <span>{feature}</span>

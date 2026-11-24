@@ -274,6 +274,7 @@ export async function POST(request: Request) {
       currentPlan: effectivePlan,
       city: activeSub?.city || activeLead?.city || "",
       state: activeSub?.state || activeLead?.state || "",
+      pincode: ((activeSub as any)?.pincode || activeLead?.pincode || (activeSub?.city?.toLowerCase().includes("singur") ? "712124" : "712124")).toString().trim(),
       territoryScope: activeSub?.territoryScope || (effectivePlan === "silver" ? "Local Ward / Pin Code Hub" : effectivePlan === "platinum" ? "State / Regional Master Territory" : "Exclusive District Hub"),
       subscriptionId: activeSub?.subscriptionId || "SUB-BB-2026-ACTIVE",
       isPaid: activeSub?.paymentStatus === "PAID" || activeSub?.status === "active",
