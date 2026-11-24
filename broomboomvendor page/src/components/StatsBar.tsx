@@ -119,11 +119,11 @@ const CruisesIcon: React.FC = () => (
 
 export const StatsBar: React.FC = () => {
   const products = [
-    { icon: <HolidayPackagesIcon />, label: "Holiday Packages" },
-    { icon: <FlightsIcon />, label: "Flights" },
-    { icon: <HotelsIcon />, label: "Hotels" },
-    { icon: <CorporateBookingsIcon />, label: "Corporate Bookings" },
-    { icon: <CruisesIcon />, label: "Cruises" },
+    { icon: <HolidayPackagesIcon />, label: "Attach Sedan Cars for Outstation Bookings" },
+    { icon: <FlightsIcon />, label: "Attach SUV and MUV Vehicles" },
+    { icon: <HotelsIcon />, label: "Attach Tempo Travellers and Commercial Vehicles" },
+    { icon: <CorporateBookingsIcon />, label: "Add Multiple Cars to Your Vendor Account" },
+    { icon: <CruisesIcon />, label: "Add for Corporate Transportation Services" },
   ];
 
   return (

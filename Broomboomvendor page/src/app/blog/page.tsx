@@ -51,7 +51,6 @@ export default function BlogPage() {
       return matchesCategory && matchesSearch;
     });
   }, [selectedCategory, searchQuery]);
-
   return (
     <div className="min-h-screen flex flex-col bg-puja-cream text-slate-900 selection:bg-brand-yellow selection:text-black font-sans">
       <Navbar

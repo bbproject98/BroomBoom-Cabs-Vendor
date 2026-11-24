@@ -183,7 +183,7 @@ type MenuTab =
 const UPGRADE_PACKAGES = [
   {
     id: "silver",
-    name: "Silver Partner",
+    name: "Silver Vendor Partner Plan",
     subtitle: "Booking Kiosk",
     price: 5000,
     originalPrice: "₹20,000",
@@ -198,7 +198,7 @@ const UPGRADE_PACKAGES = [
   },
   {
     id: "gold",
-    name: "Gold Partner",
+    name: "Gold Partner Vendor Plan",
     subtitle: "District Exclusive Hub",
     price: 10000,
     originalPrice: "₹40,000",
@@ -213,7 +213,7 @@ const UPGRADE_PACKAGES = [
   },
   {
     id: "platinum",
-    name: "Platinum Partner",
+    name: "Platinum Vendor Partner Plan",
     subtitle: "Regional Master Hub",
     price: 20000,
     originalPrice: "₹1,00,000",

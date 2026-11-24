@@ -29,7 +29,7 @@ export const JourneySection: React.FC<JourneySectionProps> = ({
   const steps = [
     {
       stepNumber: "01",
-      title: "Choose Your Vendor Plan",
+      title: "Select Your Vendor Plan",
       badge: "Flexible Plans",
       description:
         "Select your preferred Silver, Gold, or Platinum vendor partnership plan according to your business requirements.",
@@ -37,7 +37,7 @@ export const JourneySection: React.FC<JourneySectionProps> = ({
     },
     {
       stepNumber: "02",
-      title: "Enter Basic Details",
+      title: "Submit Your Contact Details",
       badge: "Quick Start",
       description:
         "Click on Join Now, enter your Full Name and Mobile Number, and seamlessly continue to the application form.",
@@ -45,7 +45,7 @@ export const JourneySection: React.FC<JourneySectionProps> = ({
     },
     {
       stepNumber: "03",
-      title: "Complete Application Form",
+      title: "Upload Business and Vehicle Documents",
       badge: "Detailed Profile",
       description:
         "Fill in your contact details, proposed city/territory, commercial space availability, business background, and investment readiness.",
@@ -53,7 +53,7 @@ export const JourneySection: React.FC<JourneySectionProps> = ({
     },
     {
       stepNumber: "04",
-      title: "Submit & Make Payment",
+      title: "Complete payment & Verification",
       badge: "Secure Payment",
       description:
         "Review and submit your application, then complete the applicable plan payment to register for your selected area.",
@@ -61,7 +61,7 @@ export const JourneySection: React.FC<JourneySectionProps> = ({
     },
     {
       stepNumber: "05",
-      title: "Get Approved & Start",
+      title: "Access Your Vendor Dashboard",
       badge: "Go Live",
       description:
         "Receive your Vendor login credentials. Log in to manage your profile, receive booking notifications, and accept requests.",
@@ -120,15 +120,15 @@ export const JourneySection: React.FC<JourneySectionProps> = ({
             <span>Fast-Track Onboarding</span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-950 tracking-tight leading-tight">
-            Begin Your{" "}
+            How to Register as a Cab Vendor with {" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-yellow-600">
-              {cityName ? `${cityName} Journey` : "Journey"} Now
+              {cityName ? ` BroomBoom in ${cityName}` : "BroomBoom"} 
             </span>
           </h2>
           <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto font-medium">
             {cityName
               ? `Start your ${cityName} BroomBoom vendor journey in just 5 simple steps!`
-              : "Register your business, choose your vendor plan, and apply for cab attachment in just 5 simple steps!"}
+              : "Start your BroomBoom vendor journey in just 5 simple steps!"}
           </p>
         </div>
 

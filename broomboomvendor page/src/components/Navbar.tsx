@@ -212,8 +212,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="relative w-10 h-10 rounded-full p-[2px] bg-gradient-to-br from-brand-yellow via-amber-300 to-brand-yellow-dark shadow-md group-hover:shadow-lg group-hover:shadow-amber-300/40 transition-all duration-300 group-hover:scale-105">
               <div className="relative w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center p-0.5">
                 <Image
-                  src="/broomboom-vendor-logo.png"
-                  alt="BroomBoom Vendor Logo"
+                  src="/logo.png"
+                  alt="broomboom-cabs-logo"
                   fill
                   className="object-contain"
                   priority
@@ -222,7 +222,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
             <div className="flex items-baseline gap-1.5">
               <span className="text-lg xl:text-xl font-black tracking-tight text-slate-950">
-                Broom<span className="text-brand-yellow-dark">Boom</span>
+                BroomBoom <span className="text-brand-yellow-dark"> Cabs</span>
               </span>
               <span className="text-xs font-light text-slate-300">|</span>
               <span className="text-[10px] xl:text-xs font-extrabold uppercase tracking-wider text-slate-500">
@@ -475,8 +475,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full p-[2px] bg-gradient-to-br from-brand-yellow via-amber-300 to-brand-yellow-dark shadow-sm shrink-0">
               <div className="relative w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center p-0.5">
                 <Image
-                  src="/broomboom-vendor-logo.png"
-                  alt="BroomBoom Vendor Logo"
+                  src="/logo.png"
+                  alt="broomboom-cabs-logo"
                   fill
                   className="object-contain"
                   priority

@@ -1355,7 +1355,7 @@ export default function ReviewsPage() {
           <div className="max-w-6xl mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-3 gap-12">
             {/* Left Sticky Column */}
             <div className="md:sticky md:top-28 md:self-start">
-              <h2 className="text-3xl font-bold text-slate-900 mb-4">FAQs for BroomBoom Cab Vendors & Drivers</h2>
+              <h2 className="text-3xl font-bold text-slate-900 mb-4">Frequently Asked Questions About Cab Vendor Registration</h2>
               <p className="text-slate-600 text-sm mb-8">Find answers to common questions about onboarding, earnings, and operational policies.</p>
               
               <div className="bg-white rounded-2xl p-4 border border-slate-200 flex items-center gap-4 hover:shadow-md transition-shadow mb-6">
@@ -1370,7 +1370,7 @@ export default function ReviewsPage() {
 
               <div className="bg-[#111111] text-white rounded-2xl p-6 relative overflow-hidden">
                 <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#FBBF24] opacity-10 blur-2xl rounded-full" />
-                <h3 className="font-bold text-lg mb-2 relative z-10">Join BroomBoom and grow your cab business with more booking opportunities across India.</h3>
+                <h2 className="font-bold text-lg mb-2 relative z-10">Join BroomBoom and Grow Your Cab Business</h2>
                 <button onClick={() => handleOpenLoginModal("gold")} className="mt-4 bb-btn-shine bg-[#FBBF24] text-black px-4 py-2 rounded-xl text-sm font-bold w-full hover:bg-yellow-500 transition-colors relative z-10">
                   Register as a Vendor
                 </button>

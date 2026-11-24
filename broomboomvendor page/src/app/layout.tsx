@@ -1,6 +1,24 @@
+
+// app/layout.tsx
+
 import type { Metadata, Viewport } from "next";
-import Script from "next/script";
+import {
+  GoogleTagManager,
+  GoogleAnalytics,
+} from "@next/third-parties/google";
+
 import "./globals.css";
+
+/* ------------------------------------------------------------------ */
+/* GOOGLE TRACKING                                                    */
+/* ------------------------------------------------------------------ */
+
+const GTM_ID = "GTM-N6D7HH8";
+const GA_ID = "G-JD89KXBSS2";
+
+/* ------------------------------------------------------------------ */
+/* VIEWPORT                                                           */
+/* ------------------------------------------------------------------ */
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -9,34 +27,66 @@ export const viewport: Viewport = {
   themeColor: "#F59E0B",
 };
 
+/* ------------------------------------------------------------------ */
+/* SEO METADATA                                                       */
+/* ------------------------------------------------------------------ */
+
 export const metadata: Metadata = {
-  title:
-    "BroomBoom Vendor Partner | Attach Your Cabs & Fleet with India's Leading Network",
-
-  description:
-    "Attach your commercial cabs, sedans, SUVs, and fleet with BroomBoom. Enjoy 0% introductory commission, daily direct bank settlements, corporate bookings, and dedicated fleet management support across 120+ cities.",
-
-  keywords: [
-    "BroomBoom vendor partner",
-    "attach cab in BroomBoom",
-    "fleet attachment portal",
-    "car rental vendor India",
-    "taxi fleet operator partner",
-    "outstation cab vendor",
-    "attach car with travel agency",
-    "BroomBoom cabs",
-  ],
-
-  robots: {
-    index: true,
-    follow: true,
-  },
-
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL ||
       "https://vendor.broomboomcabs.com"
   ),
 
+  title:
+    "Cab Vendor Registration in India | Attach Your Car – BroomBoom Vendor",
+
+  description:
+    "Register as a cab vendor with BroomBoom. Attach your car, taxi or fleet for outstation, local, airport and corporate booking opportunities across India. Join as a fleet partner.",
+
+  keywords: [
+    "attach car with cab company",
+    "taxi vendor registration",
+    "cab partner registration",
+    "outstation cab vendor",
+    "taxi fleet partner",
+    "driver partner registration",
+    "commercial vehicle attachment",
+    "cab booking company for drivers",
+  ],
+
+  applicationName: "BroomBoom Vendor",
+
+  authors: [
+    {
+      name: "BroomBoom Transportation Services Private Limited",
+    },
+  ],
+
+  creator: "BroomBoom Transportation Services Private Limited",
+
+  publisher: "BroomBoom Transportation Services Private Limited",
+
+  category: "Travel",
+
+  /* CANONICAL URL */
+  alternates: {
+    canonical: "https://vendor.broomboomcabs.com/",
+  },
+
+  /* SEARCH ENGINE ROBOTS */
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+
+  /* OPEN GRAPH */
   openGraph: {
     title:
       "BroomBoom Vendor Partner | Attach Your Cabs & Fleet with India's Leading Network",
@@ -44,22 +94,25 @@ export const metadata: Metadata = {
     description:
       "Attach your commercial cabs, sedans, SUVs, and fleet with BroomBoom. Enjoy 0% introductory commission, daily direct bank settlements, corporate bookings, and dedicated fleet management support across 120+ cities.",
 
-    url: "/",
+    url: "https://vendor.broomboomcabs.com/",
+
     siteName: "BroomBoom Vendor",
 
     images: [
       {
-        url: "/broomboom-logo.png",
+        url: "/logo.png",
         width: 764,
         height: 1024,
-        alt: "BroomBoom Vendor Logo",
+        alt: "broomboom-cabs-logo",
       },
     ],
 
     locale: "en_IN",
+
     type: "website",
   },
 
+  /* TWITTER / X */
   twitter: {
     card: "summary_large_image",
 
@@ -68,9 +121,10 @@ export const metadata: Metadata = {
     description:
       "Attach your commercial cabs, sedans, SUVs, and fleet with BroomBoom. Enjoy 0% introductory commission and daily direct bank settlements.",
 
-    images: ["/broomboom-logo.png"],
+    images: ["/logo.png"],
   },
 
+  /* FAVICON */
   icons: {
     icon: [
       {
@@ -94,7 +148,7 @@ export const metadata: Metadata = {
       },
     ],
 
-    shortcut: "/broomboom-logo.png",
+    shortcut: "/favicon.ico",
 
     apple: [
       {
@@ -105,9 +159,8 @@ export const metadata: Metadata = {
     ],
   },
 
+  /* PWA */
   manifest: "/site.webmanifest",
-
-  applicationName: "BroomBoom Vendor",
 
   appleWebApp: {
     capable: true,
@@ -115,14 +168,24 @@ export const metadata: Metadata = {
     title: "BroomBoom Vendor",
   },
 
+  /* CUSTOM META TAGS */
   other: {
+    brand: "BroomBoom Vendor",
+
     "mobile-web-app-capable": "yes",
+
     "apple-mobile-web-app-capable": "yes",
+
     "apple-mobile-web-app-title": "BroomBoom Vendor",
+
     copyright:
       "2026 BroomBoom Transportation Services Private Limited",
   },
 };
+
+/* ------------------------------------------------------------------ */
+/* ROOT LAYOUT                                                        */
+/* ------------------------------------------------------------------ */
 
 export default function RootLayout({
   children,
@@ -130,37 +193,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
-      <body className="min-h-screen bg-puja-cream text-slate-900 antialiased" suppressHydrationWarning>
-        {/* Google Tag Manager */}
-        <Script
-          id="google-tag-manager"
-          strategy="lazyOnload"
-        >
-          {`
-            (function(w,d,s,l,i){
-              w[l]=w[l]||[];
-              w[l].push({
-                'gtm.start': new Date().getTime(),
-                event:'gtm.js'
-              });
-
-              var f=d.getElementsByTagName(s)[0],
-                  j=d.createElement(s),
-                  dl=l!='dataLayer'?'&l='+l:'';
-
-              j.async=true;
-              j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
-
-              f.parentNode.insertBefore(j,f);
-            })(window,document,'script','dataLayer','GTM-N6D7HH8');
-          `}
-        </Script>
-
-        {/* Google Tag Manager - NoScript */}
-        <noscript suppressHydrationWarning>
+    <html
+      lang="en"
+      className="scroll-smooth"
+      suppressHydrationWarning
+    >
+      <body
+        className="min-h-screen bg-puja-cream text-slate-900 antialiased"
+        suppressHydrationWarning
+      >
+        {/* GOOGLE TAG MANAGER - NOSCRIPT FALLBACK */}
+        <noscript>
           <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-N6D7HH8"
+            src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
             height="0"
             width="0"
             style={{
@@ -171,7 +216,15 @@ export default function RootLayout({
           />
         </noscript>
 
+        {/* WEBSITE CONTENT */}
         {children}
+
+        {/* GOOGLE TAG MANAGER */}
+        <GoogleTagManager gtmId={GTM_ID} />
+
+        {/* GOOGLE ANALYTICS 4 */}
+        <GoogleAnalytics gaId={GA_ID} />
+
       </body>
     </html>
   );

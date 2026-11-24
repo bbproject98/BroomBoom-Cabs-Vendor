@@ -23,7 +23,7 @@ export const FaqSection: React.FC<FaqSectionProps> = ({
         {/* Left Sticky Column */}
         <div className="md:sticky md:top-28 md:self-start">
           <h2 className="text-3xl font-bold text-slate-900 mb-4">
-            FAQs for BroomBoom Cab Vendors &amp; Drivers
+            Frequently Asked Questions About Cab Vendor Registration
           </h2>
           <p className="text-slate-600 text-sm mb-8">
             Find answers to common questions about onboarding, earnings, and
@@ -66,7 +66,7 @@ export const FaqSection: React.FC<FaqSectionProps> = ({
         <div className="md:col-span-2 space-y-2">
           {[
             {
-              q: "How can I attach my car or taxi with BroomBoom?",
+              q: "How can I attach my car to a cab company?",
               a: (
                 <div className="space-y-2">
                   <p>
@@ -91,7 +91,7 @@ export const FaqSection: React.FC<FaqSectionProps> = ({
               ),
             },
             {
-              q: "What documents are required to register as a BroomBoom vendor?",
+              q: " Can I join a cab booking company with one car?",
               a: (
                 <div className="space-y-2">
                   <p>
@@ -115,19 +115,19 @@ export const FaqSection: React.FC<FaqSectionProps> = ({
               ),
             },
             {
-              q: "Can an individual car owner or driver join BroomBoom?",
+              q: "Can individual drivers register as vendors?",
               a: "Yes. BroomBoom welcomes individual vehicle owners, independent drivers, travel agencies and fleet operators. You do not necessarily need to own a large fleet or operate a registered travel agency to explore vendor opportunities.",
             },
             {
-              q: "How long does it take to approve my vendor account?",
+              q: "How can taxi operators get outstation bookings?",
               a: "Approval time depends on document verification and the completeness of the submitted information. Our team may contact you if any additional documents or clarification are required.",
             },
             {
-              q: "Can I receive bookings immediately after registration?",
+              q: "What commission does BroomBoom charge?",
               a: "You can access booking opportunities once your vendor account and relevant vehicle/driver details have been verified and approved. Booking acceptance is subject to vehicle category, availability, service location and applicable platform requirements.",
             },
             {
-              q: "What types of bookings can I receive from BroomBoom Vendor?",
+              q: "How long does vendor verification take?",
               a: (
                 <div className="space-y-2">
                   <p>
@@ -150,11 +150,11 @@ export const FaqSection: React.FC<FaqSectionProps> = ({
               ),
             },
             {
-              q: "How will I know about new bookings?",
+              q: "Can I register multiple vehicles?",
               a: "Eligible vendors can access booking opportunities through the BroomBoom Vendor Portal. Booking details, including pickup location, destination, travel date, vehicle category and applicable vendor fare, are provided for evaluation before accepting a trip.",
             },
             {
-              q: "How much can I earn through BroomBoom Vendor?",
+              q: "Can I work with other cab companies?",
               a: "Your earnings depend on the number of bookings completed, vehicle category, route, distance, trip type and applicable vendor fare. You can increase your earning potential by keeping your vehicle available and accepting suitable booking opportunities.",
             },
             {
@@ -250,23 +250,27 @@ export const FaqSection: React.FC<FaqSectionProps> = ({
               key={idx}
               className="bg-transparent border-b border-slate-200 py-2"
             >
-              <button
-                onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                className="w-full flex items-center justify-between py-4 text-left font-bold text-slate-900 hover:text-blue-600 transition-colors"
-              >
-                <span>{faq.q}</span>
-                <div
-                  className={`w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center shrink-0 transition-all duration-300 ${
-                    openFaq === idx ? "rotate-180 bg-[#FBBF24]/30" : ""
-                  }`}
+              {/* ✅ FAQ question now rendered in an <h3> */}
+              <h3 className="m-0">
+                <button
+                  onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                  aria-expanded={openFaq === idx}
+                  className="w-full flex items-center justify-between py-4 text-left text-base font-bold text-slate-900 hover:text-blue-600 transition-colors"
                 >
-                  {openFaq === idx ? (
-                    <Minus className="w-4 h-4" />
-                  ) : (
-                    <Plus className="w-4 h-4" />
-                  )}
-                </div>
-              </button>
+                  <span>{faq.q}</span>
+                  <div
+                    className={`w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center shrink-0 transition-all duration-300 ${
+                      openFaq === idx ? "rotate-180 bg-[#FBBF24]/30" : ""
+                    }`}
+                  >
+                    {openFaq === idx ? (
+                      <Minus className="w-4 h-4" />
+                    ) : (
+                      <Plus className="w-4 h-4" />
+                    )}
+                  </div>
+                </button>
+              </h3>
               <div
                 className={`grid transition-all duration-300 ease-out ${
                   openFaq === idx

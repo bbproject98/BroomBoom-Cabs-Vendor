@@ -9,6 +9,7 @@ import { VendorOverview } from "@/components/VendorOverview";
 import { WhyBroomBoom } from "@/components/WhyBroomBoom";
 import { JourneySection } from "@/components/JourneySection";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
+import { VendorNetworkSection } from "@/components/VendorNetworkSection";
 import { FaqSection } from "@/components/FaqSection";
 import { AppDownloadSection } from "@/components/AppDownloadSection";
 import { Footer } from "@/components/Footer";
@@ -80,8 +81,14 @@ export const LandingPageContent: React.FC<LandingPageContentProps> = ({
           cityName={cityName}
         />
 
+        {/* 8. BroomBoom Vendor Partner Network Across India */}
+        <VendorNetworkSection
+          cityName={cityName}
+          onOpenApplyModal={handleOpenLoginModal}
+        />
+
         {/* Download BroomBoom Vendor App Section */}
-        <AppDownloadSection cityName={cityName} />
+        <AppDownloadSection />
 
         {/* Comprehensive FAQ Accordion */}
         <FaqSection

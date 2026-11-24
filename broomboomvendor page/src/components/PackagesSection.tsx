@@ -144,21 +144,28 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
       id: "silver",
       image: "/images/travel-tajmahal.jpg",
       alt: "Taj Mahal - Indian Tourism & Travel Sector",
-      headline: "Expand Your Business Beyond Your Local City",
+      headline: "Register as an Individual fleet Owner",
     },
     {
       id: "gold",
       image: "/images/travel-roadtrip.jpg",
       alt: "Road trip travel - Domestic tourist growth",
       headline:
-        "ABP Live — Turn Your Available Cars into Revenue-Generating Assets",
+        "Join as a Driver cum Owner",
     },
     {
       id: "platinum",
       image: "/images/travel-airport.jpg",
       alt: "Airport traveler - Holiday packages revenue",
       headline:
-        "Outlook India — Every Completed Trip Brings Earning Potential",
+        "Register as a Travel Agency",
+    },
+    {
+      id: "platinum",
+      image: "/images/travel-airport.jpg",
+      alt: "Airport traveler - Holiday packages revenue",
+      headline:
+        "Partner with Us as a Fleet Operator",
     },
   ];
 
@@ -240,15 +247,15 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
           <h2 className="text-2xl sm:text-3xl lg:text-[2rem] font-black text-slate-950 tracking-tight leading-tight">
             {cityName ? (
               <>
-                Choose Your{" "}
+                Choose the Right{" "}
                 <span className="text-amber-600">
-                  {cityName} Vendor Partner Package
+                  {cityName} Cab Vendor Partner Plan
                 </span>
               </>
             ) : (
               <>
-                Choose Your{" "}
-                <span className="text-amber-600">Vendor Partner Package</span>
+                Choose the Right{" "}
+                <span className="text-amber-600">Cab Vendor Partner Plan</span>
               </>
             )}
           </h2>
@@ -257,6 +264,11 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
               ? `Attach your commercial vehicles or establish a dedicated ${cityName} booking hub. Lock in your ${cityName} territory with our exclusive commercial franchise partner network.`
               : "Attach your commercial vehicles or establish a dedicated regional booking hub. Lock in your territory with our exclusive commercial franchise partner network."}
           </p>
+
+          {/* NEW: Comparison sub-heading */}
+          <h3 className="text-sm sm:text-base font-black text-slate-950 tracking-tight mt-4">
+            Compare Vendor Commission and Benefits
+          </h3>
         </div>
 
         {/* 3 Packages Grid / Mobile Horizontal Carousel */}
@@ -483,9 +495,9 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
         {/* ========================================================================= */}
         <div className="pt-6 border-t border-amber-200/70">
           <div className="text-center max-w-2xl mx-auto mb-5">
-            <h3 className="text-lg sm:text-xl font-black text-slate-950 tracking-tight">
-              Indians are travelling the world like never before!
-            </h3>
+            <h2 className="text-lg sm:text-xl font-black text-slate-950 tracking-tight">
+               Become a BroomBoom Cab Vendor Partner
+            </h2>
             <p className="text-[11px] sm:text-xs text-slate-600 mt-1">
               Capitalize on the massive boom in Indian domestic tourism and
               outstation cab travel.
@@ -493,35 +505,35 @@ export const PackagesSection: React.FC<PackagesSectionProps> = ({
           </div>
 
           {/* Desktop 3-Column Trend Photos */}
-          <div className="hidden md:grid md:grid-cols-3 md:gap-5 max-w-4xl mx-auto items-stretch">
-            {trendCards.map((card) => (
-              <div
-                key={card.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => handleSelect(card.id)}
-                onKeyDown={handleKeyActivate(card.id)}
-                className="flex flex-col group h-full cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-xl"
-              >
-                <div className="bg-white rounded-xl border border-amber-200/80 shadow-[0_3px_16px_rgba(0,0,0,0.06)] hover:shadow-xl hover:border-amber-400 p-3.5 flex flex-col h-full transition-all duration-300 hover:-translate-y-1">
-                  <div className="relative w-full h-36 sm:h-40 overflow-hidden rounded-lg mb-2.5 bg-slate-100 shrink-0">
-                    <Image
-                      src={card.image}
-                      alt={card.alt}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                      sizes="33vw"
-                    />
-                  </div>
-                  <div className="flex-1 flex flex-col justify-start">
-                    <h4 className="text-[13px] font-bold text-slate-950 leading-snug">
-                      {card.headline}
-                    </h4>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+       <div className="hidden md:grid md:grid-cols-4 md:gap-4 lg:gap-5 max-w-5xl mx-auto items-stretch">
+  {trendCards.map((card) => (
+    <div
+      key={card.id}
+      role="button"
+      tabIndex={0}
+      onClick={() => handleSelect(card.id)}
+      onKeyDown={handleKeyActivate(card.id)}
+      className="flex flex-col group h-full cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-xl"
+    >
+      <div className="bg-white rounded-xl border border-amber-200/80 shadow-[0_3px_16px_rgba(0,0,0,0.06)] hover:shadow-xl hover:border-amber-400 p-3 flex flex-col h-full transition-all duration-300 hover:-translate-y-1">
+        <div className="relative w-full h-32 sm:h-36 overflow-hidden rounded-lg mb-2 bg-slate-100 shrink-0">
+          <Image
+            src={card.image}
+            alt={card.alt}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+            sizes="(min-width: 1024px) 25vw, 25vw"
+          />
+        </div>
+        <div className="flex-1 flex flex-col justify-start">
+          <h3 className="text-[12.5px] sm:text-[13px] font-bold text-slate-950 leading-snug">
+            {card.headline}
+          </h3>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
 
           {/* Mobile Swipeable Trend Carousel */}
           <div className="md:hidden">

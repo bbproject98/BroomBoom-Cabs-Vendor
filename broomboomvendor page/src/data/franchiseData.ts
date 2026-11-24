@@ -3,7 +3,7 @@ import { FranchisePackage, Testimonial, FaqItem } from "@/types";
 export const FRANCHISE_PACKAGES: FranchisePackage[] = [
   {
     id: "silver",
-    name: "Silver Partner",
+    name: " Silver Vendor Partner Plan",
     tagline: "Booking Kiosk & Express Travel Outlet",
     subtitle: "Quick-start booking kiosk and express travel outlet",
     description: "Operate a compact booking outlet and earn commissions from cab, airport transfer, outstation, and rental bookings.",
@@ -46,7 +46,7 @@ export const FRANCHISE_PACKAGES: FranchisePackage[] = [
   },
   {
     id: "gold",
-    name: "Gold Partner",
+    name: "Gold Vendor Partner Plan",
     tagline: "Exclusive District Fleet & Hub Franchise",
     subtitle: "Exclusive district-level fleet and operations hub",
     description: "Operate a dedicated district hub, onboard drivers, and earn from ride commissions and fleet overrides.",
@@ -90,7 +90,7 @@ export const FRANCHISE_PACKAGES: FranchisePackage[] = [
   },
   {
     id: "platinum",
-    name: "Platinum Partner",
+    name: "Platinum Vendor Partner Plan",
     tagline: "Regional Master Franchise & State Hub",
     subtitle: "Regional master franchise and state-level operations hub",
     description: "Lead regional operations, appoint sub-franchisees, and earn from ride commissions, royalties, and enterprise fleet contracts.",

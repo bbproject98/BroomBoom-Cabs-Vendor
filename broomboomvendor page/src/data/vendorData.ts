@@ -122,7 +122,7 @@ export const VENDOR_TIERS: VendorTier[] = [
 export const VENDOR_PACKAGES = [
   {
     id: "silver",
-    name: "Silver Partner",
+    name: "Silver Vendor Partner Plan",
     subtitle: "Airport, Station & Short Rentals",
     fleetSize: "1-2 Cabs",
     originalPrice: "₹20,000",
@@ -143,7 +143,7 @@ export const VENDOR_PACKAGES = [
   },
   {
     id: "gold",
-    name: "Gold Partner",
+    name: "Gold Vendor Partner Plan",
     subtitle: "Outstation & Long Rentals",
     popular: true,
     fleetSize: "1-5 Cabs",
@@ -164,7 +164,7 @@ export const VENDOR_PACKAGES = [
   },
   {
     id: "platinum",
-    name: "Platinum Partner",
+    name: "Platinum Vendor Partner Plan",
     subtitle: "Corporate, Tours & Full Fleet",
     fleetSize: "1 - 10 Cabs",
     originalPrice: "₹1,00,000",

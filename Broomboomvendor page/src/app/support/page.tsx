@@ -4,14 +4,11 @@ import React, { useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
-  Building2,
   CheckCircle2,
   ChevronDown,
-  Clock,
   Headphones,
   HelpCircle,
   Mail,
-  MapPin,
   MessageCircle,
   Phone,
   Send,
@@ -22,7 +19,7 @@ import { Footer } from "@/components/Footer";
 import { VendorLoginModal } from "@/components/VendorLoginModal";
 import { BrochureModal } from "@/components/BrochureModal";
 import { FloatingCta } from "@/components/FloatingCta";
-import { FALLBACK_HUBS, FAQ_ITEMS } from "@/data/vendorData";
+import { FAQ_ITEMS } from "@/data/vendorData";
 import { SERVICE_CITIES } from "@/data/serviceCities";
 
 const SUPPORT_TOPICS = [
@@ -206,10 +203,9 @@ export default function SupportPage() {
           </div>
         </section>
 
-        {/* Main Two-Column Section: Callback Ticket Form + Regional Hubs */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14 grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Raise Support Request Form */}
-          <div className="lg:col-span-7 bg-white rounded-3xl border border-amber-200 p-6 sm:p-8 shadow-card">
+        {/* Raise Support Request Form */}
+        <section className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+          <div className="bg-white rounded-3xl border border-amber-200 p-6 sm:p-8 shadow-card">
             <div className="mb-6">
               <span className="inline-block bg-amber-100 text-amber-900 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full mb-2">
                 Submit a Request
@@ -361,56 +357,6 @@ export default function SupportPage() {
                 <span>{isSubmitting ? "Submitting Request..." : "Submit Support Request"}</span>
               </button>
             </form>
-          </div>
-
-          {/* Regional Hub Offices */}
-          <div className="lg:col-span-5 space-y-4">
-            <div className="bg-slate-950 text-white rounded-3xl border border-amber-400/40 p-6">
-              <div className="flex items-center gap-2 text-amber-400 text-xs font-black uppercase tracking-wider mb-1">
-                <Building2 className="w-4 h-4" />
-                <span>Regional Verification Desks</span>
-              </div>
-              <h2 className="text-xl font-black mb-2">
-                Walk-In Fleet Inspection Hubs
-              </h2>
-              <p className="text-xs text-slate-300 mb-4">
-                Prefer in-person onboarding or branding kit pickup? Visit our regional partner offices below.
-              </p>
-
-              <div className="space-y-3 max-h-[430px] overflow-y-auto pr-1">
-                {FALLBACK_HUBS.map((hub) => (
-                  <div
-                    key={hub.id}
-                    className="rounded-2xl bg-slate-900 border border-slate-800 p-4 space-y-1.5"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-black text-white">
-                        {hub.city}, {hub.state}
-                      </span>
-                      <span className="text-[10px] font-bold bg-amber-400/15 text-amber-300 border border-amber-400/30 px-2 py-0.5 rounded-full">
-                        {hub.tier}
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-300 flex items-start gap-1.5">
-                      <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                      <span>{hub.address}</span>
-                    </p>
-                    <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
-                      <span className="inline-flex items-center gap-1">
-                        <Clock className="w-3 h-3 text-amber-400" />
-                        {hub.openHours}
-                      </span>
-                      <a
-                        href="tel:+916289952418"
-                        className="text-amber-400 font-bold hover:underline"
-                      >
-                        6289952418
-                      </a>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         </section>
 

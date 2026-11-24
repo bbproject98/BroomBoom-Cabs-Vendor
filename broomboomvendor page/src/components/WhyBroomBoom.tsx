@@ -21,33 +21,39 @@ export const WhyBroomBoom: React.FC<WhyBroomBoomProps> = ({
   const benefits = [
     {
       id: 1,
-      title: "Attractive commission structure",
+      title: "Access to Booking Opportunities",
       image: "/images/benefit-commission.jpg",
+      alt: "access-to-booking-opportunities",
     },
     {
       id: 2,
-      title: "Best-in-class technical support",
+      title: "Manage Cars and Drivers from One Dashboard",
       image: "/images/benefit-support.jpg",
+      alt: "manage-cars-and-drivers-from-one-dashboard",
     },
     {
       id: 3,
-      title: "Branding and marketing assistance",
+      title: "Booking Alerts and Trip Management",
       image: "/images/benefit-branding.jpg",
+      alt: "booking-alerts-and-trip-management",
     },
     {
       id: 4,
-      title: "Regular training and access to market Insights",
+      title: "Transparent Vendor Fare and Payment Terms",
       image: "/images/benefit-training.jpg",
+      alt: "transparent-vendor-fare-and-payment-terms",
     },
     {
       id: 5,
-      title: "A dedicated relationship manager",
+      title: "Vendor Support and Account Assistance",
       image: "/images/benefit-manager.jpg",
+      alt: "vendor-support-and-account-assistance",
     },
     {
       id: 6,
-      title: "Dashboard for monitoring business",
+      title: "Attractive Commission Structure",
       image: "/images/benefit-dashboard.jpg",
+      alt: "attractive-commission-structure",
     },
   ];
 
@@ -90,8 +96,8 @@ export const WhyBroomBoom: React.FC<WhyBroomBoomProps> = ({
         <div className="text-center max-w-3xl mx-auto mb-3 sm:mb-4">
           <h2 className="text-2xl sm:text-4xl font-black text-slate-950 tracking-tight">
             {cityName
-              ? `What's in it For You in ${cityName}?`
-              : "What's in it For You?"}
+              ? `Benefits of Joining BroomBoom Vendor in  ${cityName}`
+              : "Benefits of Joining BroomBoom Vendor"}
           </h2>
           <p className="mt-1 text-sm sm:text-base text-slate-600 leading-relaxed">
             {cityName
@@ -110,7 +116,7 @@ export const WhyBroomBoom: React.FC<WhyBroomBoomProps> = ({
               {/* Background Image */}
               <Image
                 src={item.image}
-                alt={item.title}
+                alt={item.alt}
                 fill
                 className="object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out"
                 sizes="(max-width: 1024px) 50vw, 600px"
@@ -156,7 +162,7 @@ export const WhyBroomBoom: React.FC<WhyBroomBoomProps> = ({
               >
                 <Image
                   src={item.image}
-                  alt={item.title}
+                  alt={item.alt}
                   fill
                   className="object-cover"
                   sizes="80vw"

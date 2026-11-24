@@ -21,17 +21,32 @@ export const VendorOverview: React.FC<VendorOverviewProps> = ({ cityName }) => {
     {
       icon: <Palmtree className="w-12 h-12 text-white stroke-[1.5]" />,
       title: "Plan end-to-end",
-      highlight: "RIDES & TRAVEL",
+      highlight: "Outstation One-Way Taxi Bookings",
     },
     {
       icon: <Globe className="w-12 h-12 text-white stroke-[1.5]" />,
       title: "Build a Strong",
-      highlight: "MOBILITY COMMUNITY",
+      highlight: "Outstation Round-Trip Bookings",
     },
     {
       icon: <TrendingUp className="w-12 h-12 text-white stroke-[1.5]" />,
       title: "Ensure Continuous",
-      highlight: "BUSINESS GROWTH",
+      highlight: "Local Car Rental Bookings",
+    },
+        {
+      icon: <Palmtree className="w-12 h-12 text-white stroke-[1.5]" />,
+      title: "Plan end-to-end",
+      highlight: "Airport Pickup and Drop Bookings",
+    },
+    {
+      icon: <Globe className="w-12 h-12 text-white stroke-[1.5]" />,
+      title: "Build a Strong",
+      highlight: "Corporate Transportation Services",
+    },
+    {
+      icon: <TrendingUp className="w-12 h-12 text-white stroke-[1.5]" />,
+      title: "Ensure Continuous",
+      highlight: "Holiday and Sightseeing Tour Bookings",
     },
   ];
 
@@ -79,11 +94,11 @@ export const VendorOverview: React.FC<VendorOverviewProps> = ({ cityName }) => {
             {cityName ? `${cityName} Partnership Ecosystem` : "Partnership Ecosystem"}
           </span>
           <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
-            Wondering What a{" "}
+             Get Local, Outstation, Airport and{" "}
             <span className="text-brand-yellow">
-              {cityName ? `BroomBoom ${cityName} Vendor` : "BroomBoom Vendor"}
+              {cityName ? ` Corporate Cab ` : "Corporate Cab"}
             </span>{" "}
-            Does?
+            Booking Opportunities in {cityName}
           </h2>
           <p className="mt-1 text-sm sm:text-base text-slate-300 max-w-2xl mx-auto">
             {cityName
@@ -99,14 +114,19 @@ export const VendorOverview: React.FC<VendorOverviewProps> = ({ cityName }) => {
               key={idx}
               className="bg-slate-900/90 border border-amber-500/20 rounded-2xl p-5 sm:p-6 flex flex-col items-center justify-center text-center backdrop-blur-sm shadow-xl hover:border-amber-400/50 hover:bg-slate-900 transition-all duration-300 group"
             >
-              <div className="mb-3 p-3 rounded-2xl bg-amber-500/10 text-amber-400 group-hover:scale-105 transition-transform">
-                {feature.icon}
-              </div>
+              {React.createElement(
+                "div",
+                {
+                  className:
+                    "mb-3 p-3 rounded-2xl bg-amber-500/10 text-amber-400 group-hover:scale-105 transition-transform",
+                },
+                feature.icon,
+              )}
               <p className="text-sm sm:text-base font-medium text-slate-300">
                 {feature.title} <br />
-                <span className="text-lg sm:text-xl font-black text-amber-400 tracking-wide mt-1 block">
+                <h3 className="text-lg sm:text-xl font-black text-amber-400 tracking-wide mt-1 block">
                   {feature.highlight}
-                </span>
+                </h3>
               </p>
             </div>
           ))}
@@ -211,12 +231,12 @@ export const VendorOverview: React.FC<VendorOverviewProps> = ({ cityName }) => {
           <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
             {cityName ? (
               <>
-                Our Products &amp;{" "}
-                <span className="text-brand-yellow">Services in {cityName}</span>
+                Attach Your Car with {" "}
+                <span className="text-brand-yellow">a Cab Booking Company in {cityName}</span>
               </>
             ) : (
               <>
-                Our Products &amp; <span className="text-brand-yellow">Services</span>
+                 Attach Your Car with <span className="text-brand-yellow">a Cab Booking Company in India</span>
               </>
             )}
           </h2>
