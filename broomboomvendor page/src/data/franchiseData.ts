@@ -34,7 +34,7 @@ export const FRANCHISE_PACKAGES: FranchisePackage[] = [
       "Rental (1 hours 10 kms, 3 hours 30 kms, 5 hours 50 kms)",
       "No dedicated account manager",
       "15-20% commission",
-      "1-5 cars",
+      "1-2 cars",
       "GST and Gateway Charges is only Applicable",
     ],
     revenueStreams: [
