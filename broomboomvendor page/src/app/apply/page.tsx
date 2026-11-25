@@ -473,6 +473,7 @@ function ApplyFormContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
+          applicationId: applicationId || undefined,
           preferredPackage: selectedPackage,
           packageName: currentPkgDetails.name,
           investmentBudget: finalBudget,

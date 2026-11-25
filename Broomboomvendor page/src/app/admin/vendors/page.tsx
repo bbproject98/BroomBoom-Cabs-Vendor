@@ -87,6 +87,18 @@ interface Vendor {
   status: string; // 'approved' | 'pending'
   orderId?: string;
   source: string;
+  alternatePhone?: string;
+  pincode?: string;
+  proposedAddress?: string;
+  spaceStatus?: string;
+  carpetArea?: string;
+  investmentBudget?: string;
+  financeRequired?: string;
+  loanAssistance?: string;
+  currentProfession?: string;
+  hasExperience?: string;
+  message?: string;
+  leadSource?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -1744,6 +1756,58 @@ export default function AdminVendorsPage() {
                   Assigning a plan updates their Thank You page to show this chosen tier with all corresponding perks.
                 </p>
               </div>
+
+              {/* Submitted Application Form Details */}
+              {(editingVendor.pincode ||
+                editingVendor.proposedAddress ||
+                editingVendor.spaceStatus ||
+                editingVendor.carpetArea ||
+                editingVendor.investmentBudget ||
+                editingVendor.currentProfession ||
+                editingVendor.hasExperience ||
+                editingVendor.alternatePhone ||
+                editingVendor.message) && (
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2 text-[11px]">
+                  <div className="font-black text-slate-800 uppercase tracking-wider text-[10px]">
+                    Submitted Application Form Details
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-slate-700">
+                    {editingVendor.alternatePhone && (
+                      <div><span className="font-bold text-slate-500">Alt Phone:</span> {editingVendor.alternatePhone}</div>
+                    )}
+                    {editingVendor.pincode && (
+                      <div><span className="font-bold text-slate-500">Pincode:</span> {editingVendor.pincode}</div>
+                    )}
+                    {editingVendor.proposedAddress && (
+                      <div className="sm:col-span-2"><span className="font-bold text-slate-500">Proposed Address:</span> {editingVendor.proposedAddress}</div>
+                    )}
+                    {editingVendor.spaceStatus && (
+                      <div><span className="font-bold text-slate-500">Space Status:</span> {editingVendor.spaceStatus}</div>
+                    )}
+                    {editingVendor.carpetArea && (
+                      <div><span className="font-bold text-slate-500">Carpet Area:</span> {editingVendor.carpetArea}</div>
+                    )}
+                    {editingVendor.investmentBudget && (
+                      <div><span className="font-bold text-slate-500">Investment Budget:</span> {editingVendor.investmentBudget}</div>
+                    )}
+                    {editingVendor.financeRequired && (
+                      <div><span className="font-bold text-slate-500">Finance:</span> {editingVendor.financeRequired}</div>
+                    )}
+                    {editingVendor.loanAssistance && (
+                      <div><span className="font-bold text-slate-500">Loan Assistance:</span> {editingVendor.loanAssistance}</div>
+                    )}
+                    {editingVendor.currentProfession && (
+                      <div><span className="font-bold text-slate-500">Profession:</span> {editingVendor.currentProfession}</div>
+                    )}
+                    {editingVendor.hasExperience && (
+                      <div><span className="font-bold text-slate-500">Experience:</span> {editingVendor.hasExperience}</div>
+                    )}
+                    {editingVendor.message && (
+                      <div className="sm:col-span-2"><span className="font-bold text-slate-500">Message:</span> {editingVendor.message}</div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Payment & Approval Status in 2 columns */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">

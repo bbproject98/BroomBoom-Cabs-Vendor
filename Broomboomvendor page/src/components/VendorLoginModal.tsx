@@ -89,7 +89,8 @@ export const VendorLoginModal: React.FC<VendorLoginModalProps> = ({
           fullName: cleanName,
           mobile: cleanMobile,
           city: cleanCity,
-          preferredPackage: selectedPackage,
+          preferredPackage: "null",
+          packageName: null,
           source: "modal_join_now",
           status: "new",
         }),
@@ -144,67 +145,17 @@ export const VendorLoginModal: React.FC<VendorLoginModalProps> = ({
         </button>
 
         {/* Modal Header */}
-        <div className="text-center pb-4 border-b border-slate-100">
+        <div className="text-center pb-4 border-b border-slate-100 mb-4">
           <div className="inline-flex items-center gap-1.5 bg-amber-500/15 border border-amber-400/80 text-amber-950 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wide mb-2">
             <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
-            <span>Fast-Track Partner Login</span>
+            <span>Fast-Track Partner Registration</span>
           </div>
           <h3 className="text-xl sm:text-2xl font-black text-slate-950 tracking-tight">
             Join BroomBoom Vendor Partner
           </h3>
           <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto leading-relaxed">
-            Enter your details below to initiate your application and unlock your regional vendor franchise portal.
+            Enter your name and mobile number below to continue to the vendor application form.
           </p>
-        </div>
-
-        {/* Package Selector Pills */}
-        <div className="my-4">
-          <span className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
-            Select Your Package Tier:
-          </span>
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              type="button"
-              onClick={() => setSelectedPackage("silver")}
-              className={`p-2 rounded-xl text-center border-2 transition-all cursor-pointer ${
-                selectedPackage === "silver"
-                  ? "bg-slate-900 text-white border-slate-900 shadow-sm"
-                  : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
-              }`}
-            >
-              <div className="text-[11px] font-black">Silver</div>
-              <div className="text-[9px] opacity-80 font-bold truncate">Ward Kiosk</div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setSelectedPackage("gold")}
-              className={`p-2 rounded-xl text-center border-2 transition-all relative cursor-pointer ${
-                selectedPackage === "gold"
-                  ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 border-amber-500 shadow-md font-black ring-2 ring-amber-400/30"
-                  : "bg-amber-50/60 hover:bg-amber-100/80 text-amber-900 border-amber-200"
-              }`}
-            >
-              <span className="absolute -top-1.5 right-1 bg-amber-600 text-white text-[8px] font-black px-1.5 py-0.5 leading-none rounded-full uppercase">
-                ★ Hub
-              </span>
-              <div className="text-[11px] font-black">Gold</div>
-              <div className="text-[9px] opacity-90 font-bold truncate">District Hub</div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setSelectedPackage("platinum")}
-              className={`p-2 rounded-xl text-center border-2 transition-all cursor-pointer ${
-                selectedPackage === "platinum"
-                  ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white border-cyan-500 shadow-sm"
-                  : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
-              }`}
-            >
-              <div className="text-[11px] font-black">Platinum</div>
-              <div className="text-[9px] opacity-80 font-bold truncate">Master Hub</div>
-            </button>
-          </div>
         </div>
 
         {/* Error Notice */}

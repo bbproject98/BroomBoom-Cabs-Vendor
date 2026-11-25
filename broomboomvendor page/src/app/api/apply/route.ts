@@ -86,38 +86,71 @@ export async function POST(request: Request) {
           : "300 - 500 sq.ft (Ideal for Gold Hub)";
     }
 
-    const serial = Math.floor(1000 + Math.random() * 9000);
-    const generatedApplicationId = `BB-VENDOR-2026-${serial}`;
+    const cleanMobile = body.mobile.trim().replace(/\D/g, "").slice(-10);
+    const requestedAppId =
+      typeof body.applicationId === "string" && body.applicationId.trim()
+        ? body.applicationId.trim()
+        : null;
 
-    const lead = await prisma.vendorLead.create({
-      data: {
-        applicationId: generatedApplicationId,
-        fullName: body.fullName.trim(),
-        mobile: body.mobile.trim(),
-        alternatePhone: body.alternatePhone?.trim() || null,
-        email: body.email?.trim() || null,
-        state: body.state?.trim() || null,
-        city: (body.city && body.city.trim()) || "Kolkata",
-        pincode: body.pincode?.trim() || null,
-        proposedAddress: body.proposedAddress?.trim() || null,
-        spaceStatus: body.spaceStatus || null,
-        carpetArea,
-        preferredPackage: validPackage,
-        packageName,
-        investmentBudget,
-        financeRequired:
-          body.financeRequired || "Self-Funded / Ready Capital",
-        loanAssistance:
-          body.loanAssistance || "No (Self-Funded)",
-        currentProfession: body.currentProfession || null,
-        hasExperience: body.hasExperience || null,
-        message: body.message || null,
-        source: body.source || "vendor_portal",
-        status: "new",
-        adminNotes:
-          "Application saved to PostgreSQL via Prisma. Ready for evaluation.",
-      },
-    });
+    // Check if a lead already exists from Join Now (by applicationId or mobile)
+    let existingLead = requestedAppId
+      ? await prisma.vendorLead.findFirst({
+          where: { applicationId: requestedAppId },
+        })
+      : null;
+
+    if (!existingLead && cleanMobile) {
+      existingLead = await prisma.vendorLead.findFirst({
+        where: {
+          mobile: { endsWith: cleanMobile },
+          source: "modal_join_now",
+        },
+        orderBy: { createdAt: "desc" },
+      });
+    }
+
+    const serial = Math.floor(1000 + Math.random() * 9000);
+    const generatedApplicationId =
+      existingLead?.applicationId ||
+      requestedAppId ||
+      `BB-VENDOR-2026-${serial}`;
+
+    const fullLeadPayload = {
+      applicationId: generatedApplicationId,
+      fullName: body.fullName.trim(),
+      mobile: body.mobile.trim(),
+      alternatePhone: body.alternatePhone?.trim() || null,
+      email: body.email?.trim() || null,
+      state: body.state?.trim() || null,
+      city: (body.city && body.city.trim()) || "Kolkata",
+      pincode: body.pincode?.trim() || null,
+      proposedAddress: body.proposedAddress?.trim() || null,
+      spaceStatus: body.spaceStatus || null,
+      carpetArea,
+      preferredPackage: validPackage,
+      packageName,
+      investmentBudget,
+      financeRequired:
+        body.financeRequired || "Self-Funded / Ready Capital",
+      loanAssistance:
+        body.loanAssistance || "No (Self-Funded)",
+      currentProfession: body.currentProfession || null,
+      hasExperience: body.hasExperience || null,
+      message: body.message || null,
+      source: body.source || "vendor_portal",
+      status: existingLead?.status === "approved" ? "approved" : "new",
+      adminNotes:
+        "Full application form details saved to PostgreSQL via Prisma. Ready for evaluation.",
+    };
+
+    const lead = existingLead
+      ? await prisma.vendorLead.update({
+          where: { id: existingLead.id },
+          data: fullLeadPayload,
+        })
+      : await prisma.vendorLead.create({
+          data: fullLeadPayload,
+        });
 
     console.log(
       `[PRISMA POSTGRES] Successfully saved Vendor Lead: ${lead.applicationId} (${lead.fullName}, ${lead.city})`

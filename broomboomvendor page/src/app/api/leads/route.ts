@@ -106,10 +106,18 @@ export async function POST(request: Request) {
       );
     }
 
+    const rawPkg = body.preferredPackage ?? body.selectedPackage;
     const preferredPackage =
-      body.preferredPackage ||
-      body.selectedPackage ||
-      "gold";
+      rawPkg === null || rawPkg === undefined || rawPkg === ""
+        ? body.source === "modal_join_now"
+          ? "null"
+          : "gold"
+        : String(rawPkg);
+
+    const isNoPackage =
+      preferredPackage === "null" ||
+      preferredPackage === "unassigned" ||
+      preferredPackage === "undecided";
 
     const serial = Math.floor(1000 + Math.random() * 9000);
 
@@ -117,17 +125,18 @@ export async function POST(request: Request) {
       body.applicationId ||
       `BB-VENDOR-2026-${serial}`;
 
-    let investmentBudget = body.investmentBudget;
+    let investmentBudget = body.investmentBudget ?? null;
 
     if (
-      !investmentBudget ||
-      investmentBudget === "Flexible" ||
-      (preferredPackage === "silver" &&
-        investmentBudget.includes("Gold")) ||
-      (preferredPackage === "platinum" &&
-        investmentBudget.includes("Gold")) ||
-      (preferredPackage === "gold" &&
-        investmentBudget.includes("Silver"))
+      !isNoPackage &&
+      (!investmentBudget ||
+        investmentBudget === "Flexible" ||
+        (preferredPackage === "silver" &&
+          investmentBudget.includes("Gold")) ||
+        (preferredPackage === "platinum" &&
+          investmentBudget.includes("Gold")) ||
+        (preferredPackage === "gold" &&
+          investmentBudget.includes("Silver")))
     ) {
       investmentBudget =
         preferredPackage === "silver"
@@ -137,16 +146,17 @@ export async function POST(request: Request) {
           : "₹10,000 (Gold Package - 75% OFF Exclusive Deal)";
     }
 
-    let carpetArea = body.carpetArea;
+    let carpetArea = body.carpetArea ?? null;
 
     if (
-      !carpetArea ||
-      (preferredPackage === "silver" &&
-        carpetArea.includes("Gold")) ||
-      (preferredPackage === "platinum" &&
-        carpetArea.includes("Gold")) ||
-      (preferredPackage === "gold" &&
-        carpetArea.includes("Silver"))
+      !isNoPackage &&
+      (!carpetArea ||
+        (preferredPackage === "silver" &&
+          carpetArea.includes("Gold")) ||
+        (preferredPackage === "platinum" &&
+          carpetArea.includes("Gold")) ||
+        (preferredPackage === "gold" &&
+          carpetArea.includes("Silver")))
     ) {
       carpetArea =
         preferredPackage === "silver"
