@@ -485,7 +485,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
             <div className="flex items-baseline gap-1 whitespace-nowrap">
               <span className="text-sm sm:text-lg font-black tracking-tight text-slate-950">
-                Broom<span className="text-brand-yellow-dark">Boom</span>
+                BroomBoom<span className="text-brand-yellow-dark"> Cabs</span>
               </span>
               <span className="text-xs text-slate-300 font-light">|</span>
               <span className="text-[9.5px] sm:text-xs font-extrabold uppercase tracking-wider text-slate-500">

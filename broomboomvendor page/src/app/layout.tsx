@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     "cab booking company for drivers",
   ],
 
-  applicationName: "BroomBoom Vendor",
+  applicationName: "BroomBoom Cabs",
 
   authors: [
     {
@@ -170,13 +170,13 @@ export const metadata: Metadata = {
 
   /* CUSTOM META TAGS */
   other: {
-    brand: "BroomBoom Vendor",
+    brand: "BroomBoom Cabs",
 
     "mobile-web-app-capable": "yes",
 
     "apple-mobile-web-app-capable": "yes",
 
-    "apple-mobile-web-app-title": "BroomBoom Vendor",
+    "apple-mobile-web-app-title": "BroomBoom Cabs",
 
     copyright:
       "2026 BroomBoom Transportation Services Private Limited",
