@@ -22,7 +22,20 @@ export interface BookingData {
   inclusionsMatched?: string;
   totalFare: number;
   vendorPayout?: number;
+  driverShare?: number;
   commissionRate?: number;
+  pickupDate?: string | null;
+  pickupTime?: string | null;
+  returnDate?: string | null;
+  returnTime?: string | null;
+  waitingCharge?: string | null;
+  extraKmCharge?: string | null;
+  extraCharges?: string | null;
+  tollCharge?: string | null;
+  parkingCharge?: string | null;
+  nightAllowance?: string | null;
+  stateTax?: string | null;
+  specialInstructions?: string | null;
   paymentMethod?: string;
   source?: "broomboom app" | "broomboomweb_page" | "user_app" | "user_app_admin" | "admin_dispatch" | string;
   status?: "incoming" | "active" | "completed" | "rejected" | "cancelled" | "pending_admin_reassign";
@@ -512,11 +525,41 @@ export async function findEligibleVendors(
   return candidates;
 }
 
+let bookingDetailColsReady = false;
+
+export async function ensureBookingDetailColumns(): Promise<void> {
+  if (bookingDetailColsReady) return;
+  try {
+    await prisma.$queryRawUnsafe(`
+      ALTER TABLE booking_orders
+        ADD COLUMN IF NOT EXISTS pickup_date VARCHAR(100),
+        ADD COLUMN IF NOT EXISTS pickup_time VARCHAR(100),
+        ADD COLUMN IF NOT EXISTS return_date VARCHAR(100),
+        ADD COLUMN IF NOT EXISTS return_time VARCHAR(100),
+        ADD COLUMN IF NOT EXISTS driver_share DOUBLE PRECISION,
+        ADD COLUMN IF NOT EXISTS waiting_charge VARCHAR(150),
+        ADD COLUMN IF NOT EXISTS extra_km_charge VARCHAR(150),
+        ADD COLUMN IF NOT EXISTS extra_charges TEXT,
+        ADD COLUMN IF NOT EXISTS toll_charge VARCHAR(100),
+        ADD COLUMN IF NOT EXISTS parking_charge VARCHAR(100),
+        ADD COLUMN IF NOT EXISTS night_allowance VARCHAR(100),
+        ADD COLUMN IF NOT EXISTS state_tax VARCHAR(100),
+        ADD COLUMN IF NOT EXISTS special_instructions TEXT,
+        ADD COLUMN IF NOT EXISTS extra_hour VARCHAR(100),
+        ADD COLUMN IF NOT EXISTS booking_details_json TEXT;
+    `);
+    bookingDetailColsReady = true;
+  } catch (err) {
+    console.warn("[BOOKING DETAIL COLS INIT WARN]", err);
+  }
+}
+
 /**
  * Creates a new booking from BroomBoom App, BroomBoom Web Page, or Admin
  * and automatically assigns it to the nearest vendor plan-wise and pincode-wise.
  */
 export async function createBookingOrder(data: {
+  bookingId?: string;
   passengerName: string;
   passengerPhone: string;
   passengerRating?: number;
@@ -534,12 +577,28 @@ export async function createBookingOrder(data: {
   commissionRate?: number;
   totalFare: number;
   vendorPayout?: number;
+  driverShare?: number;
+  pickupDate?: string;
+  pickupTime?: string;
+  returnDate?: string;
+  returnTime?: string;
+  waitingCharge?: string;
+  extraKmCharge?: string;
+  extraCharges?: string;
+  tollCharge?: string;
+  parkingCharge?: string;
+  nightAllowance?: string;
+  stateTax?: string;
+  specialInstructions?: string;
+  extraHour?: string;
+  bookingDetails?: Record<string, any>;
   paymentMethod?: string;
   source?: string;
   adminApproved?: boolean;
   customVendorId?: string;
   notes?: string;
 }): Promise<any> {
+  await ensureBookingDetailColumns();
   const classification = classifyBookingByPlan({
     pickup: data.pickup,
     drop: data.drop,
@@ -562,14 +621,18 @@ export async function createBookingOrder(data: {
   const dropZone = data.dropZone || "Kolkata Central";
 
   const totalFare = Number(data.totalFare) || 500;
-  // Commission logic from packages:
-  // Silver (Ward Kiosk): 15-20% commission (15% platform fee, 85% vendor payout)
-  // Gold (District Exclusive): 10-15% commission (10% platform fee, 90% vendor payout)
-  // Platinum (Regional Master): ★ 0% Commission SLA (Zero Platform Fee, 100% vendor payout)
   const commissionRate = data.commissionRate !== undefined ? data.commissionRate : classification.commissionRate;
-  const vendorPayout = data.vendorPayout || Math.round(totalFare * (1 - commissionRate / 100));
+  const explicitDriverShare =
+    data.driverShare !== undefined && Number(data.driverShare) > 0
+      ? Math.round(Number(data.driverShare))
+      : data.vendorPayout !== undefined && Number(data.vendorPayout) > 0
+      ? Math.round(Number(data.vendorPayout))
+      : Math.round(totalFare * (1 - commissionRate / 100));
+  const vendorPayout = explicitDriverShare;
 
-  const bookingId = `BB-ORD-${Date.now().toString().slice(-4)}${Math.floor(1000 + Math.random() * 9000)}`;
+  const bookingId =
+    (data.bookingId && data.bookingId.trim()) ||
+    `BB-ORD-${Date.now().toString().slice(-4)}${Math.floor(1000 + Math.random() * 9000)}`;
   const id = `ord_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
   // Find eligible vendor by plan tier and pincode
@@ -600,6 +663,10 @@ export async function createBookingOrder(data: {
       commission_rate, payment_method, source, status, assigned_vendor_id,
       assigned_vendor_name, assigned_vendor_mobile, assigned_vendor_pincode,
       rejected_vendor_ids, admin_approved, dispatch_time, notes,
+      pickup_date, pickup_time, return_date, return_time,
+      driver_share, waiting_charge, extra_km_charge, extra_charges,
+      toll_charge, parking_charge, night_allowance, state_tax, special_instructions,
+      extra_hour, booking_details_json,
       created_at, updated_at
     ) VALUES (
       $1, $2, $3, $4, $5,
@@ -608,6 +675,10 @@ export async function createBookingOrder(data: {
       $19, $20, $21, $22, $23,
       $24, $25, $26,
       $27, $28, $29, $30,
+      $31, $32, $33, $34,
+      $35, $36, $37, $38,
+      $39, $40, $41, $42, $43,
+      $44, $45,
       NOW(), NOW()
     ) RETURNING *;
   `;
@@ -646,6 +717,21 @@ export async function createBookingOrder(data: {
     adminApproved,
     dispatchTime,
     data.notes || null,
+    data.pickupDate || null,
+    data.pickupTime || null,
+    data.returnDate || null,
+    data.returnTime || null,
+    explicitDriverShare,
+    data.waitingCharge || null,
+    data.extraKmCharge || null,
+    data.extraCharges || null,
+    data.tollCharge || null,
+    data.parkingCharge || null,
+    data.nightAllowance || null,
+    data.stateTax || null,
+    data.specialInstructions || null,
+    data.extraHour || null,
+    data.bookingDetails ? JSON.stringify(data.bookingDetails) : null,
   ];
 
   const result: any = await prisma.$queryRawUnsafe(query, ...values);
@@ -943,6 +1029,9 @@ export async function getVendorOrders(
     const targetPin = cleanPincode(pincode) || (city && city.toLowerCase().includes("singur") ? "712124" : "712124");
     const vId = (vendorId || "").trim();
 
+    // 0. Ensure extra schedule & charge columns exist
+    await ensureBookingDetailColumns();
+
     // 1. Ensure high-quality territory incoming bookings exist for this PIN and Plan tier
     await ensureTerritorySeedBookings(targetPin, targetTier, city);
 
@@ -1040,6 +1129,7 @@ export async function acceptBookingOrder(
     vehicleNumber?: string;
     startOtp?: string;
     proposedPrice?: number;
+    planTier?: string;
     cngCarrierConfirmed?: boolean;
   }
 ): Promise<any> {
@@ -1067,6 +1157,11 @@ export async function acceptBookingOrder(
   const isAlreadyActiveForVendor =
     existing.status === "active" && existing.assigned_vendor_id === vendorId;
 
+  const activePlanTier =
+    cleanString(driverInfo?.planTier) ||
+    cleanString(existing.plan_tier) ||
+    "gold";
+
   let walletState: any = null;
   if (!isAlreadyActiveForVendor) {
     walletState = await recordBookingDebitOnAccept({
@@ -1074,6 +1169,8 @@ export async function acceptBookingOrder(
       bookingId: existing.booking_id || bookingId,
       totalFare,
       vendorPayout: currentPayout,
+      driverShareFare: effectivePayout,
+      planTier: activePlanTier,
       routeSummary: `${existing.pickup} to ${existing.drop_loc || existing.drop || "Destination"}`,
       driverLabel: `${driverName} (${driverVehicle})`,
     });
@@ -1253,6 +1350,14 @@ export async function completeBookingOrder(bookingId: string): Promise<any> {
  * Helper to transform DB row into clean UI object
  */
 export function formatOrderRow(row: any): any {
+  let details: Record<string, any> = {};
+  if (row.booking_details_json) {
+    try {
+      details = JSON.parse(row.booking_details_json) || {};
+    } catch {
+      details = {};
+    }
+  }
   return {
     id: row.booking_id || row.id,
     dbId: row.id,
@@ -1270,8 +1375,33 @@ export function formatOrderRow(row: any): any {
     bookingType: row.booking_type || "",
     bookingTypeLabel: getBookingTypeBadge(row.booking_type, row.plan_tier).label,
     totalFare: Number(row.total_fare),
-    vendorPayout: Number(row.vendor_payout),
+    vendorPayout: Number(row.driver_share || row.vendor_payout || row.total_fare || 0),
+    driverShare: Number(row.driver_share || row.vendor_payout || row.total_fare || 0),
     commissionRate: Number(row.commission_rate),
+    pickupDate: row.pickup_date || "",
+    pickupTime: row.pickup_time || "",
+    returnDate: row.return_date || "",
+    returnTime: row.return_time || "",
+    waitingCharge: row.waiting_charge || "",
+    extraKmCharge: row.extra_km_charge || "",
+    extraCharges: row.extra_charges || "",
+    tollCharge: row.toll_charge || "",
+    parkingCharge: row.parking_charge || "",
+    nightAllowance: row.night_allowance || "",
+    stateTax: row.state_tax || "",
+    specialInstructions: row.special_instructions || "",
+    extraHour: row.extra_hour || "",
+    serviceType: details.serviceType || "",
+    wayType: details.wayType || "",
+    seater: details.seater || null,
+    acType: details.acType || "",
+    addons: details.addons || null,
+    petFriendly: Boolean(details.petFriendly),
+    dueFare: details.dueFare ?? null,
+    paidAmount: details.paidAmount ?? null,
+    companyShare: details.companyShare ?? null,
+    paymentStatus: details.paymentStatus || "",
+    exclusions: Array.isArray(details.exclusions) ? details.exclusions : [],
     passengerName: row.passenger_name,
     passengerPhone: row.passenger_phone,
     passengerRating: Number(row.passenger_rating || 4.9),

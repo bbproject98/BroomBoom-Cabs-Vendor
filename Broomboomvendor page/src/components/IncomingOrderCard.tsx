@@ -20,8 +20,35 @@ export interface IncomingOrderCardData {
   bookingTypeLabel?: string;
   totalFare: number;
   vendorPayout: number;
+  driverShare?: number;
   commissionRate?: number;
+  pickupDate?: string;
+  pickupTime?: string;
+  returnDate?: string;
+  returnTime?: string;
+  waitingCharge?: string;
+  extraKmCharge?: string;
+  extraCharges?: string;
+  tollCharge?: string;
+  parkingCharge?: string;
+  nightAllowance?: string;
+  stateTax?: string;
+  specialInstructions?: string;
+  extraHour?: string;
+  serviceType?: string;
+  wayType?: string;
+  seater?: number | null;
+  acType?: string;
+  addons?: Record<string, any> | null;
+  petFriendly?: boolean;
+  dueFare?: number | null;
+  paidAmount?: number | null;
+  companyShare?: number | null;
+  paymentStatus?: string;
+  exclusions?: string[];
+  notes?: string;
   passengerName?: string;
+  passengerPhone?: string;
   passengerRating?: number;
   dispatchTime?: string;
   paymentMethod?: string;
@@ -48,26 +75,68 @@ function getTripDescription(order: IncomingOrderCardData): string {
 function formatPickupSchedule(order: IncomingOrderCardData): {
   dateText: string;
   timeText: string;
+  returnDateText: string;
+  returnTimeText: string;
 } {
-  if (order.createdAt) {
+  let dateText = (order.pickupDate || "").trim();
+  let timeText = (order.pickupTime || "").trim();
+
+  if ((!dateText || !timeText) && order.createdAt) {
     const dt = new Date(order.createdAt);
     if (!Number.isNaN(dt.getTime())) {
-      const dateText = dt.toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      });
-      const timeText = dt.toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      });
-      return { dateText, timeText };
+      if (!dateText) {
+        dateText = dt.toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        });
+      }
+      if (!timeText) {
+        timeText = dt.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        });
+      }
     }
   }
+
   return {
-    dateText: order.dispatchTime || "Immediate",
-    timeText: "Now",
+    dateText: dateText || order.dispatchTime || "Immediate",
+    timeText: timeText || "Now",
+    returnDateText: (order.returnDate || "").trim(),
+    returnTimeText: (order.returnTime || "").trim(),
+  };
+}
+
+/**
+ * Resolves the advance amount already paid by the customer and the balance due.
+ * Priority:
+ *   1. `paidAmount` when provided (> 0)
+ *   2. `totalFare - dueFare` when `dueFare` is provided
+ *   3. `totalFare - 0` (i.e. nothing paid yet) -> advance 0
+ */
+function getPaymentBreakup(order: IncomingOrderCardData): {
+  advanceAmount: number;
+  dueAmount: number;
+} {
+  const totalFare = Math.max(Number(order.totalFare ?? 0) || 0, 0);
+  const paid = Math.max(Number(order.paidAmount ?? 0) || 0, 0);
+
+  const dueRaw = order.dueFare;
+  const hasDue = dueRaw !== null && dueRaw !== undefined && !Number.isNaN(Number(dueRaw));
+  const due = hasDue ? Math.max(Number(dueRaw) || 0, 0) : Math.max(totalFare - paid, 0);
+
+  let advance = 0;
+  if (paid > 0) {
+    advance = paid;
+  } else if (hasDue && totalFare > 0) {
+    advance = Math.max(totalFare - due, 0);
+  }
+
+  return {
+    advanceAmount: Math.round(advance),
+    dueAmount: Math.round(due),
   };
 }
 
@@ -78,7 +147,8 @@ export default function IncomingOrderCard({
   onOpenDetails,
 }: IncomingOrderCardProps) {
   const displayId = order.bookingId || order.id;
-  const listedAmount = Math.round(Number(order.vendorPayout || order.totalFare || 0));
+  const listedAmount = Math.round(Number(order.driverShare || order.vendorPayout || order.totalFare || 0));
+  const { advanceAmount, dueAmount } = getPaymentBreakup(order);
   const isAirportTrip =
     order.pickup.toLowerCase().includes("airport") ||
     order.drop.toLowerCase().includes("airport");
@@ -156,11 +226,57 @@ export default function IncomingOrderCard({
               </p>
             )}
             <p>
-              Base Fare <strong className="text-slate-950 font-black">₹{listedAmount}</strong> for{" "}
+              Driver Share <strong className="text-slate-950 font-black">₹{listedAmount}</strong> for{" "}
               <strong className="text-slate-950 font-bold">{order.duration || "Trip"}</strong> and{" "}
               <strong className="text-slate-950 font-bold">{order.distance || "Standard Km"}</strong>{" "}
               limit
             </p>
+
+            {/* Advance / Balance Due */}
+            {(advanceAmount > 0 || dueAmount > 0) && (
+              <div className="flex flex-wrap gap-1.5 pt-0.5 text-[11px]">
+                {advanceAmount > 0 && (
+                  <span className="px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-900 font-bold">
+                    Advance Paid: ₹{advanceAmount}
+                  </span>
+                )}
+                {dueAmount > 0 && (
+                  <span className="px-2 py-0.5 rounded bg-rose-50 border border-rose-200 text-rose-900 font-bold">
+                    Balance Due: ₹{dueAmount}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {(order.waitingCharge || order.extraKmCharge || order.extraCharges) && (
+              <div className="flex flex-wrap gap-1.5 pt-0.5 text-[11px]">
+                {order.waitingCharge && (
+                  <span className="px-2 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-900 font-semibold">
+                    Waiting: {order.waitingCharge}
+                  </span>
+                )}
+                {order.extraKmCharge && (
+                  <span className="px-2 py-0.5 rounded bg-blue-50 border border-blue-200 text-blue-900 font-semibold">
+                    Extra KM: {order.extraKmCharge}
+                  </span>
+                )}
+                {order.extraHour && (
+                  <span className="px-2 py-0.5 rounded bg-indigo-50 border border-indigo-200 text-indigo-900 font-semibold">
+                    Extra Hr: {order.extraHour}
+                  </span>
+                )}
+                {order.nightAllowance && (
+                  <span className="px-2 py-0.5 rounded bg-purple-50 border border-purple-200 text-purple-900 font-semibold">
+                    Night: {order.nightAllowance}
+                  </span>
+                )}
+                {order.extraCharges && (
+                  <span className="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-800 font-semibold">
+                    Extra Charges: {order.extraCharges}
+                  </span>
+                )}
+              </div>
+            )}
             <p className="text-[11px] sm:text-xs">
               <span className="font-bold text-emerald-700">
                 {order.planTier?.toLowerCase() === "platinum" ? "Included:" : "Not Included:"}
@@ -180,6 +296,7 @@ export default function IncomingOrderCard({
           </div>
           <div className="px-3.5 py-2.5 leading-snug space-y-1">
             <div className="flex flex-wrap items-center gap-2 text-emerald-800 font-black text-xs sm:text-sm">
+              <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Pickup:</span>
               <span className="inline-flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
                 <span>{scheduleLabel.dateText}</span>
@@ -190,6 +307,26 @@ export default function IncomingOrderCard({
                 <span>{scheduleLabel.timeText}</span>
               </span>
             </div>
+            {(scheduleLabel.returnDateText || scheduleLabel.returnTimeText) && (
+              <div className="flex flex-wrap items-center gap-2 text-blue-800 font-black text-xs">
+                <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Return:</span>
+                {scheduleLabel.returnDateText && (
+                  <span className="inline-flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5 text-blue-700 shrink-0" />
+                    <span>{scheduleLabel.returnDateText}</span>
+                  </span>
+                )}
+                {scheduleLabel.returnDateText && scheduleLabel.returnTimeText && (
+                  <span className="text-slate-400">@</span>
+                )}
+                {scheduleLabel.returnTimeText && (
+                  <span className="inline-flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5 text-blue-700 shrink-0" />
+                    <span>{scheduleLabel.returnTimeText}</span>
+                  </span>
+                )}
+              </div>
+            )}
             <div>
               <span className="text-slate-600 font-medium">at</span>{" "}
               <span className="font-bold text-slate-900">{pickupWithPin}</span>{" "}
@@ -221,7 +358,15 @@ export default function IncomingOrderCard({
             }`}
           >
             {walletLocked && <Lock className="w-3.5 h-3.5" />}
-            <span>CONFIRM @₹{listedAmount}</span>
+            <span className="flex flex-col items-start leading-tight">
+              <span>CONFIRM @₹{listedAmount}</span>
+              {advanceAmount > 0 && (
+                <span className="text-[10px] font-bold normal-case tracking-normal opacity-95">
+                  Advance ₹{advanceAmount}
+                  {dueAmount > 0 ? ` · Due ₹${dueAmount}` : ""}
+                </span>
+              )}
+            </span>
           </button>
 
           <button

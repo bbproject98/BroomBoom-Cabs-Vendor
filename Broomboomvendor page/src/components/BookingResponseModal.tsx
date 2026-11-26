@@ -15,6 +15,7 @@ export interface WalletGateSummary {
 interface BookingResponseModalProps {
   order: IncomingOrderCardData | null;
   initialMode: "confirm" | "price";
+  planTier?: string;
   wallet: WalletGateSummary;
   onClose: () => void;
   onConfirmAccept: (bookingId: string, proposedPrice?: number) => Promise<void>;
@@ -22,13 +23,19 @@ interface BookingResponseModalProps {
   onOpenPayToZero: (dueAmount: number) => void;
 }
 
-function computeAdvanceAmount(order: IncomingOrderCardData): number {
-  const fare = Number(order.totalFare || 0);
-  const payout = Number(order.vendorPayout || 0);
-  const diff = Math.round(fare - payout);
-  if (diff > 0) return diff;
+function getHighestCommissionPercent(planTier?: string): number {
+  const tier = (planTier || "gold").trim().toLowerCase();
+  if (tier.includes("silver")) return 20;
+  if (tier.includes("platinum")) return 0;
+  if (tier.includes("gold")) return 15;
+  return 15;
+}
+
+function computeAdvanceAmount(driverShareFare: number, planTier?: string): number {
+  const fare = Math.max(0, Math.round(Number(driverShareFare) || 0));
   if (fare <= 0) return 0;
-  return Math.max(50, Math.round(fare * 0.05));
+  const pct = getHighestCommissionPercent(planTier);
+  return Math.round((fare * pct) / 100);
 }
 
 function formatDateTimeLabels(order: IncomingOrderCardData) {
@@ -45,12 +52,16 @@ function formatDateTimeLabels(order: IncomingOrderCardData) {
       month: "short",
     });
 
-  const pickupDateStr = validDate.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-  const pickupTimeStr = fmtTimeOnly(validDate);
+  const pickupDateStr =
+    (order.pickupDate || "").trim() ||
+    validDate.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  const pickupTimeStr = (order.pickupTime || "").trim() || fmtTimeOnly(validDate);
+  const returnDateStr = (order.returnDate || "").trim();
+  const returnTimeStr = (order.returnTime || "").trim();
   const pickupLocationStr = `${order.pickup}${
     order.pickupPincode ? ` (PIN ${order.pickupPincode})` : ""
   }`;
@@ -58,6 +69,8 @@ function formatDateTimeLabels(order: IncomingOrderCardData) {
   return {
     pickupDateStr,
     pickupTimeStr,
+    returnDateStr,
+    returnTimeStr,
     pickupLocationStr,
     assignmentTimeStr: fmtTimeOnly(validDate),
     assignmentDateStr: fmtShortDate(validDate),
@@ -69,6 +82,7 @@ function formatDateTimeLabels(order: IncomingOrderCardData) {
 export default function BookingResponseModal({
   order,
   initialMode,
+  planTier,
   wallet,
   onClose,
   onConfirmAccept,
@@ -96,16 +110,18 @@ export default function BookingResponseModal({
   if (!order) return null;
 
   const displayId = order.bookingId || order.id;
-  const advanceAmount = computeAdvanceAmount(order);
   const times = formatDateTimeLabels(order);
   const fromCity = (order.pickupZone || order.pickup.split(",")[0] || order.pickup).trim();
   const toCity = (order.dropZone || order.drop.split(",")[0] || order.drop).trim();
   const tripSummary = `${fromCity} -> ${toCity}, ${order.bookingTypeLabel || "Outstation"} for ${order.vehicleCategory || "Sedan / Dzire or similar"}`;
   const allChecked = agreeTerms && agreePayment && agreeCngCarrier;
-  const listedPrice = Math.round(Number(order.vendorPayout || order.totalFare || 0));
+  const listedPrice = Math.round(Number(order.driverShare || order.vendorPayout || order.totalFare || 0));
   const parsedQuote = Number(customPrice);
   const effectivePrice =
     showCustomPrice && parsedQuote > 0 ? Math.round(parsedQuote) : listedPrice;
+  const activeTier = (planTier || order.planTier || "gold").toLowerCase();
+  const commissionPercent = getHighestCommissionPercent(activeTier);
+  const advanceAmount = computeAdvanceAmount(effectivePrice, activeTier);
 
   const handleConfirmClick = async () => {
     if (wallet.mustPayToZero) {
@@ -242,6 +258,28 @@ export default function BookingResponseModal({
               </div>
             </div>
 
+            {(times.returnDateStr || times.returnTimeStr) && (
+              <div className="grid grid-cols-[120px_1fr] sm:grid-cols-[145px_1fr]">
+                <div className="px-3 py-2.5 font-semibold text-slate-800 border-r border-slate-300 bg-slate-50/70">
+                  Return Date &amp; Time
+                </div>
+                <div className="px-3 py-2.5 flex flex-wrap items-center gap-2">
+                  {times.returnDateStr && (
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-blue-50 border border-blue-200 text-[#105796] font-extrabold text-xs">
+                      <Calendar className="w-3.5 h-3.5 shrink-0" />
+                      <span>{times.returnDateStr}</span>
+                    </span>
+                  )}
+                  {times.returnTimeStr && (
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 font-extrabold text-xs">
+                      <Clock className="w-3.5 h-3.5 shrink-0" />
+                      <span>{times.returnTimeStr}</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-[120px_1fr] sm:grid-cols-[145px_1fr]">
               <div className="px-3 py-2.5 font-semibold text-slate-800 border-r border-slate-300 bg-slate-50/70">
                 Drop Location
@@ -249,6 +287,95 @@ export default function BookingResponseModal({
               <div className="px-3 py-2.5 font-bold text-[#105796]">
                 {order.drop}
                 {order.dropPincode ? ` (PIN ${order.dropPincode})` : ""}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-[120px_1fr] sm:grid-cols-[145px_1fr]">
+              <div className="px-3 py-2.5 font-semibold text-slate-800 border-r border-slate-300 bg-slate-50/70">
+                Driver Share &amp; Extra Charges
+              </div>
+              <div className="px-3 py-2.5 space-y-1.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-black text-emerald-800 text-sm">
+                    Driver Share: ₹{listedPrice}
+                  </span>
+                  {order.distance && (
+                    <span className="text-[11px] font-semibold text-slate-600">
+                      ({order.distance} • {order.duration || "Trip"})
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1.5 text-[11px]">
+                  <span className="px-2 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-900 font-semibold">
+                    Waiting Charges: {order.waitingCharge || "As per slab"}
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-blue-50 border border-blue-200 text-blue-900 font-semibold">
+                    Extra KM: {order.extraKmCharge || "As per slab"}
+                  </span>
+                  {order.extraHour && (
+                    <span className="px-2 py-0.5 rounded bg-indigo-50 border border-indigo-200 text-indigo-900 font-semibold">
+                      Extra Hour: {order.extraHour}
+                    </span>
+                  )}
+                  {order.tollCharge && (
+                    <span className="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-800 font-semibold">
+                      Toll: {order.tollCharge}
+                    </span>
+                  )}
+                  {order.parkingCharge && (
+                    <span className="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-800 font-semibold">
+                      Parking: {order.parkingCharge}
+                    </span>
+                  )}
+                  {order.nightAllowance && (
+                    <span className="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-800 font-semibold">
+                      Night Allowance: {order.nightAllowance}
+                    </span>
+                  )}
+                  {order.stateTax && (
+                    <span className="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-800 font-semibold">
+                      State Tax: {order.stateTax}
+                    </span>
+                  )}
+                  {order.extraCharges && (
+                    <span className="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-800 font-semibold">
+                      Extra Charges: {order.extraCharges}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-[120px_1fr] sm:grid-cols-[145px_1fr]">
+              <div className="px-3 py-2.5 font-semibold text-slate-800 border-r border-slate-300 bg-slate-50/70">
+                Passenger &amp; Dispatch Info
+              </div>
+              <div className="px-3 py-2.5 space-y-1 text-xs">
+                <div className="font-bold text-slate-900">
+                  {order.passengerName || "Verified Customer"} ★ {order.passengerRating ?? 4.9}
+                  {order.passengerPhone ? ` • ${order.passengerPhone}` : ""}
+                </div>
+                <div className="text-slate-600 font-medium">
+                  Vehicle: <strong className="text-slate-900">{order.vehicleCategory || "Sedan"}</strong>
+                  {order.seater ? ` (${order.seater} Seater` : ""}
+                  {order.acType ? `${order.seater ? ", " : " ("}${order.acType})` : order.seater ? ")" : ""} •{" "}
+                  Payment: <strong className="text-slate-900">{order.paymentMethod || "Online / Cash"}</strong>
+                  {order.paymentStatus ? ` (${order.paymentStatus})` : ""}
+                  {order.source ? ` • Source: ${order.source}` : ""}
+                </div>
+                {order.exclusions && order.exclusions.length > 0 && (
+                  <ul className="mt-1 space-y-0.5 text-[11px] text-slate-700 bg-slate-50 border border-slate-200 rounded p-2 list-disc list-inside">
+                    {order.exclusions.map((ex, idx) => (
+                      <li key={idx}>{ex}</li>
+                    ))}
+                  </ul>
+                )}
+                {(order.specialInstructions || order.notes) && (
+                  <div className="text-slate-700 bg-amber-50/70 border border-amber-200 rounded px-2 py-1 mt-1">
+                    <span className="font-bold">Admin / Trip Note:</span>{" "}
+                    {order.specialInstructions || order.notes}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -302,11 +429,19 @@ export default function BookingResponseModal({
           {/* Amber Section: Advance Payment Link */}
           <div className="border border-slate-400 overflow-hidden">
             <div className="bg-[#ddb36a] text-slate-950 font-black text-center py-2 text-sm border-b border-slate-400">
-              Advance Payment Link
+              Advance Payment Link ({activeTier.toUpperCase()} Plan • {commissionPercent}% Commission)
+            </div>
+            <div className="grid grid-cols-[1fr_92px] border-b border-slate-300 bg-slate-50">
+              <div className="px-3 py-2 font-semibold text-slate-700 flex items-center">
+                Driver Share Fare (Booking Amount)
+              </div>
+              <div className="px-3 py-2 font-bold text-slate-900 border-l border-slate-300 flex items-center justify-center">
+                ₹{effectivePrice}
+              </div>
             </div>
             <div className="grid grid-cols-[1fr_92px] border-b border-slate-300 bg-white">
               <div className="p-3 font-bold text-slate-950 flex items-center">
-                Advance Amount Needs To Be Paid Via Payment Link
+                Advance Commission ({commissionPercent}% of ₹{effectivePrice}) To Accept Order
               </div>
               <div className="p-3 font-black text-sm text-slate-950 border-l border-slate-300 flex items-center justify-center">
                 ₹{advanceAmount}

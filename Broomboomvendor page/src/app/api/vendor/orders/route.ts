@@ -51,7 +51,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { action, bookingId, vendorId, reason, driverInfo, proposedPrice } = body;
+    const { action, bookingId, vendorId, reason, driverInfo, proposedPrice, planTier } = body;
 
     if (!bookingId || !action) {
       return jsonResponse(
@@ -63,6 +63,7 @@ export async function POST(request: Request) {
     if (action === "accept") {
       const mergedDriverInfo = {
         ...(driverInfo || {}),
+        ...(planTier ? { planTier } : {}),
         ...(proposedPrice && Number(proposedPrice) > 0
           ? { proposedPrice: Number(proposedPrice) }
           : {}),

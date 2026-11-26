@@ -51,34 +51,86 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    if (!body.passengerName || !body.passengerPhone || !body.pickup || !body.drop) {
+    const passengerName = body.passengerName || body.customerName;
+    const passengerPhone = body.passengerPhone || body.customerMobile;
+    const pickup = body.pickup || body.pickupAddress || body.fromCity;
+    const drop = body.drop || body.dropAddress || body.toCity;
+
+    if (!passengerName || !passengerPhone || !pickup || !drop) {
       return jsonResponse(
         {
           success: false,
-          error: "passengerName, passengerPhone, pickup, and drop are required fields.",
+          error: "passengerName/customerName, passengerPhone/customerMobile, pickup/pickupAddress, and drop/dropAddress are required fields.",
         },
         400
       );
     }
 
+    const exclusionsArr = Array.isArray(body.exclusions) ? body.exclusions : undefined;
+
     const booking = await createBookingOrder({
-      passengerName: body.passengerName,
-      passengerPhone: body.passengerPhone,
+      bookingId: body.bookingId || undefined,
+      passengerName,
+      passengerPhone,
       passengerRating: body.passengerRating,
-      pickup: body.pickup,
-      pickupZone: body.pickupZone,
-      pickupPincode: body.pickupPincode,
-      drop: body.drop,
-      dropZone: body.dropZone,
+      pickup,
+      pickupZone: body.pickupZone || body.fromCity,
+      pickupPincode: body.pickupPincode || body.pincode,
+      drop,
+      dropZone: body.dropZone || body.toCity,
       dropPincode: body.dropPincode,
       distance: body.distance,
       duration: body.duration,
-      vehicleCategory: body.vehicleCategory,
+      vehicleCategory: body.vehicleCategory || body.searchDetails?.cabName,
       planTier: body.planTier, // silver, gold, platinum
-      bookingType: body.bookingType || body.serviceType,
+      bookingType: body.bookingType || body.serviceType || body.searchDetails?.tripType,
       commissionRate: body.commissionRate !== undefined ? Number(body.commissionRate) : undefined,
-      totalFare: Number(body.totalFare) || 500,
+      totalFare: Number(body.totalFare ?? body.fare ?? body.searchDetails?.baseFare) || 500,
       vendorPayout: body.vendorPayout ? Number(body.vendorPayout) : undefined,
+      driverShare:
+        body.driverShare !== undefined
+          ? Number(body.driverShare)
+          : body.driver_share !== undefined
+          ? Number(body.driver_share)
+          : body.dueFare !== undefined
+          ? Number(body.dueFare)
+          : undefined,
+      pickupDate: body.pickupDate || body.pickup_date || body.scheduledDate || body.tripDate || undefined,
+      pickupTime: body.pickupTime || body.pickup_time || body.scheduledTime || body.tripTime || undefined,
+      returnDate: body.returnDate || body.return_date || undefined,
+      returnTime: body.returnTime || body.return_time || undefined,
+      waitingCharge: body.waitingCharge || body.waiting_charge || body.waitingCharges || undefined,
+      extraKmCharge: body.extraKmCharge || body.extra_km_charge || body.extraKm || body.extraKmRate || undefined,
+      extraHour: body.extraHour || body.extra_hour || undefined,
+      extraCharges:
+        body.extraCharges ||
+        body.extra_charges ||
+        (exclusionsArr ? exclusionsArr.join(" • ") : undefined),
+      tollCharge: body.tollCharge || body.toll_charge || body.tollTax || undefined,
+      parkingCharge: body.parkingCharge || body.parking_charge || undefined,
+      nightAllowance: body.nightAllowance || body.night_allowance || undefined,
+      stateTax: body.stateTax || body.state_tax || undefined,
+      specialInstructions: body.specialInstructions || body.special_instructions || undefined,
+      bookingDetails: {
+        serviceType: body.serviceType || null,
+        wayType: body.wayType || null,
+        seater: body.seater || null,
+        acType: body.acType || null,
+        addons: body.addons || null,
+        petFriendly: body.petFriendly ?? false,
+        petCount: body.petCount ?? 0,
+        customerEmail: body.customerEmail || null,
+        airportDirection: body.airportDirection || null,
+        airportTerminal: body.airportTerminal || null,
+        rentalPackage: body.rentalPackage || null,
+        advance: body.advance ?? null,
+        rideAdvance: body.rideAdvance ?? null,
+        dueFare: body.dueFare ?? null,
+        paidAmount: body.paidAmount ?? null,
+        companyShare: body.companyShare ?? null,
+        paymentStatus: body.paymentStatus || null,
+        exclusions: exclusionsArr || null,
+      },
       paymentMethod: body.paymentMethod,
       source: body.source || "broomboom app",
       customVendorId: body.customVendorId,

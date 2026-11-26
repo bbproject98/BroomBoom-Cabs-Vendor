@@ -580,6 +580,7 @@ function VendorDashboardContent() {
           action: "accept",
           bookingId: orderId,
           vendorId: vId,
+          planTier: currentTier,
           proposedPrice,
           driverInfo: {
             name: "Raju Karmakar",
@@ -587,6 +588,7 @@ function VendorDashboardContent() {
             vehicleNumber: "WB-02-AK-4921",
             startOtp: "6814",
             proposedPrice,
+            planTier: currentTier,
           },
         }),
       });
@@ -4303,6 +4305,7 @@ function VendorDashboardContent() {
       <BookingResponseModal
         order={selectedResponseOrder}
         initialMode={responseModalMode}
+        planTier={currentTier}
         wallet={{
           balance: walletBalance,
           unsettledBookingsCount,

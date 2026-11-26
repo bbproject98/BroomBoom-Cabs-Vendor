@@ -108,17 +108,37 @@ export async function ensureWalletTables(): Promise<void> {
 }
 
 /**
- * Computes the per-booking advance / dispatch charge debited to the vendor wallet.
- * Falls back to 5% (min ₹50) when payout equals totalFare (e.g., 0% tier) so every
- * accepted booking accurately tracks the 2-booking -> maintain ₹0 settlement cycle.
+ * Returns the highest percentage of the vendor's plan commission range:
+ * - Silver (15-20%) -> 20%
+ * - Gold (10-15%)   -> 15%
+ * - Platinum (0%)   -> 0%
  */
-export function calculateBookingAdvanceFee(totalFare: number, vendorPayout: number): number {
-  const fare = Number(totalFare) || 0;
-  const payout = Number(vendorPayout) || 0;
+export function getHighestPlanCommissionRate(planTier?: string): number {
+  const tier = (planTier || "gold").trim().toLowerCase();
+  if (tier.includes("silver")) return 20;
+  if (tier.includes("platinum")) return 0;
+  if (tier.includes("gold")) return 15;
+  return 15;
+}
+
+/**
+ * Computes the per-booking commission payable to accept an order:
+ * Highest value of the vendor's plan commission range applied to the Driver Share Fare.
+ */
+export function calculateBookingAdvanceFee(
+  driverShareFare: number,
+  planTierOrPayout?: string | number
+): number {
+  const fare = Math.max(0, Math.round(Number(driverShareFare) || 0));
+  if (fare <= 0) return 0;
+  if (typeof planTierOrPayout === "string") {
+    const rate = getHighestPlanCommissionRate(planTierOrPayout);
+    return Math.round((fare * rate) / 100);
+  }
+  const payout = Math.round(Number(planTierOrPayout) || 0);
   const diff = Math.round(fare - payout);
   if (diff > 0) return diff;
-  if (fare <= 0) return 0;
-  return Math.max(50, Math.round(fare * 0.05));
+  return Math.round((fare * getHighestPlanCommissionRate("gold")) / 100);
 }
 
 function getBadgeStyle(type: string): string {
@@ -222,6 +242,8 @@ export async function recordBookingDebitOnAccept(params: {
   bookingId: string;
   totalFare: number;
   vendorPayout: number;
+  driverShareFare?: number;
+  planTier?: string;
   routeSummary: string;
   driverLabel?: string;
 }): Promise<VendorWalletState> {
@@ -232,10 +254,15 @@ export async function recordBookingDebitOnAccept(params: {
     throw new WalletClearanceRequiredError(wallet.balance, wallet.unsettledBookingsCount);
   }
 
-  const fee = calculateBookingAdvanceFee(params.totalFare, params.vendorPayout);
+  const effectiveTier = (params.planTier || "gold").trim().toLowerCase();
+  const effectiveShareFare = Math.round(
+    Number(params.driverShareFare || params.vendorPayout || params.totalFare || 0)
+  );
+  const commissionRate = getHighestPlanCommissionRate(effectiveTier);
+  const fee = calculateBookingAdvanceFee(effectiveShareFare, effectiveTier);
   const newBalance = wallet.balance - fee;
   const newUnsettledCount =
-    newBalance < 0 ? wallet.unsettledBookingsCount + 1 : 0;
+    fee > 0 && newBalance < 0 ? wallet.unsettledBookingsCount + 1 : 0;
 
   await prisma.$queryRawUnsafe(
     `UPDATE vendor_wallets
@@ -256,9 +283,9 @@ export async function recordBookingDebitOnAccept(params: {
       ) VALUES ($1, $2, 'booking_due', $3, $4, $5, $6, $7, $8, $9);`,
       txnId,
       normalizedId,
-      `Booking Advance Link Due (#${params.bookingId})`,
+      `Commission Due (${commissionRate}% of ₹${effectiveShareFare}) (#${params.bookingId})`,
       params.bookingId,
-      `Advance due for ${params.routeSummary} (${newUnsettledCount}/${MAX_UNSETTLED_BOOKINGS} bookings before ₹0 settlement)`,
+      `${effectiveTier.toUpperCase()} Plan ${commissionRate}% max-range commission on ₹${effectiveShareFare} driver share fare for ${params.routeSummary} (${newUnsettledCount}/${MAX_UNSETTLED_BOOKINGS} bookings before ₹0 settlement)`,
       -fee,
       newBalance,
       `BOOKING ${newUnsettledCount}/${MAX_UNSETTLED_BOOKINGS}`,
