@@ -22,7 +22,7 @@ export const LeadFormModal: React.FC<LeadFormModalProps> = ({
     mobile: "",
     email: "",
     state: "",
-    city: "",
+    city: "null",
     preferredPackage: defaultPackage || "gold",
     investmentBudget: "₹10,000 (Gold Package - 75% OFF Exclusive Deal)",
     spaceStatus: "Owned commercial space ready",

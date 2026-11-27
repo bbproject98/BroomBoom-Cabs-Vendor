@@ -108,7 +108,7 @@ const handleCreateLead = async (req, res) => {
         alternatePhone: body.alternatePhone?.trim() || null,
         email: body.email?.trim() || null,
         state: body.state?.trim() || null,
-        city: (body.city && body.city.trim()) || "Kolkata",
+        city: (body.city && body.city.trim()) || null,
         pincode: body.pincode?.trim() || null,
         proposedAddress: body.proposedAddress?.trim() || null,
         spaceStatus: body.spaceStatus || null,
@@ -128,19 +128,19 @@ const handleCreateLead = async (req, res) => {
     });
 
     console.log(`[BACKEND DB] Created Lead: ${lead.applicationId} - ${lead.fullName}`);
-
-    res.status(201).json({
-      success: true,
-      message: "Lead recorded successfully in PostgreSQL via Prisma.",
-      data: lead,
-    });
-  } catch (error) {
-    console.error("[BACKEND DB ERROR] Failed to create lead:", error);
-    res.status(500).json({
-      success: false,
-      error: "Failed to store lead in PostgreSQL database.",
-      details: error.message,
-    });
+res.status(201).json({
+  success: true,
+  message: "Lead recorded successfully in PostgreSQL via Prisma.",
+  data: {
+    ...lead,
+    createdAt: new Date(lead.createdAt).toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+    }),
+    updatedAt: new Date(lead.updatedAt).toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+    }),
+  },
+});
   }
 };
 
